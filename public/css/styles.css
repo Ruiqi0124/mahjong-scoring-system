@@ -271,32 +271,20 @@ h2 {
 /* 导航栏样式 */
 .navbar {
     box-shadow: 0 2px 4px rgba(0,0,0,.1);
-    background-color: #1a73e8 !important;
-    padding: 0.8rem 0;
+    background-color: var(--bs-primary) !important;
 }
 
 .navbar-brand {
-    font-weight: bold;
-    font-size: 1.4rem;
-    color: #fff !important;
+    font-weight: 600;
 }
 
 .navbar-nav .nav-link {
-    color: rgba(255, 255, 255, 0.9) !important;
     padding: 0.5rem 1rem;
     font-weight: 500;
-    transition: all 0.2s;
-}
-
-.navbar-nav .nav-link:hover {
-    color: #fff !important;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
 }
 
 .navbar-nav .nav-link.active {
-    color: #fff !important;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
 }
 
