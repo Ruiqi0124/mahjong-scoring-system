@@ -94,7 +94,7 @@ const Rankings = {
             } else {
                 noHistoryMessage.style.display = 'none';
                 // 按日期降序排序
-                playerGames.sort((a, b) => new Date(b.date) - new Date(a.date));
+                playerGames.sort((a, b) => new Date(b.timestamp || b.time) - new Date(a.timestamp || a.time));
                 
                 tbody.innerHTML = playerGames.map(game => {
                     // 获取当前玩家的信息
@@ -118,7 +118,7 @@ const Rankings = {
 
                     return `
                         <tr>
-                            <td class="text-nowrap">${this.formatDate(game.date)}</td>
+                            <td class="text-nowrap">${this.formatDate(game.timestamp || game.time)}</td>
                             <td class="game-players">${gameResult}</td>
                         </tr>
                     `;
