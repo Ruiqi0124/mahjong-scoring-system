@@ -368,4 +368,49 @@ h2 {
     border-top: 1px solid #dee2e6;
     background-color: #f8f9fa;
     border-radius: 0 0 10px 10px;
+}
+
+/* 表格固定列样式 */
+.table-responsive {
+    position: relative;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+/* 固定第一列 */
+.table th:first-child,
+.table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: inherit;
+}
+
+/* 确保固定列的背景色正确 */
+.table-striped > tbody > tr:nth-of-type(odd) > td:first-child {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.table-striped > tbody > tr:nth-of-type(even) > td:first-child {
+    background-color: #fff;
+}
+
+.table > thead > tr > th:first-child {
+    background-color: #cfe2ff;
+    border-right: 1px solid #dee2e6;
+}
+
+/* 添加阴影效果 */
+.table th:first-child::after,
+.table td:first-child::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -5px;
+    bottom: 0;
+    width: 5px;
+    pointer-events: none;
+    background: linear-gradient(to right, rgba(0,0,0,0.1), rgba(0,0,0,0));
 } 
