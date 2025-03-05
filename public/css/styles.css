@@ -425,6 +425,17 @@ h2 {
     background-color: #f8f8f8;
 }
 
+/* 可排序表头样式 */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.sortable:hover {
+    background-color: #e9ecef !important;
+}
+
 /* 排序按钮样式 */
 .sort-btn {
     padding: 0 4px;
@@ -453,4 +464,9 @@ h2 {
 .sort-btn i.fa-sort-up,
 .sort-btn i.fa-sort-down {
     color: #0d6efd;
+}
+
+/* 激活状态的表头 */
+.sortable[data-sort].active {
+    background-color: #e9ecef;
 } 

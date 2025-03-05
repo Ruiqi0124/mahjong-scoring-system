@@ -12,9 +12,23 @@ const Rankings = {
         try {
             this.deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
             
-            // 添加排序按钮事件监听
-            document.querySelectorAll('.sort-btn').forEach(btn => {
-                btn.addEventListener('click', () => this.handleSort(btn.dataset.sort));
+            // 添加排序按钮和表头点击事件监听
+            document.querySelectorAll('.sortable').forEach(th => {
+                const sortField = th.dataset.sort;
+                // 为表头添加点击事件
+                th.addEventListener('click', (e) => {
+                    // 如果点击的是按钮，不处理（让按钮自己的事件处理）
+                    if (e.target.closest('.sort-btn')) return;
+                    this.handleSort(sortField);
+                });
+                // 为排序按钮添加点击事件
+                const btn = th.querySelector('.sort-btn');
+                if (btn) {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // 阻止事件冒泡到表头
+                        this.handleSort(sortField);
+                    });
+                }
             });
             
             await this.updateRankings();
