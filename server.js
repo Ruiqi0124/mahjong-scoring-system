@@ -13,13 +13,18 @@ app.use(express.static('public'));
 
 // 连接MongoDB
 const connectDB = async () => {
-    if (mongoose.connections[0].readyState) return;
-    
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mahjong-system', {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    });
-    console.log('MongoDB connected successfully');
+    try {
+        if (mongoose.connections[0].readyState) return;
+        
+        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mahjong-system', {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
+        console.log('MongoDB connected successfully');
+    } catch (error) {
+        console.error('MongoDB connection error:', error);
+        throw error;
+    }
 };
 
 // 定义模型
@@ -44,9 +49,10 @@ let Game = mongoose.models.Game || mongoose.model('Game', gameSchema);
 app.get('/api/players', async (req, res) => {
     try {
         await connectDB();
-        const players = await Player.find();
+        const players = await Player.find().sort({ name: 1 });
         res.json(players.map(p => p.name));
     } catch (err) {
+        console.error('获取玩家列表错误:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -55,10 +61,23 @@ app.get('/api/players', async (req, res) => {
 app.post('/api/players', async (req, res) => {
     try {
         await connectDB();
-        const player = new Player({ name: req.body.name });
+        const { name } = req.body;
+        
+        if (!name || typeof name !== 'string' || name.trim().length === 0) {
+            return res.status(400).json({ error: '玩家名称不能为空' });
+        }
+
+        // 检查玩家是否已存在
+        const existingPlayer = await Player.findOne({ name: name.trim() });
+        if (existingPlayer) {
+            return res.status(400).json({ error: '该玩家已存在' });
+        }
+
+        const player = new Player({ name: name.trim() });
         await player.save();
         res.status(201).json({ name: player.name });
     } catch (err) {
+        console.error('添加玩家错误:', err);
         if (err.code === 11000) {
             res.status(400).json({ error: '该玩家已存在' });
         } else {
@@ -74,6 +93,7 @@ app.get('/api/games', async (req, res) => {
         const games = await Game.find().sort({ timestamp: -1 });
         res.json(games);
     } catch (err) {
+        console.error('获取比赛记录错误:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -82,15 +102,22 @@ app.get('/api/games', async (req, res) => {
 app.post('/api/games', async (req, res) => {
     try {
         await connectDB();
+        const { players, scores } = req.body;
+
+        if (!players || !scores || players.length !== 4 || scores.length !== 4) {
+            return res.status(400).json({ error: '数据格式不正确' });
+        }
+
         const game = new Game({
-            players: req.body.players.map((name, index) => ({
+            players: players.map((name, index) => ({
                 name,
-                score: req.body.scores[index]
+                score: scores[index]
             }))
         });
         await game.save();
         res.status(201).json(game);
     } catch (err) {
+        console.error('保存比赛记录错误:', err);
         res.status(500).json({ error: err.message });
     }
 });
