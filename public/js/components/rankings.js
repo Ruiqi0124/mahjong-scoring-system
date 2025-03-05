@@ -93,8 +93,9 @@ const Rankings = {
                 noHistoryMessage.style.display = 'block';
             } else {
                 noHistoryMessage.style.display = 'none';
-                // 按日期降序排序
+                // 按日期降序排序并限制显示最近10场
                 playerGames.sort((a, b) => new Date(b.timestamp || b.time) - new Date(a.timestamp || a.time));
+                playerGames = playerGames.slice(0, 10);
                 
                 tbody.innerHTML = playerGames.map(game => {
                     // 获取当前玩家的信息
@@ -108,8 +109,15 @@ const Rankings = {
                         return b.score - a.score;
                     });
 
-                    // 生成对局成绩字符串
-                    const gameResult = sortedPlayers.map(p => {
+                    // 生成对局成绩字符串，每行显示两个玩家
+                    const firstRow = sortedPlayers.slice(0, 2).map(p => {
+                        const isCurrentPlayer = p.name === name;
+                        return `<div class="player-score ${isCurrentPlayer ? 'fw-bold text-primary' : ''}">
+                            ${p.name}: ${p.score}
+                        </div>`;
+                    }).join('');
+
+                    const secondRow = sortedPlayers.slice(2, 4).map(p => {
                         const isCurrentPlayer = p.name === name;
                         return `<div class="player-score ${isCurrentPlayer ? 'fw-bold text-primary' : ''}">
                             ${p.name}: ${p.score}
@@ -119,7 +127,10 @@ const Rankings = {
                     return `
                         <tr>
                             <td class="text-nowrap">${this.formatDate(game.timestamp || game.time)}</td>
-                            <td class="game-players">${gameResult}</td>
+                            <td class="game-players">
+                                <div class="game-row">${firstRow}</div>
+                                <div class="game-row">${secondRow}</div>
+                            </td>
                         </tr>
                     `;
                 }).join('');
