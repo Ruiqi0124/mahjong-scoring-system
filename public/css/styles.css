@@ -385,21 +385,21 @@ h2 {
     position: sticky;
     left: 0;
     z-index: 1;
-    background-color: inherit;
 }
 
-/* 确保固定列的背景色正确 */
+/* 确保固定列的背景色正确且不透明 */
 .table-striped > tbody > tr:nth-of-type(odd) > td:first-child {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: #f2f2f2;
 }
 
 .table-striped > tbody > tr:nth-of-type(even) > td:first-child {
-    background-color: #fff;
+    background-color: #ffffff;
 }
 
 .table > thead > tr > th:first-child {
     background-color: #cfe2ff;
     border-right: 1px solid #dee2e6;
+    z-index: 2;
 }
 
 /* 添加阴影效果 */
@@ -413,4 +413,14 @@ h2 {
     width: 5px;
     pointer-events: none;
     background: linear-gradient(to right, rgba(0,0,0,0.1), rgba(0,0,0,0));
+}
+
+/* 处理悬停效果 */
+.table-hover > tbody > tr:hover > td:first-child {
+    background-color: #ebebeb !important;
+}
+
+/* 处理不活跃玩家的样式 */
+.table-striped > tbody > tr.inactive-player > td:first-child {
+    background-color: #f8f8f8;
 } 
