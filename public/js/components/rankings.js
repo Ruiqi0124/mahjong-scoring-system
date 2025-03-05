@@ -77,7 +77,7 @@ const Rankings = {
 
         try {
             const games = await api.getGames();
-            const playerGames = games.filter(game => 
+            let playerGames = games.filter(game => 
                 game.players.some(player => player.name === name)
             );
 
