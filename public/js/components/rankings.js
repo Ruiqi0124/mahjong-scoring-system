@@ -116,9 +116,15 @@ const Rankings = {
                 fourthRate: stat.games > 0 ? ((stat.ranks[3] / stat.games) * 100).toFixed(1) + '%' : '-' // 四位率
             }));
 
-            // 排序
-            rankings.sort((a, b) => {
-                if (a.games === 0 && b.games === 0) return 0;
+            // 分离"其他玩家"和普通玩家
+            const otherPlayer = rankings.find(player => player.name === '其他玩家');
+            const normalPlayers = rankings.filter(player => player.name !== '其他玩家');
+
+            // 对普通玩家进行排序
+            normalPlayers.sort((a, b) => {
+                if (a.games === 0 && b.games === 0) {
+                    return a.name.localeCompare(b.name); // 无比赛记录的玩家按名字排序
+                }
                 if (a.games === 0) return 1;
                 if (b.games === 0) return -1;
 
@@ -129,9 +135,12 @@ const Rankings = {
                 }
             });
 
+            // 合并排序结果，确保"其他玩家"在最后
+            rankings = otherPlayer ? [...normalPlayers, otherPlayer] : normalPlayers;
+
             // 显示排名
             const tbody = document.getElementById('rankingsBody');
-            tbody.innerHTML = rankings.map(stat => `
+            tbody.innerHTML = rankings.map((stat, index) => `
                 <tr class="${stat.games === 0 ? 'inactive-player' : ''}">
                     <td>${stat.name}</td>
                     <td>${stat.games}</td>
