@@ -79,20 +79,25 @@ const api = {
 
     // 删除玩家
     async deletePlayer(name) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/players/${encodeURIComponent(name)}`, {
-                method: 'DELETE'
-            });
-            
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({ error: '删除玩家失败' }));
-                throw new Error(error.error || '删除玩家失败');
-            }
-            
-            return response.json();
-        } catch (error) {
-            console.error('删除玩家错误:', error);
-            throw error;
+        const response = await fetch(`${API_BASE_URL}/api/players/${name}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(error || '删除玩家失败');
+        }
+    },
+
+    // 删除对局
+    async deleteGame(gameId) {
+        const response = await fetch(`${API_BASE_URL}/api/games/${gameId}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(error || '删除对局失败');
         }
     }
 }; 
