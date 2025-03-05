@@ -42,7 +42,7 @@ const playerSchema = new mongoose.Schema({
 });
 
 const gameSchema = new mongoose.Schema({
-    timestamp: { type: Date, default: Date.now },
+    time: { type: Date, default: Date.now },
     players: [{
         name: String,
         score: Number
@@ -132,6 +132,7 @@ app.post('/api/games', async (req, res) => {
         }
 
         const game = new Game({
+            time: new Date(),
             players: players.map((name, index) => ({
                 name,
                 score: scores[index]
@@ -173,6 +174,30 @@ app.delete('/api/players/:name', async (req, res) => {
         res.json({ message: '玩家删除成功' });
     } catch (err) {
         console.error('删除玩家错误:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 删除对局
+app.delete('/api/games/:id', async (req, res) => {
+    console.log('Received DELETE request for game:', req.params.id);
+    try {
+        await connectDB();
+        const gameId = req.params.id;
+        
+        // 检查对局是否存在
+        const game = await Game.findById(gameId);
+        if (!game) {
+            console.log('Game not found:', gameId);
+            return res.status(404).json({ error: '对局不存在' });
+        }
+
+        // 删除对局
+        await Game.findByIdAndDelete(gameId);
+        console.log('Game deleted successfully:', gameId);
+        res.json({ message: '对局删除成功' });
+    } catch (err) {
+        console.error('删除对局错误:', err);
         res.status(500).json({ error: err.message });
     }
 });

@@ -5,8 +5,11 @@ const auth = {
 
     // 验证管理员权限
     async verifyAdmin() {
-        const password = await this.showPasswordPrompt();
-        return password === this.adminPassword;
+        const password = prompt('请输入管理员密码：');
+        if (!password) return false;
+        
+        // 这里使用一个简单的密码验证，实际应用中应该使用更安全的方式
+        return password === 'admin123';
     },
 
     // 显示密码输入弹窗
