@@ -110,7 +110,10 @@ const Rankings = {
                 ...stat,
                 averageScore: stat.games > 0 ? Math.round(stat.totalScore / stat.games) : 0,
                 averageRank: stat.games > 0 ? (stat.totalRank / stat.games).toFixed(2) : '-',
-                firstRate: stat.games > 0 ? ((stat.ranks[0] / stat.games) * 100).toFixed(1) + '%' : '-' // 计算一位率
+                firstRate: stat.games > 0 ? ((stat.ranks[0] / stat.games) * 100).toFixed(1) + '%' : '-', // 一位率
+                secondRate: stat.games > 0 ? ((stat.ranks[1] / stat.games) * 100).toFixed(1) + '%' : '-', // 二位率
+                thirdRate: stat.games > 0 ? ((stat.ranks[2] / stat.games) * 100).toFixed(1) + '%' : '-', // 三位率
+                fourthRate: stat.games > 0 ? ((stat.ranks[3] / stat.games) * 100).toFixed(1) + '%' : '-' // 四位率
             }));
 
             // 排序
@@ -139,6 +142,9 @@ const Rankings = {
                     <td>${stat.ranks[2]}</td>
                     <td>${stat.ranks[3]}</td>
                     <td>${stat.firstRate}</td>
+                    <td>${stat.secondRate}</td>
+                    <td>${stat.thirdRate}</td>
+                    <td>${stat.fourthRate}</td>
                     <td>
                         <button class="btn btn-sm btn-outline-danger" onclick="Rankings.showDeleteConfirm('${stat.name}')">
                             <i class="fas fa-trash"></i>
