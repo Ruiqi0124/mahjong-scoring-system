@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>麻将比赛记分系统</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>麻将比赛记分</h1>
+        <div class="nav-buttons">
+            <a href="rankings.html" class="nav-btn">查看排名</a>
+        </div>
+        <div class="game-form">
+            <table>
+                <tr>
+                    <th>一位</th>
+                    <th>二位</th>
+                    <th>三位</th>
+                    <th>四位</th>
+                </tr>
+                <tr>
+                    <td>
+                        <select id="player1" class="player-select">
+                            <option value="">选择玩家</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select id="player2" class="player-select">
+                            <option value="">选择玩家</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select id="player3" class="player-select">
+                            <option value="">选择玩家</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select id="player4" class="player-select">
+                            <option value="">选择玩家</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="number" id="score1" placeholder="分数"></td>
+                    <td><input type="number" id="score2" placeholder="分数"></td>
+                    <td><input type="number" id="score3" placeholder="分数"></td>
+                    <td><input type="number" id="score4" placeholder="分数"></td>
+                </tr>
+            </table>
+            <button onclick="saveData()" class="save-btn">保存结果</button>
+        </div>
+        <div id="history" class="history">
+            <h2>历史记录</h2>
+            <div id="historyContent"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 

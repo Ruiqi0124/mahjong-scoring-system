@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>麻将比赛排名</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>麻将比赛排名</h1>
+        <div class="nav-buttons">
+            <a href="index.html" class="nav-btn">返回记分页</a>
+        </div>
+        
+        <!-- 添加玩家表单 -->
+        <div class="add-player-form">
+            <input type="text" id="newPlayerName" placeholder="输入新玩家名称">
+            <button onclick="addNewPlayer()" class="add-btn">添加玩家</button>
+        </div>
+
+        <!-- 排序选项 -->
+        <div class="sort-options">
+            <label>排序方式：</label>
+            <select id="sortOption" onchange="updateRankings()">
+                <option value="averageScore">按平均素点</option>
+                <option value="averageRanking">按平均顺位</option>
+            </select>
+        </div>
+
+        <div id="rankingsContent"></div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        // 页面加载时更新排名
+        document.addEventListener('DOMContentLoaded', () => {
+            updateRankings();
+        });
+    </script>
+</body>
+</html> 
