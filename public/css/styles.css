@@ -473,7 +473,7 @@ h2 {
 
 /* 玩家历史对局气泡框样式 */
 #playerHistoryPopover {
-    position: absolute;
+    position: fixed;
     z-index: 1060;
     display: none;
     max-width: 600px;
@@ -490,10 +490,15 @@ h2 {
     border-top-left-radius: calc(0.5rem - 1px);
     border-top-right-radius: calc(0.5rem - 1px);
     font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 #playerHistoryPopover .popover-body {
     padding: 0;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 #playerHistoryPopover .table {
@@ -532,27 +537,53 @@ h2 {
     white-space: nowrap;
     flex: 1;
     text-align: left;
+    padding: 0.25rem 0;
 }
 
 /* 移动端适配 */
 @media (max-width: 768px) {
     #playerHistoryPopover {
-        width: calc(100vw - 40px) !important;
+        position: fixed;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%);
+        width: calc(100% - 32px) !important;
         max-width: none;
+        margin: 0;
+        max-height: 90vh;
+    }
+
+    #playerHistoryPopover .popover-body {
+        max-height: calc(90vh - 50px);
     }
 
     #playerHistoryPopover .table th,
     #playerHistoryPopover .table td {
-        padding: 0.5rem;
+        padding: 0.625rem;
     }
 
     .game-row {
-        gap: 1rem;
+        flex-direction: column;
+        gap: 0.25rem;
     }
 
     .player-score {
-        font-size: 0.9rem;
+        font-size: 0.875rem;
+        padding: 0.125rem 0;
     }
+
+    #playerHistoryPopover .table td:first-child {
+        width: 100px;
+    }
+}
+
+/* 气泡框动画 */
+#playerHistoryPopover.fade {
+    transition: opacity 0.15s linear;
+}
+
+#playerHistoryPopover.fade:not(.show) {
+    opacity: 0;
 }
 
 /* 玩家名称链接样式 */
@@ -564,13 +595,4 @@ h2 {
 
 .player-name-link:hover {
     color: #0d6efd;
-}
-
-/* 气泡框动画 */
-#playerHistoryPopover.fade {
-    transition: opacity 0.15s linear;
-}
-
-#playerHistoryPopover.fade:not(.show) {
-    opacity: 0;
 } 

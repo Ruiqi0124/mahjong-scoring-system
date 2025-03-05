@@ -140,36 +140,39 @@ const Rankings = {
             this.historyPopover.style.display = 'block';
             this.historyPopover.classList.add('show');
 
-            // 计算位置
-            const rect = event.target.getBoundingClientRect();
-            const popoverWidth = Math.min(500, window.innerWidth - 40); // 移动端适配
-            this.historyPopover.style.width = `${popoverWidth}px`;
-            
-            const popoverHeight = this.historyPopover.offsetHeight;
-            const spaceBelow = window.innerHeight - rect.bottom;
-            const spaceRight = window.innerWidth - rect.left;
+            // 根据屏幕宽度判断是否为移动端
+            if (window.innerWidth > 768) {
+                // 计算位置
+                const rect = event.target.getBoundingClientRect();
+                const popoverWidth = Math.min(500, window.innerWidth - 40);
+                this.historyPopover.style.width = `${popoverWidth}px`;
+                
+                const popoverHeight = this.historyPopover.offsetHeight;
+                const spaceBelow = window.innerHeight - rect.bottom;
+                const spaceRight = window.innerWidth - rect.left;
 
-            // 决定显示在上方还是下方
-            let top;
-            if (spaceBelow >= popoverHeight + 10 || spaceBelow >= window.innerHeight / 2) {
-                top = rect.bottom + window.scrollY + 5;
-                this.historyPopover.classList.remove('bs-popover-top');
-                this.historyPopover.classList.add('bs-popover-bottom');
-            } else {
-                top = rect.top + window.scrollY - popoverHeight - 5;
-                this.historyPopover.classList.remove('bs-popover-bottom');
-                this.historyPopover.classList.add('bs-popover-top');
+                // 决定显示在上方还是下方
+                let top;
+                if (spaceBelow >= popoverHeight + 10 || spaceBelow >= window.innerHeight / 2) {
+                    top = rect.bottom + window.scrollY + 5;
+                    this.historyPopover.classList.remove('bs-popover-top');
+                    this.historyPopover.classList.add('bs-popover-bottom');
+                } else {
+                    top = rect.top + window.scrollY - popoverHeight - 5;
+                    this.historyPopover.classList.remove('bs-popover-bottom');
+                    this.historyPopover.classList.add('bs-popover-top');
+                }
+
+                // 决定显示在左边还是右边
+                let left = Math.max(20, Math.min(
+                    rect.left,
+                    window.innerWidth - popoverWidth - 20
+                ));
+
+                // 设置位置
+                this.historyPopover.style.top = `${top}px`;
+                this.historyPopover.style.left = `${left}px`;
             }
-
-            // 决定显示在左边还是右边
-            let left = Math.max(20, Math.min(
-                rect.left,
-                window.innerWidth - popoverWidth - 20
-            ));
-
-            // 设置位置
-            this.historyPopover.style.top = `${top}px`;
-            this.historyPopover.style.left = `${left}px`;
 
             this.currentHistoryPlayer = name;
         } catch (error) {
