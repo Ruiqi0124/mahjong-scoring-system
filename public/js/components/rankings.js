@@ -36,10 +36,22 @@ const Rankings = {
     },
 
     // 显示删除确认弹窗
-    showDeleteConfirm(name) {
-        this.playerToDelete = name;
-        document.getElementById('playerToDelete').textContent = name;
-        this.deleteModal.show();
+    async showDeleteConfirm(name) {
+        try {
+            // 验证管理员权限
+            const isAdmin = await auth.verifyAdmin();
+            if (!isAdmin) {
+                alert('密码错误，无权执行此操作！');
+                return;
+            }
+
+            this.playerToDelete = name;
+            document.getElementById('playerToDelete').textContent = name;
+            this.deleteModal.show();
+        } catch (error) {
+            console.error('验证失败:', error);
+            alert('验证失败: ' + error.message);
+        }
     },
 
     // 确认删除玩家
