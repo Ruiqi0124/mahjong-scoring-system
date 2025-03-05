@@ -6,11 +6,14 @@ const Rankings = {
         field: 'averageRank',
         direction: 'asc'
     },
+    historyPopover: null,
+    currentHistoryPlayer: null,
 
     // 初始化
     async init() {
         try {
             this.deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            this.initHistoryPopover();
             
             // 添加排序按钮和表头点击事件监听
             document.querySelectorAll('.sortable').forEach(th => {
@@ -30,11 +33,123 @@ const Rankings = {
                     });
                 }
             });
+
+            // 添加点击空白区域关闭气泡框的事件
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#playerHistoryPopover') && 
+                    !e.target.closest('.player-name-link')) {
+                    this.hidePlayerHistory();
+                }
+            });
             
             await this.updateRankings();
         } catch (error) {
             console.error('初始化失败:', error);
             alert('初始化失败: ' + error.message);
+        }
+    },
+
+    // 初始化历史对局气泡框
+    initHistoryPopover() {
+        this.historyPopover = document.getElementById('playerHistoryPopover');
+        document.body.appendChild(this.historyPopover);
+    },
+
+    // 显示玩家历史对局
+    async showPlayerHistory(name, event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // 如果点击的是当前显示的玩家，则关闭气泡框
+        if (this.currentHistoryPlayer === name) {
+            this.hidePlayerHistory();
+            return;
+        }
+
+        try {
+            const games = await api.getGames();
+            const playerGames = games.filter(game => 
+                game.players.some(player => player.name === name)
+            );
+
+            // 更新标题
+            document.getElementById('playerHistoryTitle').textContent = `${name} 的对局记录`;
+
+            // 更新内容
+            const tbody = document.getElementById('playerHistoryBody');
+            const noHistoryMessage = document.getElementById('noHistoryMessage');
+
+            if (playerGames.length === 0) {
+                tbody.innerHTML = '';
+                noHistoryMessage.style.display = 'block';
+            } else {
+                noHistoryMessage.style.display = 'none';
+                tbody.innerHTML = playerGames.map(game => {
+                    const playerInfo = game.players.find(p => p.name === name);
+                    const rank = game.players.indexOf(playerInfo) + 1;
+                    return `
+                        <tr>
+                            <td>${new Date(game.date).toLocaleDateString()}</td>
+                            <td>
+                                ${game.players.map(p => 
+                                    `<span class="${p.name === name ? 'fw-bold text-primary' : ''}">${p.name}</span>`
+                                ).join(' / ')}
+                            </td>
+                            <td>${playerInfo.score}</td>
+                            <td>${rank}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // 显示气泡框
+            this.historyPopover.style.display = 'block';
+            this.historyPopover.classList.add('show');
+
+            // 计算位置
+            const rect = event.target.getBoundingClientRect();
+            const popoverWidth = this.historyPopover.offsetWidth;
+            const popoverHeight = this.historyPopover.offsetHeight;
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceRight = window.innerWidth - rect.left;
+
+            // 决定显示在上方还是下方
+            let top;
+            if (spaceBelow >= popoverHeight + 10 || spaceBelow >= window.innerHeight / 2) {
+                top = rect.bottom + window.scrollY + 5;
+                this.historyPopover.classList.remove('bs-popover-top');
+                this.historyPopover.classList.add('bs-popover-bottom');
+            } else {
+                top = rect.top + window.scrollY - popoverHeight - 5;
+                this.historyPopover.classList.remove('bs-popover-bottom');
+                this.historyPopover.classList.add('bs-popover-top');
+            }
+
+            // 决定显示在左边还是右边
+            let left;
+            if (spaceRight >= popoverWidth + 10) {
+                left = rect.left;
+            } else {
+                left = rect.right - popoverWidth;
+            }
+
+            // 设置位置
+            this.historyPopover.style.top = `${top}px`;
+            this.historyPopover.style.left = `${left}px`;
+
+            this.currentHistoryPlayer = name;
+        } catch (error) {
+            console.error('获取玩家历史对局失败:', error);
+            alert('获取玩家历史对局失败: ' + error.message);
+        }
+    },
+
+    // 隐藏玩家历史对局
+    hidePlayerHistory() {
+        if (this.historyPopover) {
+            this.historyPopover.classList.remove('show');
+            this.historyPopover.style.display = 'none';
+            this.currentHistoryPlayer = null;
         }
     },
 
@@ -243,7 +358,11 @@ const Rankings = {
             const tbody = document.getElementById('rankingsBody');
             tbody.innerHTML = rankings.map((stat) => `
                 <tr class="${stat.games === 0 ? 'inactive-player' : ''}">
-                    <td>${stat.name}</td>
+                    <td>
+                        <a href="#" class="player-name-link text-decoration-none" onclick="Rankings.showPlayerHistory('${stat.name}', event)">
+                            ${stat.name}
+                        </a>
+                    </td>
                     <td>${stat.games}</td>
                     <td>${stat.averageScore}</td>
                     <td>${stat.averageRank === 999 ? '-' : stat.averageRank}</td>
