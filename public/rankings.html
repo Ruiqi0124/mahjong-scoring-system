@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排名 - 麻将比赛记分系统</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>排名</h1>
+        <div class="nav-buttons">
+            <a href="index.html" class="nav-btn">返回记分</a>
+        </div>
+        <div class="rankings">
+            <div class="sort-controls">
+                <select id="sortType" onchange="Rankings.updateRankings()">
+                    <option value="average_score">按平均素点排序</option>
+                    <option value="average_rank">按平均顺位排序</option>
+                </select>
+            </div>
+            <table id="rankingsTable">
+                <thead>
+                    <tr>
+                        <th>玩家</th>
+                        <th>场数</th>
+                        <th>平均素点</th>
+                        <th>平均顺位</th>
+                    </tr>
+                </thead>
+                <tbody id="rankingsBody"></tbody>
+            </table>
+        </div>
+    </div>
+    <!-- 工具库 -->
+    <script src="js/utils/storage.js"></script>
+    <script src="js/utils/api.js"></script>
+    <!-- 组件 -->
+    <script src="js/components/rankings.js"></script>
+    <!-- 初始化 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            Rankings.init();
+        });
+    </script>
+</body>
+</html> 

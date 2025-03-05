@@ -49,14 +49,25 @@
                     <td><input type="number" id="score4" placeholder="分数"></td>
                 </tr>
             </table>
-            <button onclick="saveData()" class="save-btn">保存结果</button>
+            <button onclick="GameForm.saveData()" class="save-btn">保存结果</button>
         </div>
         <div id="history" class="history">
             <h2>历史记录</h2>
             <div id="historyContent"></div>
         </div>
     </div>
-    <script src="js/api.js"></script>
-    <script src="js/script.js"></script>
+    <!-- 工具库 -->
+    <script src="js/utils/storage.js"></script>
+    <script src="js/utils/api.js"></script>
+    <!-- 组件 -->
+    <script src="js/components/game-form.js"></script>
+    <script src="js/components/history.js"></script>
+    <!-- 初始化 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            GameForm.init();
+            History.displayHistory();
+        });
+    </script>
 </body>
 </html> 
