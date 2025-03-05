@@ -14,9 +14,18 @@ app.use(express.static('public'));
 // 连接MongoDB
 const connectDB = async () => {
     try {
-        if (mongoose.connections[0].readyState) return;
+        if (mongoose.connections[0].readyState) {
+            console.log('Using existing MongoDB connection');
+            return;
+        }
         
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mahjong-system', {
+        const mongoUri = process.env.MONGODB_URI;
+        if (!mongoUri) {
+            throw new Error('MongoDB URI is not defined in environment variables');
+        }
+
+        console.log('Attempting to connect to MongoDB...');
+        await mongoose.connect(mongoUri, {
             useNewUrlParser: true,
             useUnifiedTopology: true
         });
@@ -47,9 +56,11 @@ let Game = mongoose.models.Game || mongoose.model('Game', gameSchema);
 // API路由
 // 获取所有玩家
 app.get('/api/players', async (req, res) => {
+    console.log('Received GET request for /api/players');
     try {
         await connectDB();
         const players = await Player.find().sort({ name: 1 });
+        console.log('Successfully retrieved players:', players.length);
         res.json(players.map(p => p.name));
     } catch (err) {
         console.error('获取玩家列表错误:', err);
@@ -59,22 +70,30 @@ app.get('/api/players', async (req, res) => {
 
 // 添加新玩家
 app.post('/api/players', async (req, res) => {
+    console.log('Received POST request for /api/players:', req.body);
     try {
         await connectDB();
         const { name } = req.body;
         
         if (!name || typeof name !== 'string' || name.trim().length === 0) {
+            console.log('Invalid player name received');
             return res.status(400).json({ error: '玩家名称不能为空' });
         }
 
+        const trimmedName = name.trim();
+        console.log('Checking if player exists:', trimmedName);
+        
         // 检查玩家是否已存在
-        const existingPlayer = await Player.findOne({ name: name.trim() });
+        const existingPlayer = await Player.findOne({ name: trimmedName });
         if (existingPlayer) {
+            console.log('Player already exists:', trimmedName);
             return res.status(400).json({ error: '该玩家已存在' });
         }
 
-        const player = new Player({ name: name.trim() });
+        console.log('Creating new player:', trimmedName);
+        const player = new Player({ name: trimmedName });
         await player.save();
+        console.log('Player created successfully:', player);
         res.status(201).json({ name: player.name });
     } catch (err) {
         console.error('添加玩家错误:', err);
@@ -88,9 +107,11 @@ app.post('/api/players', async (req, res) => {
 
 // 获取所有比赛记录
 app.get('/api/games', async (req, res) => {
+    console.log('Received GET request for /api/games');
     try {
         await connectDB();
         const games = await Game.find().sort({ timestamp: -1 });
+        console.log('Successfully retrieved games:', games.length);
         res.json(games);
     } catch (err) {
         console.error('获取比赛记录错误:', err);
@@ -100,11 +121,13 @@ app.get('/api/games', async (req, res) => {
 
 // 添加新比赛记录
 app.post('/api/games', async (req, res) => {
+    console.log('Received POST request for /api/games:', req.body);
     try {
         await connectDB();
         const { players, scores } = req.body;
 
         if (!players || !scores || players.length !== 4 || scores.length !== 4) {
+            console.log('Invalid game data received');
             return res.status(400).json({ error: '数据格式不正确' });
         }
 
@@ -115,11 +138,21 @@ app.post('/api/games', async (req, res) => {
             }))
         });
         await game.save();
+        console.log('Game saved successfully:', game);
         res.status(201).json(game);
     } catch (err) {
         console.error('保存比赛记录错误:', err);
         res.status(500).json({ error: err.message });
     }
+});
+
+// 健康检查端点
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+        timestamp: new Date().toISOString()
+    });
 });
 
 // 服务静态文件
