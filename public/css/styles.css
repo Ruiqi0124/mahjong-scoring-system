@@ -6,8 +6,8 @@ body {
 }
 
 .container {
-    max-width: 800px;
-    margin: 30px auto;
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 20px;
     background-color: #fff;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
@@ -26,64 +26,37 @@ h2 {
 }
 
 .game-form {
-    margin-bottom: 30px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
     margin: 20px 0;
 }
 
-th, td {
-    border: 1px solid #ddd;
-    padding: 12px;
+.game-form table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.game-form th,
+.game-form td {
+    padding: 10px;
     text-align: center;
+    border: 1px solid #ddd;
 }
 
-th {
-    background-color: #f8f9fa;
-    color: #333;
-    font-weight: bold;
-}
-
-input[type="text"],
-input[type="number"],
-.player-select {
-    width: 90%;
+.game-form input[type="number"],
+.game-form select {
+    width: 100%;
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 14px;
-}
-
-input[type="number"] {
-    text-align: center;
-}
-
-.player-select {
-    width: 95%;
-    background-color: white;
-    cursor: pointer;
-}
-
-.player-select:focus {
-    outline: none;
-    border-color: #007bff;
 }
 
 .save-btn {
-    display: block;
-    width: 200px;
-    margin: 20px auto;
-    padding: 12px 0;
+    padding: 10px 20px;
     background-color: #4CAF50;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
 }
 
 .save-btn:hover {
@@ -92,20 +65,19 @@ input[type="number"] {
 
 .history {
     margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
 }
 
-.history-item {
-    background-color: #f8f9fa;
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 5px;
-    border: 1px solid #eee;
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
-.history-item p {
-    margin: 5px 0;
+.history-table th,
+.history-table td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
 }
 
 .error {
@@ -117,22 +89,79 @@ input[type="number"] {
 
 /* 新增样式 */
 .nav-buttons {
-    text-align: center;
-    margin-bottom: 20px;
+    margin: 20px 0;
 }
 
 .nav-btn {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: #4CAF50;
     color: white;
     text-decoration: none;
     border-radius: 5px;
-    transition: background-color 0.3s;
 }
 
 .nav-btn:hover {
-    background-color: #0056b3;
+    background-color: #45a049;
+}
+
+/* 排名页面样式 */
+.rankings {
+    margin-top: 20px;
+}
+
+.sort-controls {
+    margin-bottom: 20px;
+}
+
+.sort-controls select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#rankingsTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#rankingsTable th,
+#rankingsTable td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.inactive-player {
+    color: #999;
+    background-color: #f9f9f9;
+}
+
+/* 新玩家表单样式 */
+.player-form {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+}
+
+.player-form input[type="text"] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.add-btn {
+    padding: 8px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.add-btn:hover {
+    background-color: #45a049;
 }
 
 .rankings-table {
@@ -184,20 +213,6 @@ input[type="number"] {
 .add-player-form input {
     width: 200px;
     margin-right: 10px;
-}
-
-.add-btn {
-    padding: 8px 20px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.add-btn:hover {
-    background-color: #218838;
 }
 
 .sort-options {

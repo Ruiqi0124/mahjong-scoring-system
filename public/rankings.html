@@ -12,6 +12,11 @@
         <div class="nav-buttons">
             <a href="index.html" class="nav-btn">返回记分</a>
         </div>
+        <!-- 添加新玩家表单 -->
+        <div class="player-form">
+            <input type="text" id="newPlayerName" placeholder="输入新玩家名称">
+            <button onclick="Rankings.addNewPlayer()" class="add-btn">添加玩家</button>
+        </div>
         <div class="rankings">
             <div class="sort-controls">
                 <select id="sortType" onchange="Rankings.updateRankings()">
@@ -26,6 +31,11 @@
                         <th>场数</th>
                         <th>平均素点</th>
                         <th>平均顺位</th>
+                        <th>一位</th>
+                        <th>二位</th>
+                        <th>三位</th>
+                        <th>四位</th>
+                        <th>一位率</th>
                     </tr>
                 </thead>
                 <tbody id="rankingsBody"></tbody>
