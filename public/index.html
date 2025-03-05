@@ -147,6 +147,26 @@
         </div>
     </div>
 
+    <!-- 重复玩家确认弹窗 -->
+    <div class="modal fade" id="duplicatePlayerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">发现重复玩家</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>检测到重复的玩家：<span id="duplicatePlayers" class="fw-bold text-danger"></span></p>
+                    <p>是否继续保存？</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="GameForm.confirmSaveWithDuplicates()">继续保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/utils/api.js"></script>
     <script src="js/components/game-form.js"></script>

@@ -1,8 +1,12 @@
 // 游戏表单组件
 const GameForm = {
+    duplicateModal: null,
+    pendingGameData: null,
+
     // 初始化
     async init() {
         try {
+            this.duplicateModal = new bootstrap.Modal(document.getElementById('duplicatePlayerModal'));
             await this.updatePlayerSelects();
         } catch (error) {
             console.error('初始化失败:', error);
@@ -32,7 +36,7 @@ const GameForm = {
         }
     },
 
-    // 保存比赛数据
+    // 检查并保存比赛数据
     async saveData() {
         try {
             // 清除之前的错误
@@ -48,42 +52,84 @@ const GameForm = {
                 throw new Error('请填写所有玩家和分数');
             }
 
-            // 2. 检查玩家是否重复
-            if (new Set(players).size !== 4) {
-                throw new Error('玩家不能重复');
-            }
-
-            // 3. 检查分数总和是否为 120000
+            // 2. 检查分数总和是否为 120000
             const totalScore = scores.reduce((sum, score) => sum + score, 0);
             if (totalScore !== 120000) {
                 throw new Error('分数总和必须为 120,000');
             }
 
-            // 4. 检查分数是否按顺序递减
+            // 3. 检查分数是否按顺序递减
             for (let i = 1; i < scores.length; i++) {
                 if (scores[i] > scores[i-1]) {
                     throw new Error('分数必须按顺位递减');
                 }
             }
 
-            // 保存数据
-            await api.addGame(players, scores);
+            // 4. 检查是否有重复玩家
+            const duplicates = this.findDuplicatePlayers(players);
+            if (duplicates.length > 0) {
+                // 保存当前数据以供确认后使用
+                this.pendingGameData = { players, scores };
+                // 显示重复玩家确认弹窗
+                document.getElementById('duplicatePlayers').textContent = duplicates.join('、');
+                this.duplicateModal.show();
+                return;
+            }
 
-            // 清空表单
-            [1, 2, 3, 4].forEach(i => {
-                document.getElementById(`player${i}`).value = '';
-                document.getElementById(`score${i}`).value = '';
-            });
-
-            // 更新历史记录
-            await History.updateHistory();
-
-            // 显示成功消息
-            alert('记录保存成功！');
+            // 如果没有重复玩家，直接保存
+            await this.saveGameData(players, scores);
         } catch (error) {
             console.error('保存失败:', error);
             this.showError(error.message);
         }
+    },
+
+    // 查找重复玩家
+    findDuplicatePlayers(players) {
+        const duplicates = new Set();
+        const seen = new Set();
+        
+        players.forEach(player => {
+            if (seen.has(player)) {
+                duplicates.add(player);
+            }
+            seen.add(player);
+        });
+        
+        return Array.from(duplicates);
+    },
+
+    // 确认保存带有重复玩家的对局
+    async confirmSaveWithDuplicates() {
+        if (!this.pendingGameData) return;
+
+        try {
+            await this.saveGameData(this.pendingGameData.players, this.pendingGameData.scores);
+            this.duplicateModal.hide();
+        } catch (error) {
+            console.error('保存失败:', error);
+            this.showError(error.message);
+        } finally {
+            this.pendingGameData = null;
+        }
+    },
+
+    // 保存游戏数据的具体实现
+    async saveGameData(players, scores) {
+        // 保存数据
+        await api.addGame(players, scores);
+
+        // 清空表单
+        [1, 2, 3, 4].forEach(i => {
+            document.getElementById(`player${i}`).value = '';
+            document.getElementById(`score${i}`).value = '';
+        });
+
+        // 更新历史记录
+        await History.updateHistory();
+
+        // 显示成功消息
+        alert('记录保存成功！');
     },
 
     // 显示错误信息
