@@ -1,31 +1,48 @@
 // 历史记录组件
 const History = {
-    // 显示历史记录
-    async displayHistory() {
-        const historyContent = document.getElementById('historyContent');
-        const games = await api.getGames();
-        
-        if (games.length === 0) {
-            historyContent.innerHTML = '<p>暂无比赛记录</p>';
-            return;
+    // 初始化
+    async init() {
+        try {
+            await this.updateHistory();
+        } catch (error) {
+            console.error('初始化历史记录失败:', error);
+            alert('初始化历史记录失败: ' + error.message);
         }
+    },
 
-        let html = '<table class="history-table">';
-        html += '<tr><th>时间</th><th>玩家</th><th>分数</th></tr>';
-
-        games.forEach(game => {
-            const date = new Date(game.timestamp).toLocaleString('zh-CN');
-            html += `<tr><td rowspan="4">${date}</td>`;
+    // 更新历史记录
+    async updateHistory() {
+        try {
+            const games = await api.getGames();
+            const tbody = document.getElementById('historyBody');
             
-            game.players.forEach((player, index) => {
-                if (index > 0) {
-                    html += '<tr>';
-                }
-                html += `<td>${player.name}</td><td>${player.score}</td></tr>`;
-            });
-        });
+            tbody.innerHTML = games.map(game => {
+                const date = new Date(game.timestamp);
+                const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                
+                // 按顺位排序玩家
+                const sortedPlayers = game.players.map((player, index) => ({
+                    name: player.name,
+                    score: player.score
+                }));
 
-        html += '</table>';
-        historyContent.innerHTML = html;
+                return `
+                    <tr>
+                        <td>${formattedDate}</td>
+                        ${sortedPlayers.map(player => `
+                            <td>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>${player.name}</span>
+                                    <span class="badge bg-light text-dark">${player.score.toLocaleString()}</span>
+                                </div>
+                            </td>
+                        `).join('')}
+                    </tr>
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('更新历史记录失败:', error);
+            alert('更新历史记录失败: ' + error.message);
+        }
     }
 }; 
