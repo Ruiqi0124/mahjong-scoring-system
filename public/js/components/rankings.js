@@ -55,6 +55,15 @@ const Rankings = {
         document.body.appendChild(this.historyPopover);
     },
 
+    // 格式化日期
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    },
+
     // 显示玩家历史对局
     async showPlayerHistory(name, event) {
         event.preventDefault();
@@ -84,19 +93,33 @@ const Rankings = {
                 noHistoryMessage.style.display = 'block';
             } else {
                 noHistoryMessage.style.display = 'none';
+                // 按日期降序排序
+                playerGames.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
                 tbody.innerHTML = playerGames.map(game => {
+                    // 获取当前玩家的信息
                     const playerInfo = game.players.find(p => p.name === name);
                     const rank = game.players.indexOf(playerInfo) + 1;
+                    
+                    // 按顺位排序其他玩家
+                    const sortedPlayers = [...game.players].sort((a, b) => {
+                        if (a.name === name) return -1;
+                        if (b.name === name) return 1;
+                        return b.score - a.score;
+                    });
+
+                    // 生成对局成绩字符串
+                    const gameResult = sortedPlayers.map(p => {
+                        const isCurrentPlayer = p.name === name;
+                        return `<div class="player-score ${isCurrentPlayer ? 'fw-bold text-primary' : ''}">
+                            ${p.name}: ${p.score}
+                        </div>`;
+                    }).join('');
+
                     return `
                         <tr>
-                            <td>${new Date(game.date).toLocaleDateString()}</td>
-                            <td>
-                                ${game.players.map(p => 
-                                    `<span class="${p.name === name ? 'fw-bold text-primary' : ''}">${p.name}</span>`
-                                ).join(' / ')}
-                            </td>
-                            <td>${playerInfo.score}</td>
-                            <td>${rank}</td>
+                            <td class="text-nowrap">${this.formatDate(game.date)}</td>
+                            <td class="game-players">${gameResult}</td>
                         </tr>
                     `;
                 }).join('');
@@ -108,7 +131,9 @@ const Rankings = {
 
             // 计算位置
             const rect = event.target.getBoundingClientRect();
-            const popoverWidth = this.historyPopover.offsetWidth;
+            const popoverWidth = Math.min(500, window.innerWidth - 40); // 移动端适配
+            this.historyPopover.style.width = `${popoverWidth}px`;
+            
             const popoverHeight = this.historyPopover.offsetHeight;
             const spaceBelow = window.innerHeight - rect.bottom;
             const spaceRight = window.innerWidth - rect.left;
@@ -126,12 +151,10 @@ const Rankings = {
             }
 
             // 决定显示在左边还是右边
-            let left;
-            if (spaceRight >= popoverWidth + 10) {
-                left = rect.left;
-            } else {
-                left = rect.right - popoverWidth;
-            }
+            let left = Math.max(20, Math.min(
+                rect.left,
+                window.innerWidth - popoverWidth - 20
+            ));
 
             // 设置位置
             this.historyPopover.style.top = `${top}px`;

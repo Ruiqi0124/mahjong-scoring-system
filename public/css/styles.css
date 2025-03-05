@@ -477,7 +477,6 @@ h2 {
     z-index: 1060;
     display: none;
     max-width: 600px;
-    width: 500px;
     background-color: #fff;
     border: 1px solid rgba(0,0,0,.2);
     border-radius: 0.5rem;
@@ -508,10 +507,61 @@ h2 {
     z-index: 1;
     font-weight: 500;
     border-top: none;
+    padding: 0.75rem;
 }
 
 #playerHistoryPopover .table td {
     vertical-align: middle;
+    padding: 0.75rem;
+}
+
+/* 对局历史中的玩家得分样式 */
+.game-players {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.player-score {
+    white-space: nowrap;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    #playerHistoryPopover {
+        width: calc(100vw - 40px) !important;
+        max-width: none;
+    }
+
+    #playerHistoryPopover .table th,
+    #playerHistoryPopover .table td {
+        padding: 0.5rem;
+    }
+
+    .game-players {
+        gap: 0.15rem;
+    }
+
+    /* 调整表格固定列的样式 */
+    .table-responsive {
+        margin: 0;
+    }
+
+    .table th:first-child,
+    .table td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background-color: #fff;
+    }
+
+    .table-striped > tbody > tr:nth-of-type(odd) > td:first-child {
+        background-color: #f8f9fa;
+    }
+
+    .table > thead > tr > th:first-child {
+        z-index: 3;
+    }
 }
 
 /* 玩家名称链接样式 */
