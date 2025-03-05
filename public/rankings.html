@@ -3,50 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>排名 - 麻将比赛记分系统</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>排名 - 巢计分系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body>
-    <div class="container">
-        <h1>排名</h1>
-        <div class="nav-buttons">
-            <a href="index.html" class="nav-btn">返回记分</a>
-        </div>
-        <!-- 添加新玩家表单 -->
-        <div class="player-form">
-            <input type="text" id="newPlayerName" placeholder="输入新玩家名称">
-            <button onclick="Rankings.addNewPlayer()" class="add-btn">添加玩家</button>
-        </div>
-        <div class="rankings">
-            <div class="sort-controls">
-                <select id="sortType" onchange="Rankings.updateRankings()">
-                    <option value="average_score">按平均素点排序</option>
-                    <option value="average_rank">按平均顺位排序</option>
-                </select>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">巢计分系统</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">记分</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/rankings.html">排名</a>
+                    </li>
+                </ul>
             </div>
-            <table id="rankingsTable">
-                <thead>
-                    <tr>
-                        <th>玩家</th>
-                        <th>场数</th>
-                        <th>平均素点</th>
-                        <th>平均顺位</th>
-                        <th>一位</th>
-                        <th>二位</th>
-                        <th>三位</th>
-                        <th>四位</th>
-                        <th>一位率</th>
-                    </tr>
-                </thead>
-                <tbody id="rankingsBody"></tbody>
-            </table>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="card-title mb-0">添加新玩家</h2>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="newPlayerName" class="form-control" placeholder="输入玩家名称">
+                    <button class="btn btn-primary" onclick="Rankings.addNewPlayer()">
+                        <i class="fas fa-plus"></i> 添加
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="card-title mb-0">玩家排名</h2>
+                    <div class="d-flex align-items-center">
+                        <label class="me-2">排序方式：</label>
+                        <select id="sortType" class="form-select" onchange="Rankings.updateRankings()">
+                            <option value="average_rank">平均顺位</option>
+                            <option value="average_score">平均得点</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>玩家</th>
+                                <th>场数</th>
+                                <th>平均得点</th>
+                                <th>平均顺位</th>
+                                <th>一位</th>
+                                <th>二位</th>
+                                <th>三位</th>
+                                <th>四位</th>
+                                <th>一位率</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rankingsBody"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
-    <!-- 工具库 -->
+
+    <!-- 删除确认弹窗 -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">确认删除</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    确定要删除玩家 <span id="playerToDelete" class="fw-bold"></span> 吗？
+                    <div class="text-danger mt-2">
+                        <small>注意：已参与比赛的玩家无法删除</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger" onclick="Rankings.confirmDelete()">删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/utils/api.js"></script>
-    <!-- 组件 -->
     <script src="js/components/rankings.js"></script>
-    <!-- 初始化 -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             Rankings.init();

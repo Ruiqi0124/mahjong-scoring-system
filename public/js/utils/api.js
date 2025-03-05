@@ -75,5 +75,24 @@ const api = {
             console.error('保存比赛记录错误:', error);
             throw error;
         }
+    },
+
+    // 删除玩家
+    async deletePlayer(name) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/players/${encodeURIComponent(name)}`, {
+                method: 'DELETE'
+            });
+            
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ error: '删除玩家失败' }));
+                throw new Error(error.error || '删除玩家失败');
+            }
+            
+            return response.json();
+        } catch (error) {
+            console.error('删除玩家错误:', error);
+            throw error;
+        }
     }
 }; 

@@ -1,8 +1,12 @@
 // 排名组件
 const Rankings = {
+    playerToDelete: null,
+    deleteModal: null,
+
     // 初始化
     async init() {
         try {
+            this.deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
             await this.updateRankings();
         } catch (error) {
             console.error('初始化失败:', error);
@@ -28,6 +32,30 @@ const Rankings = {
         } catch (error) {
             console.error('添加玩家失败:', error);
             alert(error.message || '添加玩家失败');
+        }
+    },
+
+    // 显示删除确认弹窗
+    showDeleteConfirm(name) {
+        this.playerToDelete = name;
+        document.getElementById('playerToDelete').textContent = name;
+        this.deleteModal.show();
+    },
+
+    // 确认删除玩家
+    async confirmDelete() {
+        if (!this.playerToDelete) return;
+
+        try {
+            await api.deletePlayer(this.playerToDelete);
+            this.deleteModal.hide();
+            await this.updateRankings();
+            alert('删除成功！');
+        } catch (error) {
+            console.error('删除玩家失败:', error);
+            alert(error.message || '删除玩家失败');
+        } finally {
+            this.playerToDelete = null;
         }
     },
 
@@ -99,6 +127,11 @@ const Rankings = {
                     <td>${stat.ranks[2]}</td>
                     <td>${stat.ranks[3]}</td>
                     <td>${stat.firstRate}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger" onclick="Rankings.showDeleteConfirm('${stat.name}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
                 </tr>
             `).join('');
         } catch (error) {

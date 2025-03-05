@@ -146,6 +146,37 @@ app.post('/api/games', async (req, res) => {
     }
 });
 
+// 删除玩家
+app.delete('/api/players/:name', async (req, res) => {
+    console.log('Received DELETE request for player:', req.params.name);
+    try {
+        await connectDB();
+        const playerName = req.params.name;
+        
+        // 检查玩家是否存在
+        const player = await Player.findOne({ name: playerName });
+        if (!player) {
+            console.log('Player not found:', playerName);
+            return res.status(404).json({ error: '玩家不存在' });
+        }
+
+        // 检查玩家是否参与过比赛
+        const games = await Game.find({ 'players.name': playerName });
+        if (games.length > 0) {
+            console.log('Cannot delete player with game records:', playerName);
+            return res.status(400).json({ error: '无法删除已参与比赛的玩家' });
+        }
+
+        // 删除玩家
+        await Player.deleteOne({ name: playerName });
+        console.log('Player deleted successfully:', playerName);
+        res.json({ message: '玩家删除成功' });
+    } catch (err) {
+        console.error('删除玩家错误:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // 健康检查端点
 app.get('/api/health', (req, res) => {
     res.json({
