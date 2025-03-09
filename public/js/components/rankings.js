@@ -57,11 +57,45 @@ const Rankings = {
 
     // 格式化日期
     formatDate(dateString) {
-        const date = new Date(dateString);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        if (!dateString) return '-';
+        
+        try {
+            const date = new Date(dateString);
+            // 检查是否为有效日期
+            if (isNaN(date.getTime())) return '-';
+            
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        } catch (error) {
+            console.error('日期格式化错误:', error);
+            return '-';
+        }
+    },
+
+    // 获取游戏时间
+    getGameTime(game) {
+        // 处理本地格式的时间 (2025/03/08 21:15)
+        if (game.timestamp && typeof game.timestamp === 'string' && game.timestamp.match(/^\d{4}\/\d{2}\/\d{2}/)) {
+            const parts = game.timestamp.split(/[\/\s:]/);
+            if (parts.length >= 5) {
+                const [year, month, day, hour, minute] = parts;
+                // 将2025年改为2024年
+                const fixedYear = year === '2025' ? '2024' : year;
+                return new Date(fixedYear, month - 1, day, hour, minute).toISOString();
+            }
+        }
+
+        // 优先使用 timestamp，确保其存在且有效
+        if (game.timestamp && !isNaN(new Date(game.timestamp).getTime())) {
+            return game.timestamp;
+        }
+        // 其次使用 time，确保其存在且有效
+        if (game.time && !isNaN(new Date(game.time).getTime())) {
+            return game.time;
+        }
+        return null;
     },
 
     // 显示玩家历史对局
@@ -94,7 +128,18 @@ const Rankings = {
             } else {
                 noHistoryMessage.style.display = 'none';
                 // 按日期降序排序并限制显示最近10场
-                playerGames.sort((a, b) => new Date(b.timestamp || b.time) - new Date(a.timestamp || a.time));
+                playerGames.sort((a, b) => {
+                    const timeA = this.getGameTime(a);
+                    const timeB = this.getGameTime(b);
+                    
+                    // 如果两个时间都无效，按原顺序保持不变
+                    if (!timeA && !timeB) return 0;
+                    // 无效时间排在后面
+                    if (!timeA) return 1;
+                    if (!timeB) return -1;
+                    
+                    return new Date(timeB) - new Date(timeA);
+                });
                 playerGames = playerGames.slice(0, 10);
                 
                 tbody.innerHTML = playerGames.map(game => {
@@ -126,7 +171,7 @@ const Rankings = {
 
                     return `
                         <tr>
-                            <td class="text-nowrap">${this.formatDate(game.timestamp || game.time)}</td>
+                            <td class="text-nowrap">${this.formatDate(this.getGameTime(game))}</td>
                             <td class="game-players">
                                 <div class="game-row">${firstRow}</div>
                                 <div class="game-row">${secondRow}</div>
