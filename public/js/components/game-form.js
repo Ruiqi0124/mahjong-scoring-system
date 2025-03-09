@@ -41,22 +41,26 @@ const GameForm = {
         const scores = [];
         for (let i = 1; i <= 4; i++) {
             const score = parseInt(document.getElementById(`score${i}`).value) || 0;
-            scores.push({ score });
+            scores.push({ score, index: i - 1 }); // 保存原始索引
         }
         
-        // 按分数降序排序
+        // 按分数降序排序，保留原始索引
         scores.sort((a, b) => b.score - a.score);
         
         // 计算并显示PT
-        const playersWithPT = ptUtils.calculateGamePTs(scores);
+        const playersWithPT = ptUtils.calculateGamePTs(scores.map(s => ({ score: s.score })));
+        
+        // 使用原始索引更新PT显示
         for (let i = 1; i <= 4; i++) {
             const ptElement = document.getElementById(`pt${i}`);
             const score = parseInt(document.getElementById(`score${i}`).value);
-            if (score) {
+            
+            if (!isNaN(score)) { // 只要有输入分数就显示PT
                 // 找到对应的计算结果
-                const playerIndex = scores.findIndex(s => s.score === score);
-                if (playerIndex !== -1) {
-                    ptElement.textContent = playersWithPT[playerIndex].pt.toFixed(1);
+                const scoreInfo = scores.find(s => s.score === score);
+                if (scoreInfo) {
+                    const ptValue = playersWithPT[scores.indexOf(scoreInfo)].pt;
+                    ptElement.textContent = ptValue.toFixed(1);
                 }
             } else {
                 ptElement.textContent = '-';
@@ -67,7 +71,8 @@ const GameForm = {
     // 保存对局数据
     async saveData() {
         try {
-            const players = [];
+            const playerNames = [];
+            const scores = [];
             let totalScore = 0;
             
             // 收集玩家数据
@@ -79,7 +84,8 @@ const GameForm = {
                     throw new Error('请填写完整的对局信息');
                 }
                 
-                players.push({ name, score });
+                playerNames.push(name);
+                scores.push(score);
                 totalScore += score;
             }
             
@@ -89,31 +95,27 @@ const GameForm = {
             }
             
             // 检查重复玩家
-            const uniquePlayers = new Set(players.map(p => p.name));
+            const uniquePlayers = new Set(playerNames);
             if (uniquePlayers.size !== 4) {
                 const duplicateModal = new bootstrap.Modal(document.getElementById('duplicatePlayerModal'));
                 document.getElementById('duplicatePlayers').textContent = 
-                    this.findDuplicatePlayers(players.map(p => p.name)).join('、');
+                    this.findDuplicatePlayers(playerNames).join('、');
                 duplicateModal.show();
-                this.pendingSaveData = players;
+                this.pendingGameData = { players: playerNames, scores };
                 return;
             }
             
-            await this.processSaveData(players);
+            await this.processSaveData(playerNames, scores);
         } catch (error) {
             this.showError(error.message);
         }
     },
 
     // 处理保存数据
-    async processSaveData(players) {
+    async processSaveData(playerNames, scores) {
         try {
-            // 按分数排序并计算PT
-            players.sort((a, b) => b.score - a.score);
-            const playersWithPT = ptUtils.calculateGamePTs(players);
-            
             // 保存对局
-            await api.saveGame(playersWithPT);
+            await this.saveGameData(playerNames, scores);
             
             // 重置表单
             this.resetForm();
@@ -146,8 +148,25 @@ const GameForm = {
         if (!this.pendingGameData) return;
 
         try {
-            await this.saveGameData(this.pendingGameData.players, this.pendingGameData.scores);
+            const { players, scores } = this.pendingGameData;
+            
+            // 保存对局
+            await api.addGame(players, scores);
+
+            // 清空表单
+            this.resetForm();
+
+            // 更新历史记录
+            await History.updateHistory();
+            
+            // 更新排名
+            await Rankings.updateRankings();
+
+            // 隐藏对话框
             this.duplicateModal.hide();
+            
+            // 显示成功消息
+            alert('记录保存成功！');
         } catch (error) {
             console.error('保存失败:', error);
             this.showError(error.message);
@@ -158,20 +177,22 @@ const GameForm = {
 
     // 保存游戏数据的具体实现
     async saveGameData(players, scores) {
-        // 保存数据
-        await api.addGame(players, scores);
+        try {
+            // 保存数据
+            await api.addGame(players, scores);
 
-        // 清空表单
-        [1, 2, 3, 4].forEach(i => {
-            document.getElementById(`player${i}`).value = '';
-            document.getElementById(`score${i}`).value = '';
-        });
+            // 清空表单
+            this.resetForm();
 
-        // 更新历史记录
-        await History.updateHistory();
+            // 更新历史记录
+            await History.updateHistory();
 
-        // 显示成功消息
-        alert('记录保存成功！');
+            // 显示成功消息
+            alert('记录保存成功！');
+        } catch (error) {
+            console.error('保存失败:', error);
+            throw error; // 向上传递错误
+        }
     },
 
     // 显示错误信息
