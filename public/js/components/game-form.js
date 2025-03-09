@@ -121,8 +121,6 @@ const GameForm = {
             this.resetForm();
             // 更新历史记录
             await History.updateHistory();
-            // 更新排名
-            await Rankings.updateRankings();
         } catch (error) {
             this.showError(error.message);
         }
@@ -158,9 +156,6 @@ const GameForm = {
 
             // 更新历史记录
             await History.updateHistory();
-            
-            // 更新排名
-            await Rankings.updateRankings();
 
             // 隐藏对话框
             this.duplicateModal.hide();
