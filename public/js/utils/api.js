@@ -99,5 +99,28 @@ const api = {
             const error = await response.text();
             throw new Error(error || '删除对局失败');
         }
+    },
+
+    // 更新对局时间
+    async updateGameTime(gameId, newTime) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/games/${gameId}/time`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ time: newTime })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ error: '更新时间失败' }));
+                throw new Error(error.error || '更新时间失败');
+            }
+            
+            return response.json();
+        } catch (error) {
+            console.error('更新时间错误:', error);
+            throw error;
+        }
     }
 }; 

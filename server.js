@@ -202,6 +202,31 @@ app.delete('/api/games/:id', async (req, res) => {
     }
 });
 
+// 更新对局时间
+app.put('/api/games/:id/time', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { time } = req.body;
+
+        if (!time) {
+            return res.status(400).json({ error: '时间不能为空' });
+        }
+
+        const game = await Game.findById(id);
+        if (!game) {
+            return res.status(404).json({ error: '找不到该对局记录' });
+        }
+
+        game.time = new Date(time);
+        await game.save();
+
+        res.json(game);
+    } catch (error) {
+        console.error('更新时间失败:', error);
+        res.status(500).json({ error: '更新时间失败' });
+    }
+});
+
 // 健康检查端点
 app.get('/api/health', (req, res) => {
     res.json({
