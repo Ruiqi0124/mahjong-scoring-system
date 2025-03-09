@@ -21,20 +21,27 @@ const connectDB = async () => {
         
         const mongoUri = process.env.MONGODB_URI;
         if (!mongoUri) {
-            throw new Error('MongoDB URI is not defined in environment variables');
+            console.error('MongoDB URI is not defined in environment variables');
+            return;
         }
 
         console.log('Attempting to connect to MongoDB...');
         await mongoose.connect(mongoUri, {
             useNewUrlParser: true,
-            useUnifiedTopology: true
+            useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 5000, // 超时时间
+            socketTimeoutMS: 45000, // Socket 超时
         });
         console.log('MongoDB connected successfully');
     } catch (error) {
         console.error('MongoDB connection error:', error);
-        throw error;
+        // 不抛出错误，让应用继续运行
+        console.log('Application will continue without database connection');
     }
 };
+
+// 确保在应用启动时连接数据库
+connectDB().catch(console.error);
 
 // 定义模型
 const playerSchema = new mongoose.Schema({
