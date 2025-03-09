@@ -52,7 +52,10 @@ const Rankings = {
     // 初始化历史对局气泡框
     initHistoryPopover() {
         this.historyPopover = document.getElementById('playerHistoryPopover');
-        document.body.appendChild(this.historyPopover);
+        // 只有当元素不在 body 中时才添加
+        if (this.historyPopover && !document.body.contains(this.historyPopover)) {
+            document.body.appendChild(this.historyPopover);
+        }
     },
 
     // 格式化日期
