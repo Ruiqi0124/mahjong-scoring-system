@@ -1,5 +1,7 @@
 // 玩家资料组件
 const Player = {
+    stats: null, // 添加stats属性
+
     // 初始化
     async init() {
         try {
@@ -24,22 +26,22 @@ const Player = {
             ]);
 
             // 处理玩家数据
-            const playerStats = this.calculatePlayerStats(games, playerName);
+            this.stats = this.calculatePlayerStats(games, playerName);
             
             // 更新基本信息
-            this.updateBasicInfo(playerStats);
+            this.updateBasicInfo(this.stats);
             
             // 更新顺位统计
-            this.updateRankStats(playerStats);
+            this.updateRankStats(this.stats);
             
             // 绘制顺位比率饼图
-            this.drawRankPieChart(playerStats);
+            this.drawRankPieChart(this.stats);
             
             // 绘制最近对局走势图
-            this.drawTrendChart(playerStats.recentGames);
+            this.drawTrendChart(this.stats.recentGames);
             
             // 更新最近对局记录
-            this.updateRecentGames(playerStats.recentGames);
+            this.updateRecentGames(this.stats.recentGames);
 
         } catch (error) {
             console.error('初始化失败:', error);
@@ -258,9 +260,9 @@ const Player = {
 
             // 生成玩家名字的HTML，当前玩家高亮显示
             const playersHtml = sortedPlayers.map(name => {
-                const score = game.players.find(p => p.name === name).score;
+                const playerInfo = game.players.find(p => p.name === name);
                 const isCurrentPlayer = name === this.stats.name;
-                return `<a href="?name=${encodeURIComponent(name)}" class="text-decoration-none${isCurrentPlayer ? ' fw-bold text-primary' : ''}">${name}</a> (${score.toLocaleString()})`;
+                return `<a href="?name=${encodeURIComponent(name)}" class="text-decoration-none${isCurrentPlayer ? ' fw-bold text-primary' : ''}">${name}</a> (${playerInfo.score.toLocaleString()})`;
             }).join('、');
 
             return `
