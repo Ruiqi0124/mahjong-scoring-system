@@ -1,14 +1,41 @@
 // 存储工具
 window.storage = {
-    // 初始化：清理旧数据
+    // 初始化：确保数据格式正确
     init() {
-        // 确保有初始数据
+        // 检查并迁移旧数据
+        const oldGames = localStorage.getItem('mahjongGames');
+        const currentGames = localStorage.getItem('games');
+        
+        if (oldGames && !currentGames) {
+            // 迁移旧格式数据
+            try {
+                const parsedOldGames = JSON.parse(oldGames);
+                const migratedGames = parsedOldGames.map(game => ({
+                    id: game.timestamp || Date.now().toString(),
+                    timestamp: game.timestamp || new Date().toISOString(),
+                    players: game.players
+                }));
+                localStorage.setItem('games', JSON.stringify(migratedGames));
+            } catch (error) {
+                console.error('迁移旧数据失败:', error);
+            }
+        }
+
+        // 确保有初始数据结构
         if (!localStorage.getItem('players')) {
             localStorage.setItem('players', JSON.stringify([]));
         }
         if (!localStorage.getItem('games')) {
             localStorage.setItem('games', JSON.stringify([]));
         }
+
+        // 确保所有游戏记录都有ID
+        const games = this.getGames();
+        const updatedGames = games.map(game => ({
+            ...game,
+            id: game.id || Date.now().toString()
+        }));
+        localStorage.setItem('games', JSON.stringify(updatedGames));
     },
 
     // 获取所有玩家
