@@ -188,32 +188,44 @@ const Player = {
     // 绘制最近对局走势图
     drawTrendChart(recentGames) {
         const ctx = document.getElementById('trendChart').getContext('2d');
-        const reversedGames = [...recentGames].slice(-20).reverse(); // 最近20场，最早的在前
+        
+        // 计算累计PT
+        let cumulativePT = 0;
+        const gamesWithCumulativePT = [...recentGames]
+            .slice(-20)
+            .reverse()
+            .map(game => {
+                cumulativePT += game.pt;
+                return {
+                    ...game,
+                    cumulativePT
+                };
+            });
 
         const data = {
-            labels: reversedGames.map(game => this.formatDate(game.time)),
+            labels: gamesWithCumulativePT.map(() => ''), // 移除x轴标签
             datasets: [
                 {
                     label: '顺位走势',
-                    data: reversedGames.map(game => game.rank),
+                    data: gamesWithCumulativePT.map(game => game.rank),
                     borderColor: 'rgb(75, 192, 192)',
                     backgroundColor: 'rgb(75, 192, 192)',
-                    tension: 0, // 使用直线
+                    tension: 0,
                     fill: false,
-                    pointRadius: 6, // 加大点的大小
+                    pointRadius: 6,
                     pointHoverRadius: 8,
                     borderWidth: 2,
                     yAxisID: 'y-rank'
                 },
                 {
-                    label: 'PT走势',
-                    data: reversedGames.map(game => game.pt),
+                    label: '累计PT走势',
+                    data: gamesWithCumulativePT.map(game => game.cumulativePT),
                     borderColor: 'rgb(128, 128, 128)',
                     backgroundColor: 'rgb(128, 128, 128)',
-                    tension: 0, // 使用直线
+                    tension: 0,
                     borderDash: [5, 5],
                     fill: false,
-                    pointRadius: 4, // 添加PT的数据点
+                    pointRadius: 4,
                     pointHoverRadius: 6,
                     borderWidth: 1,
                     yAxisID: 'y-pt'
@@ -226,70 +238,74 @@ const Player = {
             data: data,
             options: {
                 responsive: true,
-                maintainAspectRatio: false, // 允许自定义高度
+                maintainAspectRatio: false,
                 interaction: {
                     mode: 'index',
                     intersect: false,
                 },
                 layout: {
                     padding: {
-                        top: 10,    // 增加顶部内边距
-                        bottom: 10  // 增加底部内边距
+                        top: 10,
+                        bottom: 10
                     }
                 },
                 scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            display: false // 隐藏x轴刻度
+                        }
+                    },
                     'y-rank': {
                         position: 'left',
                         reverse: true,
-                        min: 0.8,    // 稍微扩大范围，避免裁剪
-                        max: 4.2,    // 稍微扩大范围，避免裁剪
-                        ticks: {
-                            stepSize: 1,
-                            color: 'rgb(75, 192, 192)'
-                        },
+                        min: 0.8,
+                        max: 4.2,
                         grid: {
-                            color: 'rgba(75, 192, 192, 0.1)'
+                            display: false
                         },
-                        title: {
-                            display: true,
-                            text: '顺位',
-                            color: 'rgb(75, 192, 192)'
+                        ticks: {
+                            display: false // 隐藏y轴刻度
                         }
                     },
                     'y-pt': {
                         position: 'right',
+                        grid: {
+                            display: false
+                        },
                         ticks: {
-                            color: 'rgb(128, 128, 128)'
-                        },
-                        grid: {
-                            display: false
-                        },
-                        title: {
-                            display: true,
-                            text: 'PT',
-                            color: 'rgb(128, 128, 128)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
+                            display: false // 隐藏y轴刻度
                         }
                     }
                 },
                 plugins: {
+                    legend: {
+                        labels: {
+                            filter: function(item) {
+                                // 只显示顺位走势的图例
+                                return item.text === '顺位走势';
+                            }
+                        }
+                    },
                     tooltip: {
                         callbacks: {
+                            title: function(context) {
+                                // 显示日期
+                                const game = gamesWithCumulativePT[context[0].dataIndex];
+                                return Player.formatDate(game.time);
+                            },
                             label: function(context) {
-                                const game = reversedGames[context.dataIndex];
-                                if (context.datasetIndex === 0) {
+                                const game = gamesWithCumulativePT[context.dataIndex];
+                                if (context.dataset.label === '顺位走势') {
                                     return [
                                         `顺位: ${game.rank}`,
-                                        `得点: ${game.score.toLocaleString()}`,
-                                        `PT: ${game.pt.toFixed(1)}`
+                                        `当局PT: ${game.pt.toFixed(1)}`,
+                                        `累计PT: ${game.cumulativePT.toFixed(1)}`
                                     ];
-                                } else {
-                                    return `PT: ${game.pt.toFixed(1)}`;
                                 }
+                                return null; // 不显示累计PT的标签
                             }
                         }
                     }
