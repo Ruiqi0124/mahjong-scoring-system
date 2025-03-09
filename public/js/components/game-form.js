@@ -36,50 +36,92 @@ const GameForm = {
         }
     },
 
-    // 检查并保存比赛数据
+    // 更新PT显示
+    updatePT() {
+        const scores = [];
+        for (let i = 1; i <= 4; i++) {
+            const score = parseInt(document.getElementById(`score${i}`).value) || 0;
+            scores.push({ score });
+        }
+        
+        // 按分数降序排序
+        scores.sort((a, b) => b.score - a.score);
+        
+        // 计算并显示PT
+        const playersWithPT = ptUtils.calculateGamePTs(scores);
+        for (let i = 1; i <= 4; i++) {
+            const ptElement = document.getElementById(`pt${i}`);
+            const score = parseInt(document.getElementById(`score${i}`).value);
+            if (score) {
+                // 找到对应的计算结果
+                const playerIndex = scores.findIndex(s => s.score === score);
+                if (playerIndex !== -1) {
+                    ptElement.textContent = playersWithPT[playerIndex].pt.toFixed(1);
+                }
+            } else {
+                ptElement.textContent = '-';
+            }
+        }
+    },
+
+    // 保存对局数据
     async saveData() {
         try {
-            // 清除之前的错误
-            this.hideError();
-
-            // 获取玩家和分数
-            const players = [1, 2, 3, 4].map(i => document.getElementById(`player${i}`).value);
-            const scores = [1, 2, 3, 4].map(i => parseInt(document.getElementById(`score${i}`).value));
-
-            // 验证数据
-            // 1. 检查是否所有字段都已填写
-            if (players.some(p => !p) || scores.some(s => isNaN(s))) {
-                throw new Error('请填写所有玩家和分数');
-            }
-
-            // 2. 检查分数总和是否为 120000
-            const totalScore = scores.reduce((sum, score) => sum + score, 0);
-            if (totalScore !== 120000) {
-                throw new Error('分数总和必须为 120,000');
-            }
-
-            // 3. 检查分数是否按顺序递减
-            for (let i = 1; i < scores.length; i++) {
-                if (scores[i] > scores[i-1]) {
-                    throw new Error('分数必须按顺位递减');
+            const players = [];
+            let totalScore = 0;
+            
+            // 收集玩家数据
+            for (let i = 1; i <= 4; i++) {
+                const name = document.getElementById(`player${i}`).value;
+                const score = parseInt(document.getElementById(`score${i}`).value);
+                
+                if (!name || isNaN(score)) {
+                    throw new Error('请填写完整的对局信息');
                 }
+                
+                players.push({ name, score });
+                totalScore += score;
             }
-
-            // 4. 检查是否有重复玩家
-            const duplicates = this.findDuplicatePlayers(players);
-            if (duplicates.length > 0) {
-                // 保存当前数据以供确认后使用
-                this.pendingGameData = { players, scores };
-                // 显示重复玩家确认弹窗
-                document.getElementById('duplicatePlayers').textContent = duplicates.join('、');
-                this.duplicateModal.show();
+            
+            // 验证总分
+            if (totalScore !== 120000) {
+                throw new Error('得点总和必须为120,000');
+            }
+            
+            // 检查重复玩家
+            const uniquePlayers = new Set(players.map(p => p.name));
+            if (uniquePlayers.size !== 4) {
+                const duplicateModal = new bootstrap.Modal(document.getElementById('duplicatePlayerModal'));
+                document.getElementById('duplicatePlayers').textContent = 
+                    this.findDuplicatePlayers(players.map(p => p.name)).join('、');
+                duplicateModal.show();
+                this.pendingSaveData = players;
                 return;
             }
-
-            // 如果没有重复玩家，直接保存
-            await this.saveGameData(players, scores);
+            
+            await this.processSaveData(players);
         } catch (error) {
-            console.error('保存失败:', error);
+            this.showError(error.message);
+        }
+    },
+
+    // 处理保存数据
+    async processSaveData(players) {
+        try {
+            // 按分数排序并计算PT
+            players.sort((a, b) => b.score - a.score);
+            const playersWithPT = ptUtils.calculateGamePTs(players);
+            
+            // 保存对局
+            await api.saveGame(playersWithPT);
+            
+            // 重置表单
+            this.resetForm();
+            // 更新历史记录
+            await History.updateHistory();
+            // 更新排名
+            await Rankings.updateRankings();
+        } catch (error) {
             this.showError(error.message);
         }
     },
@@ -143,5 +185,13 @@ const GameForm = {
     hideError() {
         const errorDiv = document.getElementById('error');
         errorDiv.style.display = 'none';
+    },
+
+    // 重置表单
+    resetForm() {
+        [1, 2, 3, 4].forEach(i => {
+            document.getElementById(`player${i}`).value = '';
+            document.getElementById(`score${i}`).value = '';
+        });
     }
 }; 

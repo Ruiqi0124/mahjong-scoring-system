@@ -40,6 +40,7 @@
                                 <th>顺位</th>
                                 <th>玩家</th>
                                 <th>得点</th>
+                                <th>PT</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -51,7 +52,10 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" id="score1" class="form-control" placeholder="输入得点">
+                                    <input type="number" id="score1" class="form-control" placeholder="输入得点" onchange="GameForm.updatePT()">
+                                </td>
+                                <td>
+                                    <span id="pt1" class="pt-value">-</span>
                                 </td>
                             </tr>
                             <tr>
@@ -62,7 +66,10 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" id="score2" class="form-control" placeholder="输入得点">
+                                    <input type="number" id="score2" class="form-control" placeholder="输入得点" onchange="GameForm.updatePT()">
+                                </td>
+                                <td>
+                                    <span id="pt2" class="pt-value">-</span>
                                 </td>
                             </tr>
                             <tr>
@@ -73,7 +80,10 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" id="score3" class="form-control" placeholder="输入得点">
+                                    <input type="number" id="score3" class="form-control" placeholder="输入得点" onchange="GameForm.updatePT()">
+                                </td>
+                                <td>
+                                    <span id="pt3" class="pt-value">-</span>
                                 </td>
                             </tr>
                             <tr>
@@ -84,7 +94,10 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" id="score4" class="form-control" placeholder="输入得点">
+                                    <input type="number" id="score4" class="form-control" placeholder="输入得点" onchange="GameForm.updatePT()">
+                                </td>
+                                <td>
+                                    <span id="pt4" class="pt-value">-</span>
                                 </td>
                             </tr>
                         </tbody>

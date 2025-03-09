@@ -349,8 +349,12 @@ const Rankings = {
                     name: player,
                     games: 0,
                     totalScore: 0,
-                    totalRank: 0,
-                    ranks: [0, 0, 0, 0]
+                    totalPT: 0,
+                    ranks: [0, 0, 0, 0], // 一位到四位的次数
+                    avgRank: 0,
+                    avgScore: 0,
+                    avgPT: 0,
+                    recentGames: []
                 };
             });
 
@@ -360,26 +364,34 @@ const Rankings = {
                     if (stats[player.name]) {
                         stats[player.name].games++;
                         stats[player.name].totalScore += player.score;
-                        stats[player.name].totalRank += (rank + 1);
+                        stats[player.name].totalPT += player.pt;
                         stats[player.name].ranks[rank]++;
+                        
+                        // 保存最近比赛记录
+                        if (stats[player.name].recentGames.length < 10) {
+                            stats[player.name].recentGames.push({
+                                time: game.time,
+                                score: player.score,
+                                pt: player.pt,
+                                rank: rank + 1
+                            });
+                        }
                     }
                 });
             });
 
-            // 转换为数组并计算平均值
-            let rankings = Object.values(stats).map(stat => ({
-                ...stat,
-                averageScore: stat.games > 0 ? Math.round(stat.totalScore / stat.games) : 0,
-                averageRank: stat.games > 0 ? parseFloat((stat.totalRank / stat.games).toFixed(2)) : 999,
-                firstRate: stat.games > 0 ? parseFloat((stat.ranks[0] / stat.games * 100).toFixed(1)) : 0,
-                secondRate: stat.games > 0 ? parseFloat((stat.ranks[1] / stat.games * 100).toFixed(1)) : 0,
-                thirdRate: stat.games > 0 ? parseFloat((stat.ranks[2] / stat.games * 100).toFixed(1)) : 0,
-                fourthRate: stat.games > 0 ? parseFloat((stat.ranks[3] / stat.games * 100).toFixed(1)) : 0
-            }));
+            // 计算平均值
+            Object.values(stats).forEach(player => {
+                player.avgScore = Math.round(player.totalScore / player.games);
+                player.avgPT = player.totalPT / player.games;
+                player.avgRank = player.ranks.reduce((sum, count, index) => sum + (count * (index + 1)), 0) / player.games;
+                // 对最近比赛按时间排序
+                player.recentGames.sort((a, b) => new Date(b.time) - new Date(a.time));
+            });
 
             // 分离"其他玩家"和普通玩家
-            const otherPlayer = rankings.find(player => player.name === '其他玩家');
-            const normalPlayers = rankings.filter(player => player.name !== '其他玩家');
+            const otherPlayer = stats['其他玩家'];
+            const normalPlayers = Object.values(stats).filter(player => player.name !== '其他玩家');
 
             // 根据当前排序设置对普通玩家进行排序
             normalPlayers.sort((a, b) => {
@@ -391,12 +403,12 @@ const Rankings = {
                         bValue = b.games;
                         break;
                     case 'averageScore':
-                        aValue = a.averageScore;
-                        bValue = b.averageScore;
+                        aValue = a.avgScore;
+                        bValue = b.avgScore;
                         break;
                     case 'averageRank':
-                        aValue = a.averageRank;
-                        bValue = b.averageRank;
+                        aValue = a.avgRank;
+                        bValue = b.avgRank;
                         break;
                     case 'firstPlace':
                         aValue = a.ranks[0];
@@ -415,24 +427,32 @@ const Rankings = {
                         bValue = b.ranks[3];
                         break;
                     case 'firstRate':
-                        aValue = a.firstRate;
-                        bValue = b.firstRate;
+                        aValue = a.ranks[0] / a.games * 100;
+                        bValue = b.ranks[0] / b.games * 100;
                         break;
                     case 'secondRate':
-                        aValue = a.secondRate;
-                        bValue = b.secondRate;
+                        aValue = a.ranks[1] / a.games * 100;
+                        bValue = b.ranks[1] / b.games * 100;
                         break;
                     case 'thirdRate':
-                        aValue = a.thirdRate;
-                        bValue = b.thirdRate;
+                        aValue = a.ranks[2] / a.games * 100;
+                        bValue = b.ranks[2] / b.games * 100;
                         break;
                     case 'fourthRate':
-                        aValue = a.fourthRate;
-                        bValue = b.fourthRate;
+                        aValue = a.ranks[3] / a.games * 100;
+                        bValue = b.ranks[3] / b.games * 100;
+                        break;
+                    case 'totalPT':
+                        aValue = a.totalPT;
+                        bValue = b.totalPT;
+                        break;
+                    case 'avgPT':
+                        aValue = a.avgPT;
+                        bValue = b.avgPT;
                         break;
                     default:
-                        aValue = a.averageRank;
-                        bValue = b.averageRank;
+                        aValue = a.avgRank;
+                        bValue = b.avgRank;
                 }
 
                 // 无比赛记录的玩家排在后面
@@ -448,7 +468,7 @@ const Rankings = {
             });
 
             // 合并排序结果，确保"其他玩家"在最后
-            rankings = otherPlayer ? [...normalPlayers, otherPlayer] : normalPlayers;
+            const rankings = otherPlayer ? [...normalPlayers, otherPlayer] : normalPlayers;
 
             // 显示排名
             const tbody = document.getElementById('rankingsBody');
@@ -460,16 +480,14 @@ const Rankings = {
                         </a>
                     </td>
                     <td>${stat.games}</td>
-                    <td>${stat.averageScore}</td>
-                    <td>${stat.averageRank === 999 ? '-' : stat.averageRank}</td>
                     <td>${stat.ranks[0]}</td>
                     <td>${stat.ranks[1]}</td>
                     <td>${stat.ranks[2]}</td>
                     <td>${stat.ranks[3]}</td>
-                    <td>${stat.games > 0 ? stat.firstRate + '%' : '-'}</td>
-                    <td>${stat.games > 0 ? stat.secondRate + '%' : '-'}</td>
-                    <td>${stat.games > 0 ? stat.thirdRate + '%' : '-'}</td>
-                    <td>${stat.games > 0 ? stat.fourthRate + '%' : '-'}</td>
+                    <td>${stat.avgRank.toFixed(2)}</td>
+                    <td>${stat.avgScore.toLocaleString()}</td>
+                    <td class="text-${stat.totalPT >= 0 ? 'success' : 'danger'}">${stat.totalPT.toFixed(1)}</td>
+                    <td class="text-${stat.avgPT >= 0 ? 'success' : 'danger'}">${stat.avgPT.toFixed(1)}</td>
                     <td>
                         <button class="btn btn-sm btn-outline-danger" onclick="Rankings.showDeleteConfirm('${stat.name}')">
                             <i class="fas fa-trash"></i>
@@ -481,5 +499,110 @@ const Rankings = {
             console.error('更新排名失败:', error);
             alert('更新排名失败: ' + error.message);
         }
+    },
+
+    // 计算玩家统计数据
+    calculateStats(games) {
+        const stats = {};
+        
+        // 初始化统计数据
+        games.forEach(game => {
+            game.players.forEach(player => {
+                if (!stats[player.name]) {
+                    stats[player.name] = {
+                        name: player.name,
+                        games: 0,
+                        totalScore: 0,
+                        totalPT: 0,
+                        ranks: [0, 0, 0, 0], // 一位到四位的次数
+                        avgRank: 0,
+                        avgScore: 0,
+                        avgPT: 0,
+                        recentGames: []
+                    };
+                }
+                
+                const playerStats = stats[player.name];
+                playerStats.games++;
+                playerStats.totalScore += player.score;
+                playerStats.totalPT += player.pt;
+                
+                // 计算顺位（根据分数排序后的位置）
+                const rank = game.players
+                    .sort((a, b) => b.score - a.score)
+                    .findIndex(p => p.name === player.name);
+                playerStats.ranks[rank]++;
+                
+                // 保存最近比赛记录
+                if (playerStats.recentGames.length < 10) {
+                    playerStats.recentGames.push({
+                        time: game.time,
+                        score: player.score,
+                        pt: player.pt,
+                        rank: rank + 1
+                    });
+                }
+            });
+        });
+        
+        // 计算平均值
+        Object.values(stats).forEach(player => {
+            player.avgScore = Math.round(player.totalScore / player.games);
+            player.avgPT = player.totalPT / player.games;
+            player.avgRank = player.ranks.reduce((sum, count, index) => sum + (count * (index + 1)), 0) / player.games;
+            // 对最近比赛按时间排序
+            player.recentGames.sort((a, b) => new Date(b.time) - new Date(a.time));
+        });
+        
+        return Object.values(stats);
+    },
+
+    // 渲染排名表格
+    renderRankings(stats) {
+        const tbody = document.getElementById('rankingsBody');
+        const sortedStats = this.sortStats(stats, this.currentSort);
+        
+        tbody.innerHTML = sortedStats.map(player => `
+            <tr class="${player.games === 0 ? 'inactive-player' : ''}">
+                <td>${player.name}</td>
+                <td>${player.games}</td>
+                <td>${player.ranks[0]}</td>
+                <td>${player.ranks[1]}</td>
+                <td>${player.ranks[2]}</td>
+                <td>${player.ranks[3]}</td>
+                <td>${player.avgRank.toFixed(2)}</td>
+                <td>${player.avgScore.toLocaleString()}</td>
+                <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
+                <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
+            </tr>
+        `).join('');
+    },
+
+    // 排序统计数据
+    sortStats(stats, sortBy) {
+        return [...stats].sort((a, b) => {
+            switch (sortBy) {
+                case 'games':
+                    return b.games - a.games;
+                case 'rank1':
+                    return b.ranks[0] - a.ranks[0];
+                case 'rank2':
+                    return b.ranks[1] - a.ranks[1];
+                case 'rank3':
+                    return b.ranks[2] - a.ranks[2];
+                case 'rank4':
+                    return b.ranks[3] - a.ranks[3];
+                case 'avgRank':
+                    return a.avgRank - b.avgRank;
+                case 'avgScore':
+                    return b.avgScore - a.avgScore;
+                case 'totalPT':
+                    return b.totalPT - a.totalPT;
+                case 'avgPT':
+                    return b.avgPT - a.avgPT;
+                default:
+                    return 0;
+            }
+        });
     }
 }; 

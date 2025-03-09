@@ -150,7 +150,13 @@ const History = {
             });
 
             const players = game.players.map(p => 
-                `${p.name}<br><small class="text-muted">${p.score.toLocaleString()}</small>`
+                `${p.name}<br>
+                <small class="text-muted">
+                    ${p.score.toLocaleString()}<br>
+                    <span class="text-${p.pt >= 0 ? 'success' : 'danger'}">
+                        ${p.pt.toFixed(1)}pt
+                    </span>
+                </small>`
             );
 
             return `

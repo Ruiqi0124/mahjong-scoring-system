@@ -123,4 +123,44 @@ const api = {
             throw error;
         }
     }
+};
+
+// PT计算工具
+const ptUtils = {
+    // 计算单个玩家的PT
+    calculatePT(score, rank, sameScoreWithFirst = false) {
+        // 基础分：(素点-30000)/1000
+        const basePT = (score - 30000) / 1000;
+        
+        // 顺位分
+        let rankPT = 0;
+        switch(rank) {
+            case 1:
+                rankPT = sameScoreWithFirst ? 25 : 45; // 如果和一位同分，平分45pt
+                break;
+            case 2:
+                rankPT = sameScoreWithFirst ? 25 : 5;
+                break;
+            case 3:
+                rankPT = -15;
+                break;
+            case 4:
+                rankPT = -35;
+                break;
+        }
+        
+        return basePT + rankPT;
+    },
+
+    // 计算一局游戏中所有玩家的PT
+    calculateGamePTs(players) {
+        // 检查是否有同分情况
+        const firstScore = players[0].score;
+        const sameScoreWithFirst = players[1].score === firstScore;
+
+        return players.map((player, index) => ({
+            ...player,
+            pt: this.calculatePT(player.score, index + 1, sameScoreWithFirst)
+        }));
+    }
 }; 
