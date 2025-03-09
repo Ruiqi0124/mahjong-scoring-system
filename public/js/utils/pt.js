@@ -1,5 +1,5 @@
 // PT计算工具
-const ptUtils = {
+window.ptUtils = {
     // 计算单场比赛的PT
     calculateGamePTs(scores) {
         // 确保分数已经按降序排序

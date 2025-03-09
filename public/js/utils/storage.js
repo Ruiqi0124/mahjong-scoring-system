@@ -1,4 +1,5 @@
-const storage = {
+// 存储工具
+window.storage = {
     // 获取所有玩家
     getPlayers() {
         const players = localStorage.getItem('players');
@@ -24,12 +25,33 @@ const storage = {
 
     // 添加新比赛记录
     addGame(players, scores) {
+        if (!Array.isArray(players) || !Array.isArray(scores)) {
+            throw new Error('玩家和分数必须是数组');
+        }
+
+        if (players.length !== 4 || scores.length !== 4) {
+            throw new Error('必须有4个玩家和4个分数');
+        }
+
+        if (!scores.every(score => !isNaN(parseInt(score)))) {
+            throw new Error('所有分数必须是数字');
+        }
+
+        // 转换分数为整数
+        const parsedScores = scores.map(score => parseInt(score));
+        
+        // 验证总分
+        const totalScore = parsedScores.reduce((sum, score) => sum + score, 0);
+        if (totalScore !== 120000) {
+            throw new Error('得点总和必须为120,000');
+        }
+
         const games = this.getGames();
         const game = {
             timestamp: new Date().toISOString(),
             players: players.map((name, index) => ({
                 name,
-                score: parseInt(scores[index])
+                score: parsedScores[index]
             }))
         };
         games.unshift(game); // 添加到开头
