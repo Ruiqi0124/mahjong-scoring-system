@@ -49,9 +49,18 @@ const gameSchema = new mongoose.Schema({
     }]
 });
 
+const scheduleSchema = new mongoose.Schema({
+    playerName: { type: String, required: true },
+    date: { type: Date, required: true },
+    times: [{ type: String, enum: ['morning', 'afternoon', 'evening'] }],
+    repeatMode: { type: String, enum: ['once', 'weekly'], default: 'once' },
+    note: String
+});
+
 // 确保模型只被创建一次
 let Player = mongoose.models.Player || mongoose.model('Player', playerSchema);
 let Game = mongoose.models.Game || mongoose.model('Game', gameSchema);
+let Schedule = mongoose.models.Schedule || mongoose.model('Schedule', scheduleSchema);
 
 // API路由
 // 获取所有玩家
@@ -224,6 +233,77 @@ app.put('/api/games/:id/time', async (req, res) => {
     } catch (error) {
         console.error('更新时间失败:', error);
         res.status(500).json({ error: '更新时间失败' });
+    }
+});
+
+// 获取时间安排列表
+app.get('/api/schedules', async (req, res) => {
+    console.log('Received GET request for /api/schedules');
+    try {
+        await connectDB();
+        const schedules = await Schedule.find();
+        console.log('Successfully retrieved schedules:', schedules.length);
+        res.json(schedules);
+    } catch (err) {
+        console.error('获取时间安排错误:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 添加新时间安排
+app.post('/api/schedules', async (req, res) => {
+    console.log('Received POST request for /api/schedules:', req.body);
+    try {
+        await connectDB();
+        const { playerName, date, times, repeatMode, note } = req.body;
+
+        if (!playerName || !date || !times || times.length === 0) {
+            console.log('Invalid schedule data received');
+            return res.status(400).json({ error: '数据格式不正确' });
+        }
+
+        const schedule = new Schedule({
+            playerName,
+            date: new Date(date),
+            times,
+            repeatMode,
+            note
+        });
+        await schedule.save();
+        console.log('Schedule saved successfully:', schedule);
+        res.status(201).json(schedule);
+    } catch (err) {
+        console.error('保存时间安排错误:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 删除时间安排
+app.delete('/api/schedules/:id/:time', async (req, res) => {
+    console.log('Received DELETE request for /api/schedules');
+    try {
+        await connectDB();
+        const { id, time } = req.params;
+
+        const schedule = await Schedule.findById(id);
+        if (!schedule) {
+            return res.status(404).json({ error: '找不到该时间安排' });
+        }
+
+        // 从时间列表中移除指定时间
+        schedule.times = schedule.times.filter(t => t !== time);
+
+        // 如果没有剩余时间，删除整个记录
+        if (schedule.times.length === 0) {
+            await Schedule.findByIdAndDelete(id);
+        } else {
+            await schedule.save();
+        }
+
+        res.json({ message: '删除成功' });
+    } catch (err) {
+        console.error('删除时间安排错误:', err);
+        res.status(500).json({ error: err.message });
     }
 });
 
