@@ -12,6 +12,17 @@ const Rankings = {
     // 初始化
     async init() {
         try {
+            // 检查是否在排名页面
+            if (!document.getElementById('rankingsBody')) {
+                return; // 如果不在排名页面，直接返回
+            }
+
+            // 初始化删除确认弹窗
+            const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+            if (deleteConfirmModal) {
+                this.deleteModal = new bootstrap.Modal(deleteConfirmModal);
+            }
+
             // 初始化历史对局气泡框
             this.initHistoryPopover();
             
