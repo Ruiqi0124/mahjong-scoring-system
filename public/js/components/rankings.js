@@ -486,10 +486,22 @@ const Rankings = {
                         </a>
                     </td>
                     <td>${stat.games}</td>
-                    <td>${stat.ranks[0]}</td>
-                    <td>${stat.ranks[1]}</td>
-                    <td>${stat.ranks[2]}</td>
-                    <td>${stat.ranks[3]}</td>
+                    <td>
+                        ${stat.ranks[0]}
+                        ${stat.games > 0 ? `<small class="text-muted">(${(stat.ranks[0] / stat.games * 100).toFixed(1)}%)</small>` : ''}
+                    </td>
+                    <td>
+                        ${stat.ranks[1]}
+                        ${stat.games > 0 ? `<small class="text-muted">(${(stat.ranks[1] / stat.games * 100).toFixed(1)}%)</small>` : ''}
+                    </td>
+                    <td>
+                        ${stat.ranks[2]}
+                        ${stat.games > 0 ? `<small class="text-muted">(${(stat.ranks[2] / stat.games * 100).toFixed(1)}%)</small>` : ''}
+                    </td>
+                    <td>
+                        ${stat.ranks[3]}
+                        ${stat.games > 0 ? `<small class="text-muted">(${(stat.ranks[3] / stat.games * 100).toFixed(1)}%)</small>` : ''}
+                    </td>
                     <td>${stat.avgRank.toFixed(2)}</td>
                     <td>${stat.avgScore.toLocaleString()}</td>
                     <td class="text-${stat.totalPT >= 0 ? 'success' : 'danger'}">${stat.totalPT.toFixed(1)}</td>
