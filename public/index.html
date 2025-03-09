@@ -179,7 +179,9 @@
         document.addEventListener('DOMContentLoaded', async () => {
             // 检查是否有本地数据需要迁移
             const localGames = localStorage.getItem('mahjongGames');
-            if (localGames) {
+            const localGamesNew = localStorage.getItem('games');
+            
+            if (localGames || localGamesNew) {
                 console.log('检查本地数据...');
                 migrate.checkLocalGames();
                 

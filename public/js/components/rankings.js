@@ -12,7 +12,7 @@ const Rankings = {
     // 初始化
     async init() {
         try {
-            this.deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            // 初始化历史对局气泡框
             this.initHistoryPopover();
             
             // 添加排序按钮和表头点击事件监听
