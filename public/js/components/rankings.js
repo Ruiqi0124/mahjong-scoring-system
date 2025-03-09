@@ -481,7 +481,7 @@ const Rankings = {
             tbody.innerHTML = rankings.map((stat) => `
                 <tr class="${stat.games === 0 ? 'inactive-player' : ''}">
                     <td>
-                        <a href="#" class="player-name-link text-decoration-none" onclick="Rankings.showPlayerHistory('${stat.name}', event)">
+                        <a href="/player.html?name=${encodeURIComponent(stat.name)}" class="text-decoration-none">
                             ${stat.name}
                         </a>
                     </td>

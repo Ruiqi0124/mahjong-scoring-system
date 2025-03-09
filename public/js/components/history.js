@@ -195,6 +195,15 @@ const History = {
                             </button>
                         </div>
                     </td>
+                    <td>
+                        ${game.players.map(player => `
+                            <div class="player-score">
+                                <a href="/player.html?name=${encodeURIComponent(player.name)}" class="text-decoration-none">
+                                    ${player.name}
+                                </a>: ${player.score}
+                            </div>
+                        `).join('')}
+                    </td>
                 </tr>
             `;
         }).join('');
