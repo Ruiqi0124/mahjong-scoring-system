@@ -215,25 +215,10 @@
     <script src="js/utils/storage.js"></script>
     <script src="js/utils/api.js"></script>
     <script src="js/utils/pt.js"></script>
-    <script src="js/migrate.js"></script>
     <script src="js/components/game-form.js"></script>
     <script src="js/components/history.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // 检查是否有本地数据需要迁移
-            const localGames = localStorage.getItem('mahjongGames');
-            const localGamesNew = localStorage.getItem('games');
-            
-            if (localGames || localGamesNew) {
-                console.log('检查本地数据...');
-                migrate.checkLocalGames();
-                
-                const shouldMigrate = confirm('检测到本地对局数据，是否迁移到服务器？');
-                if (shouldMigrate) {
-                    await migrate.migrateLocalData();
-                }
-            }
-
             // 初始化各个组件
             await Promise.all([
                 GameForm.init(),

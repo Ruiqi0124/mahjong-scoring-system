@@ -1,5 +1,13 @@
 // 存储工具
 window.storage = {
+    // 初始化：清理旧数据
+    init() {
+        // 清理旧的本地存储数据
+        localStorage.removeItem('mahjongGames');
+        localStorage.removeItem('games');
+        localStorage.removeItem('players');
+    },
+
     // 获取所有玩家
     getPlayers() {
         const players = localStorage.getItem('players');
