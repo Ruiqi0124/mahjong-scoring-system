@@ -202,12 +202,19 @@ const Player = {
                 };
             });
 
+        // 创建固定长度的数组，未使用的部分填充null
+        const maxGames = 20;
+        const paddedData = Array(maxGames).fill(null);
+        gamesWithCumulativePT.forEach((game, index) => {
+            paddedData[index] = game;
+        });
+
         const data = {
-            labels: gamesWithCumulativePT.map(() => ''), // 移除x轴标签
+            labels: paddedData.map(() => ''), // 移除x轴标签
             datasets: [
                 {
                     label: '顺位走势',
-                    data: gamesWithCumulativePT.map(game => game.rank),
+                    data: paddedData.map(game => game ? game.rank : null),
                     borderColor: 'rgb(75, 192, 192)',
                     backgroundColor: 'rgb(75, 192, 192)',
                     tension: 0,
@@ -215,11 +222,12 @@ const Player = {
                     pointRadius: 6,
                     pointHoverRadius: 8,
                     borderWidth: 2,
-                    yAxisID: 'y-rank'
+                    yAxisID: 'y-rank',
+                    spanGaps: false // 不连接空数据点
                 },
                 {
                     label: '累计PT走势',
-                    data: gamesWithCumulativePT.map(game => game.cumulativePT),
+                    data: paddedData.map(game => game ? game.cumulativePT : null),
                     borderColor: 'rgb(128, 128, 128)',
                     backgroundColor: 'rgb(128, 128, 128)',
                     tension: 0,
@@ -228,7 +236,8 @@ const Player = {
                     pointRadius: 4,
                     pointHoverRadius: 6,
                     borderWidth: 1,
-                    yAxisID: 'y-pt'
+                    yAxisID: 'y-pt',
+                    spanGaps: false // 不连接空数据点
                 }
             ]
         };
@@ -246,7 +255,9 @@ const Player = {
                 layout: {
                     padding: {
                         top: 10,
-                        bottom: 10
+                        bottom: 10,
+                        left: 10,
+                        right: 10
                     }
                 },
                 scales: {
@@ -256,7 +267,9 @@ const Player = {
                         },
                         ticks: {
                             display: false // 隐藏x轴刻度
-                        }
+                        },
+                        min: 0,
+                        max: maxGames - 1
                     },
                     'y-rank': {
                         position: 'left',
@@ -292,21 +305,24 @@ const Player = {
                     tooltip: {
                         callbacks: {
                             title: function(context) {
-                                // 显示日期
-                                const game = gamesWithCumulativePT[context[0].dataIndex];
-                                return Player.formatDate(game.time);
+                                const game = paddedData[context[0].dataIndex];
+                                return game ? Player.formatDate(game.time) : '';
                             },
                             label: function(context) {
-                                const game = gamesWithCumulativePT[context.dataIndex];
-                                if (context.dataset.label === '顺位走势') {
+                                const game = paddedData[context.dataIndex];
+                                if (game && context.dataset.label === '顺位走势') {
                                     return [
                                         `顺位: ${game.rank}`,
                                         `当局PT: ${game.pt.toFixed(1)}`,
                                         `累计PT: ${game.cumulativePT.toFixed(1)}`
                                     ];
                                 }
-                                return null; // 不显示累计PT的标签
+                                return null;
                             }
+                        },
+                        filter: function(tooltipItem) {
+                            // 只显示有数据的点的提示
+                            return paddedData[tooltipItem.dataIndex] !== null;
                         }
                     }
                 }
