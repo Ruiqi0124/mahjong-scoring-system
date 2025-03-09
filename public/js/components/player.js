@@ -1,6 +1,8 @@
 // 玩家资料组件
 const Player = {
     stats: null, // 添加stats属性
+    currentPage: 1,
+    pageSize: 10,
 
     // 初始化
     async init() {
@@ -238,7 +240,22 @@ const Player = {
     // 更新最近对局记录
     updateRecentGames(recentGames) {
         const tbody = document.getElementById('recentGames');
-        tbody.innerHTML = recentGames.map(game => {
+        const paginationDiv = document.getElementById('historyPagination');
+        
+        // 计算总页数
+        const totalPages = Math.ceil(recentGames.length / this.pageSize);
+        
+        // 确保当前页面在有效范围内
+        if (this.currentPage < 1) this.currentPage = 1;
+        if (this.currentPage > totalPages) this.currentPage = totalPages;
+        
+        // 计算当前页的数据范围
+        const startIndex = (this.currentPage - 1) * this.pageSize;
+        const endIndex = Math.min(startIndex + this.pageSize, recentGames.length);
+        const currentPageGames = recentGames.slice(startIndex, endIndex);
+
+        // 渲染表格内容
+        tbody.innerHTML = currentPageGames.map(game => {
             const time = new Date(game.time).toLocaleString('zh-CN', {
                 year: 'numeric',
                 month: '2-digit',
@@ -252,23 +269,107 @@ const Player = {
             const sortedPlayers = [...game.players].sort((a, b) => b.score - a.score);
 
             // 生成玩家名字的HTML，当前玩家高亮显示
-            const playersHtml = sortedPlayers.map(player => {
-                const isCurrentPlayer = player.name === this.stats.name;
-                return `<a href="?name=${encodeURIComponent(player.name)}" class="text-decoration-none${isCurrentPlayer ? ' fw-bold text-primary' : ''}">${player.name}</a> (${player.score.toLocaleString()})`;
-            }).join('、');
+            const playersHtml = sortedPlayers.map(player => 
+                `<a href="?name=${encodeURIComponent(player.name)}" class="text-decoration-none${player.name === this.stats.name ? ' fw-bold text-primary' : ''}">${player.name}</a><br>
+                <small class="text-muted">
+                    ${player.score.toLocaleString()}<br>
+                    <span class="text-${player.pt >= 0 ? 'success' : 'danger'}">
+                        ${player.pt.toFixed(1)}pt
+                    </span>
+                </small>`
+            );
 
             return `
                 <tr>
                     <td>${time}</td>
-                    <td>${game.rank}</td>
-                    <td>${game.score.toLocaleString()}</td>
-                    <td class="text-${game.pt >= 0 ? 'success' : 'danger'}">
-                        ${game.pt.toFixed(1)}
-                    </td>
-                    <td>${playersHtml}</td>
+                    <td>${playersHtml[0]}</td>
+                    <td>${playersHtml[1]}</td>
+                    <td>${playersHtml[2]}</td>
+                    <td>${playersHtml[3]}</td>
                 </tr>
             `;
         }).join('');
+
+        // 渲染分页控件
+        paginationDiv.innerHTML = this.renderPagination(totalPages);
+
+        // 显示当前页码信息
+        document.getElementById('pageInfo').textContent = 
+            `第 ${this.currentPage} 页 / 共 ${totalPages} 页（共 ${recentGames.length} 条记录）`;
+    },
+
+    // 渲染分页控件
+    renderPagination(totalPages) {
+        if (totalPages <= 1) return '';
+
+        let buttons = [];
+        
+        // 上一页按钮
+        buttons.push(`
+            <button class="btn btn-outline-primary ${this.currentPage === 1 ? 'disabled' : ''}"
+                    onclick="Player.goToPage(${this.currentPage - 1})"
+                    ${this.currentPage === 1 ? 'disabled' : ''}>
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        `);
+
+        // 页码按钮
+        let startPage = Math.max(1, this.currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        
+        // 调整startPage确保显示5个按钮
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+
+        // 第一页
+        if (startPage > 1) {
+            buttons.push(`
+                <button class="btn btn-outline-primary" onclick="Player.goToPage(1)">1</button>
+            `);
+            if (startPage > 2) {
+                buttons.push('<span class="btn btn-outline-primary disabled">...</span>');
+            }
+        }
+
+        // 页码按钮
+        for (let i = startPage; i <= endPage; i++) {
+            buttons.push(`
+                <button class="btn btn-outline-primary ${i === this.currentPage ? 'active' : ''}"
+                        onclick="Player.goToPage(${i})">
+                    ${i}
+                </button>
+            `);
+        }
+
+        // 最后一页
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                buttons.push('<span class="btn btn-outline-primary disabled">...</span>');
+            }
+            buttons.push(`
+                <button class="btn btn-outline-primary" onclick="Player.goToPage(${totalPages})">
+                    ${totalPages}
+                </button>
+            `);
+        }
+
+        // 下一页按钮
+        buttons.push(`
+            <button class="btn btn-outline-primary ${this.currentPage === totalPages ? 'disabled' : ''}"
+                    onclick="Player.goToPage(${this.currentPage + 1})"
+                    ${this.currentPage === totalPages ? 'disabled' : ''}>
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        `);
+
+        return buttons.join('');
+    },
+
+    // 跳转到指定页
+    goToPage(page) {
+        this.currentPage = page;
+        this.updateRecentGames(this.stats.recentGames);
     },
 
     // 格式化日期
