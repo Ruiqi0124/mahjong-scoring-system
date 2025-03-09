@@ -255,9 +255,11 @@ const Rankings = {
             // 如果点击的是当前排序字段，则切换排序方向
             this.currentSort.direction = this.currentSort.direction === 'asc' ? 'desc' : 'asc';
         } else {
-            // 如果是新字段，设置为升序
+            // 如果是新字段，根据字段类型设置默认排序方向
             this.currentSort.field = field;
-            this.currentSort.direction = 'asc';
+            // 平均顺位是越小越好，所以默认升序
+            // 其他字段（场数、得点、PT等）是越大越好，所以默认降序
+            this.currentSort.direction = field === 'averageRank' ? 'asc' : 'desc';
         }
 
         // 更新排序图标
@@ -421,14 +423,6 @@ const Rankings = {
                         aValue = a.games;
                         bValue = b.games;
                         break;
-                    case 'averageScore':
-                        aValue = a.avgScore;
-                        bValue = b.avgScore;
-                        break;
-                    case 'averageRank':
-                        aValue = a.avgRank;
-                        bValue = b.avgRank;
-                        break;
                     case 'firstPlace':
                         aValue = a.ranks[0];
                         bValue = b.ranks[0];
@@ -445,21 +439,13 @@ const Rankings = {
                         aValue = a.ranks[3];
                         bValue = b.ranks[3];
                         break;
-                    case 'firstRate':
-                        aValue = a.ranks[0] / a.games * 100;
-                        bValue = b.ranks[0] / b.games * 100;
+                    case 'averageRank':
+                        aValue = a.avgRank;
+                        bValue = b.avgRank;
                         break;
-                    case 'secondRate':
-                        aValue = a.ranks[1] / a.games * 100;
-                        bValue = b.ranks[1] / b.games * 100;
-                        break;
-                    case 'thirdRate':
-                        aValue = a.ranks[2] / a.games * 100;
-                        bValue = b.ranks[2] / b.games * 100;
-                        break;
-                    case 'fourthRate':
-                        aValue = a.ranks[3] / a.games * 100;
-                        bValue = b.ranks[3] / b.games * 100;
+                    case 'averageScore':
+                        aValue = a.avgScore;
+                        bValue = b.avgScore;
                         break;
                     case 'totalPT':
                         aValue = a.totalPT;
@@ -470,6 +456,7 @@ const Rankings = {
                         bValue = b.avgPT;
                         break;
                     default:
+                        // 默认按平均顺位排序
                         aValue = a.avgRank;
                         bValue = b.avgRank;
                 }
