@@ -111,6 +111,25 @@ const History = {
         try {
             this.games = await api.getGames();
             
+            // 确保每个游戏记录都有PT值
+            this.games = this.games.map(game => {
+                // 按分数排序玩家
+                const sortedPlayers = [...game.players].sort((a, b) => b.score - a.score);
+                // 检查是否有同分情况
+                const sameScoreWithFirst = sortedPlayers[1] && sortedPlayers[0].score === sortedPlayers[1].score;
+                
+                // 计算每个玩家的PT
+                const playersWithPT = sortedPlayers.map((player, index) => ({
+                    ...player,
+                    pt: player.pt || ptUtils.calculatePT(player.score, index + 1, sameScoreWithFirst)
+                }));
+
+                return {
+                    ...game,
+                    players: playersWithPT
+                };
+            });
+            
             // 按时间降序排序
             this.games.sort((a, b) => new Date(b.time) - new Date(a.time));
             

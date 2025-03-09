@@ -55,14 +55,17 @@ const api = {
     },
 
     // 添加新比赛记录
-    async addGame(players, scores) {
+    async saveGame(players) {
         try {
+            // 确保每个玩家都有PT值
+            const playersWithPT = ptUtils.calculateGamePTs(players);
+            
             const response = await fetch(`${API_BASE_URL}/api/games`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ players, scores })
+                body: JSON.stringify({ players: playersWithPT })
             });
             
             if (!response.ok) {
