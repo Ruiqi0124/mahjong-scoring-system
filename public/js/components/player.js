@@ -67,16 +67,22 @@ const Player = {
         );
 
         playerGames.forEach(game => {
+            // 按分数排序玩家
+            const sortedPlayers = [...game.players].sort((a, b) => b.score - a.score);
+            // 检查是否有同分情况
+            const sameScoreWithFirst = sortedPlayers[1] && sortedPlayers[0].score === sortedPlayers[1].score;
+            
             // 获取玩家在本场比赛的信息
             const playerInfo = game.players.find(p => p.name === playerName);
-            const rank = game.players
-                .sort((a, b) => b.score - a.score)
-                .findIndex(p => p.name === playerName);
+            const rank = sortedPlayers.findIndex(p => p.name === playerName);
+
+            // 计算PT（如果没有现成的PT值）
+            const pt = playerInfo.pt || ptUtils.calculatePT(playerInfo.score, rank + 1, sameScoreWithFirst);
 
             // 更新统计数据
             stats.games++;
             stats.totalScore += playerInfo.score;
-            stats.totalPT += playerInfo.pt || 0;
+            stats.totalPT += pt;
             stats.ranks[rank]++;
 
             // 保存对局记录（包含对手信息）
@@ -84,7 +90,7 @@ const Player = {
                 time: game.time || game.timestamp,
                 rank: rank + 1,
                 score: playerInfo.score,
-                pt: playerInfo.pt || 0,
+                pt: pt,
                 opponents: game.players
                     .filter(p => p.name !== playerName)
                     .map(p => p.name)
