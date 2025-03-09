@@ -202,12 +202,19 @@ const Player = {
                 };
             });
 
+        // 创建固定长度的数组，未使用的部分填充null
+        const maxGames = 20;
+        const paddedData = Array(maxGames).fill(null);
+        gamesWithCumulativePT.forEach((game, index) => {
+            paddedData[index] = game;
+        });
+
         const data = {
-            labels: gamesWithCumulativePT.map(() => ''), // 移除x轴标签
+            labels: paddedData.map(() => ''),
             datasets: [
                 {
                     label: '顺位走势',
-                    data: gamesWithCumulativePT.map(game => game.rank),
+                    data: paddedData.map(game => game ? game.rank : null),
                     borderColor: 'rgb(75, 192, 192)',
                     backgroundColor: 'rgb(75, 192, 192)',
                     tension: 0,
@@ -215,11 +222,12 @@ const Player = {
                     pointRadius: 6,
                     pointHoverRadius: 8,
                     borderWidth: 2,
-                    yAxisID: 'y-rank'
+                    yAxisID: 'y-rank',
+                    spanGaps: false
                 },
                 {
                     label: '累计PT走势',
-                    data: gamesWithCumulativePT.map(game => game.cumulativePT),
+                    data: paddedData.map(game => game ? game.cumulativePT : null),
                     borderColor: 'rgb(128, 128, 128)',
                     backgroundColor: 'rgb(128, 128, 128)',
                     tension: 0,
@@ -228,7 +236,8 @@ const Player = {
                     pointRadius: 4,
                     pointHoverRadius: 6,
                     borderWidth: 1,
-                    yAxisID: 'y-pt'
+                    yAxisID: 'y-pt',
+                    spanGaps: false
                 }
             ]
         };
@@ -255,7 +264,7 @@ const Player = {
                             display: false
                         },
                         ticks: {
-                            display: false // 隐藏x轴刻度
+                            display: false
                         }
                     },
                     'y-rank': {
@@ -267,7 +276,7 @@ const Player = {
                             display: false
                         },
                         ticks: {
-                            display: false // 隐藏y轴刻度
+                            display: false
                         }
                     },
                     'y-pt': {
@@ -276,7 +285,7 @@ const Player = {
                             display: false
                         },
                         ticks: {
-                            display: false // 隐藏y轴刻度
+                            display: false
                         }
                     }
                 },
@@ -284,7 +293,6 @@ const Player = {
                     legend: {
                         labels: {
                             filter: function(item) {
-                                // 只显示顺位走势的图例
                                 return item.text === '顺位走势';
                             }
                         }
@@ -292,21 +300,23 @@ const Player = {
                     tooltip: {
                         callbacks: {
                             title: function(context) {
-                                // 显示日期
-                                const game = gamesWithCumulativePT[context[0].dataIndex];
-                                return Player.formatDate(game.time);
+                                const game = paddedData[context[0].dataIndex];
+                                return game ? Player.formatDate(game.time) : '';
                             },
                             label: function(context) {
-                                const game = gamesWithCumulativePT[context.dataIndex];
-                                if (context.dataset.label === '顺位走势') {
+                                const game = paddedData[context.dataIndex];
+                                if (game && context.dataset.label === '顺位走势') {
                                     return [
                                         `顺位: ${game.rank}`,
                                         `当局PT: ${game.pt.toFixed(1)}`,
                                         `累计PT: ${game.cumulativePT.toFixed(1)}`
                                     ];
                                 }
-                                return null; // 不显示累计PT的标签
+                                return null;
                             }
+                        },
+                        filter: function(tooltipItem) {
+                            return paddedData[tooltipItem.dataIndex] !== null;
                         }
                     }
                 }
