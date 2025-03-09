@@ -99,10 +99,8 @@ const Player = {
                 sum + (count * (index + 1)), 0) / stats.games;
         }
 
-        // 对最近对局按时间排序（最新的在前）
+        // 对对局按时间排序（最新的在前）
         stats.recentGames.sort((a, b) => new Date(b.time) - new Date(a.time));
-        // 只保留最近10场
-        stats.recentGames = stats.recentGames.slice(0, 10);
 
         return stats;
     },
@@ -143,10 +141,10 @@ const Player = {
             datasets: [{
                 data: stats.ranks,
                 backgroundColor: [
-                    'rgba(255, 99, 132, 0.8)',
-                    'rgba(54, 162, 235, 0.8)',
-                    'rgba(255, 206, 86, 0.8)',
-                    'rgba(75, 192, 192, 0.8)'
+                    'rgba(54, 162, 235, 0.8)', // 蓝色
+                    'rgba(75, 192, 192, 0.8)', // 绿色
+                    'rgba(255, 206, 86, 0.8)', // 黄色
+                    'rgba(255, 99, 132, 0.8)'  // 红色
                 ],
                 borderWidth: 1
             }]
@@ -179,7 +177,7 @@ const Player = {
     // 绘制最近对局走势图
     drawTrendChart(recentGames) {
         const ctx = document.getElementById('trendChart').getContext('2d');
-        const reversedGames = [...recentGames].reverse(); // 最早的在前
+        const reversedGames = [...recentGames].slice(-10).reverse(); // 最近10场，最早的在前
 
         const data = {
             labels: reversedGames.map(game => this.formatDate(game.time)),
@@ -187,8 +185,11 @@ const Player = {
                 label: '顺位走势',
                 data: reversedGames.map(game => game.rank),
                 borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1,
-                fill: false
+                tension: 0, // 使用直线
+                fill: false,
+                pointRadius: 6, // 加粗点的大小
+                pointHoverRadius: 8,
+                borderWidth: 2 // 加粗线的宽度
             }]
         };
 
@@ -228,21 +229,32 @@ const Player = {
     // 更新最近对局记录
     updateRecentGames(recentGames) {
         const tbody = document.getElementById('recentGames');
-        tbody.innerHTML = recentGames.map(game => `
-            <tr>
-                <td>${this.formatDate(game.time)}</td>
-                <td>${game.rank}</td>
-                <td>${game.score.toLocaleString()}</td>
-                <td class="text-${game.pt >= 0 ? 'success' : 'danger'}">
-                    ${game.pt.toFixed(1)}
-                </td>
-                <td>
-                    ${game.opponents.map(name => 
-                        `<a href="?name=${encodeURIComponent(name)}" class="text-decoration-none">${name}</a>`
-                    ).join('、')}
-                </td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = recentGames.map(game => {
+            const time = new Date(game.time).toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+
+            return `
+                <tr>
+                    <td>${time}</td>
+                    <td>${game.rank}</td>
+                    <td>${game.score.toLocaleString()}</td>
+                    <td class="text-${game.pt >= 0 ? 'success' : 'danger'}">
+                        ${game.pt.toFixed(1)}
+                    </td>
+                    <td>
+                        ${game.opponents.map(name => 
+                            `<a href="?name=${encodeURIComponent(name)}" class="text-decoration-none">${name}</a>`
+                        ).join('、')}
+                    </td>
+                </tr>
+            `;
+        }).join('');
     },
 
     // 格式化日期
