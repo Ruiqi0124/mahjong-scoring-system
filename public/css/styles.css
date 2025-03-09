@@ -649,6 +649,32 @@ h2 {
     height: 120px;
     vertical-align: top;
     padding: 8px;
+    min-width: 150px;
+}
+
+/* 固定第一列样式 */
+.schedule-table-wrapper {
+    position: relative;
+    overflow-x: auto;
+}
+
+.schedule-table {
+    margin-left: 120px;
+}
+
+.schedule-table th:first-child,
+.schedule-table td:first-child {
+    position: absolute;
+    left: 0;
+    width: 120px;
+    background-color: #fff;
+    border-right: 2px solid #dee2e6;
+    z-index: 1;
+}
+
+.schedule-table th:nth-child(2),
+.schedule-table td:nth-child(2) {
+    padding-left: 8px;
 }
 
 .schedule-cell.can-play {
@@ -675,6 +701,7 @@ h2 {
     opacity: 1;
 }
 
+/* 移除人数显示相关样式
 .schedule-cell .player-count {
     position: absolute;
     bottom: 8px;
@@ -686,4 +713,5 @@ h2 {
 .schedule-cell.can-play .player-count {
     color: #28a745;
     font-weight: bold;
-} 
+}
+*/ 

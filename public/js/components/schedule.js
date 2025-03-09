@@ -155,16 +155,6 @@ const Schedule = {
         const cell = document.getElementById(cellId);
         const playerCount = cell.querySelectorAll('.player-tag').length;
         
-        // 移除旧的计数
-        const oldCount = cell.querySelector('.player-count');
-        if (oldCount) oldCount.remove();
-        
-        // 添加新的计数
-        const countDiv = document.createElement('div');
-        countDiv.className = 'player-count';
-        countDiv.textContent = `${playerCount} 人`;
-        cell.appendChild(countDiv);
-        
         // 当人数达到4人时添加特殊样式
         cell.classList.toggle('can-play', playerCount >= 4);
     },
