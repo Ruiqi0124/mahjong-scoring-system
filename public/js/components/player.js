@@ -198,10 +198,10 @@ const Player = {
                     data: reversedGames.map(game => game.rank),
                     borderColor: 'rgb(75, 192, 192)',
                     backgroundColor: 'rgb(75, 192, 192)',
-                    tension: 0.2,
+                    tension: 0, // 使用直线
                     fill: false,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
+                    pointRadius: 6, // 加大点的大小
+                    pointHoverRadius: 8,
                     borderWidth: 2,
                     yAxisID: 'y-rank'
                 },
@@ -210,10 +210,11 @@ const Player = {
                     data: reversedGames.map(game => game.pt),
                     borderColor: 'rgb(128, 128, 128)',
                     backgroundColor: 'rgb(128, 128, 128)',
-                    tension: 0.2,
+                    tension: 0, // 使用直线
                     borderDash: [5, 5],
                     fill: false,
-                    pointRadius: 0,
+                    pointRadius: 4, // 添加PT的数据点
+                    pointHoverRadius: 6,
                     borderWidth: 1,
                     yAxisID: 'y-pt'
                 }
@@ -225,16 +226,23 @@ const Player = {
             data: data,
             options: {
                 responsive: true,
+                maintainAspectRatio: false, // 允许自定义高度
                 interaction: {
                     mode: 'index',
                     intersect: false,
+                },
+                layout: {
+                    padding: {
+                        top: 10,    // 增加顶部内边距
+                        bottom: 10  // 增加底部内边距
+                    }
                 },
                 scales: {
                     'y-rank': {
                         position: 'left',
                         reverse: true,
-                        min: 1,
-                        max: 4,
+                        min: 0.8,    // 稍微扩大范围，避免裁剪
+                        max: 4.2,    // 稍微扩大范围，避免裁剪
                         ticks: {
                             stepSize: 1,
                             color: 'rgb(75, 192, 192)'
