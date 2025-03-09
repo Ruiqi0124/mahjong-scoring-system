@@ -140,9 +140,26 @@ const Schedule = {
                                 
                                 // 更新玩家数量
                                 this.updatePlayerCount(cellId);
+                                
+                                // 添加调试信息
+                                console.log('添加玩家到单元格:', {
+                                    cellId,
+                                    playerName: schedule.playerName,
+                                    date: schedule.date,
+                                    time,
+                                    dayDiff
+                                });
+                            } else {
+                                console.error('未找到单元格:', cellId);
                             }
                         });
                     }
+                } else {
+                    console.log('跳过日期:', {
+                        scheduleDate,
+                        dayDiff,
+                        schedule
+                    });
                 }
             });
         } catch (error) {
