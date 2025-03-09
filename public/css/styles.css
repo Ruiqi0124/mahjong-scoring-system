@@ -642,4 +642,48 @@ h2 {
         flex-direction: column;
         gap: 1rem;
     }
+}
+
+/* 营业时间表样式 */
+.schedule-cell {
+    height: 120px;
+    vertical-align: top;
+    padding: 8px;
+}
+
+.schedule-cell.can-play {
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.schedule-cell .player-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 2px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    background-color: #e9ecef;
+    white-space: nowrap;
+}
+
+.schedule-cell .player-tag .remove-btn {
+    margin-left: 4px;
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.schedule-cell .player-tag .remove-btn:hover {
+    opacity: 1;
+}
+
+.schedule-cell .player-count {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.schedule-cell.can-play .player-count {
+    color: #28a745;
+    font-weight: bold;
 } 
