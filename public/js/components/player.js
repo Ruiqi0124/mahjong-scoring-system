@@ -188,20 +188,36 @@ const Player = {
     // 绘制最近对局走势图
     drawTrendChart(recentGames) {
         const ctx = document.getElementById('trendChart').getContext('2d');
-        const reversedGames = [...recentGames].slice(-10).reverse(); // 最近10场，最早的在前
+        const reversedGames = [...recentGames].slice(-20).reverse(); // 最近20场，最早的在前
 
         const data = {
             labels: reversedGames.map(game => this.formatDate(game.time)),
-            datasets: [{
-                label: '顺位走势',
-                data: reversedGames.map(game => game.rank),
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0, // 使用直线
-                fill: false,
-                pointRadius: 6, // 加粗点的大小
-                pointHoverRadius: 8,
-                borderWidth: 2 // 加粗线的宽度
-            }]
+            datasets: [
+                {
+                    label: '顺位走势',
+                    data: reversedGames.map(game => game.rank),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgb(75, 192, 192)',
+                    tension: 0.2,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderWidth: 2,
+                    yAxisID: 'y-rank'
+                },
+                {
+                    label: 'PT走势',
+                    data: reversedGames.map(game => game.pt),
+                    borderColor: 'rgb(128, 128, 128)',
+                    backgroundColor: 'rgb(128, 128, 128)',
+                    tension: 0.2,
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0,
+                    borderWidth: 1,
+                    yAxisID: 'y-pt'
+                }
+            ]
         };
 
         new Chart(ctx, {
@@ -209,13 +225,46 @@ const Player = {
             data: data,
             options: {
                 responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
                 scales: {
-                    y: {
+                    'y-rank': {
+                        position: 'left',
                         reverse: true,
                         min: 1,
                         max: 4,
                         ticks: {
-                            stepSize: 1
+                            stepSize: 1,
+                            color: 'rgb(75, 192, 192)'
+                        },
+                        grid: {
+                            color: 'rgba(75, 192, 192, 0.1)'
+                        },
+                        title: {
+                            display: true,
+                            text: '顺位',
+                            color: 'rgb(75, 192, 192)'
+                        }
+                    },
+                    'y-pt': {
+                        position: 'right',
+                        ticks: {
+                            color: 'rgb(128, 128, 128)'
+                        },
+                        grid: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'PT',
+                            color: 'rgb(128, 128, 128)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
                         }
                     }
                 },
@@ -224,11 +273,15 @@ const Player = {
                         callbacks: {
                             label: function(context) {
                                 const game = reversedGames[context.dataIndex];
-                                return [
-                                    `顺位: ${game.rank}`,
-                                    `得点: ${game.score.toLocaleString()}`,
-                                    `PT: ${game.pt.toFixed(1)}`
-                                ];
+                                if (context.datasetIndex === 0) {
+                                    return [
+                                        `顺位: ${game.rank}`,
+                                        `得点: ${game.score.toLocaleString()}`,
+                                        `PT: ${game.pt.toFixed(1)}`
+                                    ];
+                                } else {
+                                    return `PT: ${game.pt.toFixed(1)}`;
+                                }
                             }
                         }
                     }
