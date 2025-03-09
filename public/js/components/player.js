@@ -87,12 +87,13 @@ const Player = {
             stats.totalPT += pt;
             stats.ranks[rank]++;
 
-            // 保存对局记录（包含对手信息）
+            // 保存对局记录（包含完整的玩家数据）
             stats.recentGames.push({
                 time: game.time || game.timestamp,
                 rank: rank + 1,
                 score: playerInfo.score,
                 pt: pt,
+                players: game.players,  // 保存完整的玩家数据
                 opponents: game.players
                     .filter(p => p.name !== playerName)
                     .map(p => p.name)
@@ -247,22 +248,13 @@ const Player = {
                 hour12: false
             });
 
-            // 获取所有玩家（包括当前玩家）
-            const allPlayers = [...game.opponents];
-            allPlayers.push(this.stats.name);
-
-            // 按顺位排序玩家
-            const sortedPlayers = allPlayers.sort((a, b) => {
-                const playerA = game.players.find(p => p.name === a);
-                const playerB = game.players.find(p => p.name === b);
-                return playerB.score - playerA.score;
-            });
+            // 按分数排序玩家
+            const sortedPlayers = [...game.players].sort((a, b) => b.score - a.score);
 
             // 生成玩家名字的HTML，当前玩家高亮显示
-            const playersHtml = sortedPlayers.map(name => {
-                const playerInfo = game.players.find(p => p.name === name);
-                const isCurrentPlayer = name === this.stats.name;
-                return `<a href="?name=${encodeURIComponent(name)}" class="text-decoration-none${isCurrentPlayer ? ' fw-bold text-primary' : ''}">${name}</a> (${playerInfo.score.toLocaleString()})`;
+            const playersHtml = sortedPlayers.map(player => {
+                const isCurrentPlayer = player.name === this.stats.name;
+                return `<a href="?name=${encodeURIComponent(player.name)}" class="text-decoration-none${isCurrentPlayer ? ' fw-bold text-primary' : ''}">${player.name}</a> (${player.score.toLocaleString()})`;
             }).join('、');
 
             return `
