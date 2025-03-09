@@ -52,7 +52,7 @@ const gameSchema = new mongoose.Schema({
 const scheduleSchema = new mongoose.Schema({
     playerName: { type: String, required: true },
     date: { type: Date, required: true },
-    times: [{ type: String, enum: ['morning', 'afternoon', 'evening'] }],
+    times: [{ type: String, enum: ['afternoon', 'evening', 'night'] }],
     repeatMode: { type: String, enum: ['once', 'weekly'], default: 'once' },
     note: String
 });

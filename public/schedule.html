@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>营业时间表 - 巢计分系统</title>
+    <title>约桌表 - 巢计分系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/styles.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -24,7 +24,7 @@
                         <a class="nav-link" href="/rankings.html">排名</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/schedule.html">营业时间</a>
+                        <a class="nav-link active" href="/schedule.html">约桌表</a>
                     </li>
                 </ul>
             </div>
@@ -49,9 +49,9 @@
                     </div>
                     <div class="col-md-3">
                         <select class="form-select" id="quickAddTime">
-                            <option value="morning">上午（10:00-14:00）</option>
-                            <option value="afternoon">下午（14:00-18:00）</option>
-                            <option value="evening">晚上（18:00-22:00）</option>
+                            <option value="afternoon">下午（16:00-18:00）</option>
+                            <option value="evening">晚上（18:00-20:00）</option>
+                            <option value="night">深夜（20:00-22:00）</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -63,13 +63,16 @@
                         </button>
                     </div>
                 </div>
+                <div class="text-muted mt-2">
+                    <small>注意：周一和周三不开放约桌</small>
+                </div>
             </div>
         </div>
 
         <!-- 时间表 -->
         <div class="card shadow-sm">
             <div class="card-body">
-                <h3 class="card-title mb-4">未来7天时间表</h3>
+                <h3 class="card-title mb-4">未来7天约桌表</h3>
                 <div class="table-responsive">
                     <table class="table table-bordered">
                         <thead>
@@ -86,17 +89,7 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="align-middle">上午<br><small class="text-muted">10:00-14:00</small></td>
-                                <td id="morning0" class="schedule-cell"></td>
-                                <td id="morning1" class="schedule-cell"></td>
-                                <td id="morning2" class="schedule-cell"></td>
-                                <td id="morning3" class="schedule-cell"></td>
-                                <td id="morning4" class="schedule-cell"></td>
-                                <td id="morning5" class="schedule-cell"></td>
-                                <td id="morning6" class="schedule-cell"></td>
-                            </tr>
-                            <tr>
-                                <td class="align-middle">下午<br><small class="text-muted">14:00-18:00</small></td>
+                                <td class="align-middle">下午<br><small class="text-muted">16:00-18:00</small></td>
                                 <td id="afternoon0" class="schedule-cell"></td>
                                 <td id="afternoon1" class="schedule-cell"></td>
                                 <td id="afternoon2" class="schedule-cell"></td>
@@ -106,7 +99,7 @@
                                 <td id="afternoon6" class="schedule-cell"></td>
                             </tr>
                             <tr>
-                                <td class="align-middle">晚上<br><small class="text-muted">18:00-22:00</small></td>
+                                <td class="align-middle">晚上<br><small class="text-muted">18:00-20:00</small></td>
                                 <td id="evening0" class="schedule-cell"></td>
                                 <td id="evening1" class="schedule-cell"></td>
                                 <td id="evening2" class="schedule-cell"></td>
@@ -114,6 +107,16 @@
                                 <td id="evening4" class="schedule-cell"></td>
                                 <td id="evening5" class="schedule-cell"></td>
                                 <td id="evening6" class="schedule-cell"></td>
+                            </tr>
+                            <tr>
+                                <td class="align-middle">深夜<br><small class="text-muted">20:00-22:00</small></td>
+                                <td id="night0" class="schedule-cell"></td>
+                                <td id="night1" class="schedule-cell"></td>
+                                <td id="night2" class="schedule-cell"></td>
+                                <td id="night3" class="schedule-cell"></td>
+                                <td id="night4" class="schedule-cell"></td>
+                                <td id="night5" class="schedule-cell"></td>
+                                <td id="night6" class="schedule-cell"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -127,7 +130,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">添加营业时间</h5>
+                    <h5 class="modal-title">添加约桌时间</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -148,20 +151,21 @@
                         <div class="mb-3">
                             <label class="form-label">日期</label>
                             <input type="date" class="form-control" id="scheduleDate" required>
+                            <div class="form-text text-danger">周一和周三不开放约桌</div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">时间段</label>
                             <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="timeMorning">
-                                <label class="form-check-label">上午（10:00-14:00）</label>
-                            </div>
-                            <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="timeAfternoon">
-                                <label class="form-check-label">下午（14:00-18:00）</label>
+                                <label class="form-check-label">下午（16:00-18:00）</label>
                             </div>
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="timeEvening">
-                                <label class="form-check-label">晚上（18:00-22:00）</label>
+                                <label class="form-check-label">晚上（18:00-20:00）</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="timeNight">
+                                <label class="form-check-label">深夜（20:00-22:00）</label>
                             </div>
                         </div>
                         <div class="mb-3">

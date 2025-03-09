@@ -29,16 +29,31 @@ const Schedule = {
             
             // 每天凌晨自动更新
             this.setupAutoRefresh();
+
+            // 添加日期选择器的事件监听
+            document.getElementById('quickAddDate').addEventListener('change', this.validateDate);
+            document.getElementById('scheduleDate').addEventListener('change', this.validateDate);
         } catch (error) {
             console.error('初始化失败:', error);
             alert('初始化失败: ' + error.message);
         }
     },
 
+    // 验证日期（周一和周三不可选）
+    validateDate(event) {
+        const date = new Date(event.target.value);
+        const day = date.getDay();
+        
+        if (day === 1 || day === 3) { // 1是周一，3是周三
+            alert('周一和周三不开放约桌');
+            event.target.value = ''; // 清空选择
+        }
+    },
+
     // 更新玩家选择器
     updatePlayerSelects(players) {
         const options = players.map(player => 
-            `<option value="${player.name}">${player.name}</option>`
+            `<option value="${player}">${player}</option>`
         ).join('');
         
         document.getElementById('quickAddName').innerHTML = 
@@ -60,8 +75,13 @@ const Schedule = {
             const day = date.getDate();
             const weekday = days[date.getDay()];
             
-            document.getElementById(`day${i}`).innerHTML = 
-                `${month}/${day}<br><small class="text-muted">周${weekday}</small>`;
+            const cell = document.getElementById(`day${i}`);
+            cell.innerHTML = `${month}/${day}<br><small class="text-muted">周${weekday}</small>`;
+            
+            // 周一和周三添加特殊样式
+            if (date.getDay() === 1 || date.getDay() === 3) {
+                cell.classList.add('text-muted', 'bg-light');
+            }
         }
     },
 
@@ -75,6 +95,15 @@ const Schedule = {
             document.querySelectorAll('.schedule-cell').forEach(cell => {
                 cell.innerHTML = '';
                 cell.className = 'schedule-cell';
+                
+                // 如果是周一或周三的单元格，添加禁用样式
+                const dayIndex = cell.id.slice(-1);
+                const date = new Date();
+                date.setDate(date.getDate() + parseInt(dayIndex));
+                if (date.getDay() === 1 || date.getDay() === 3) {
+                    cell.classList.add('bg-light');
+                    cell.innerHTML = '<div class="text-muted text-center">不开放</div>';
+                }
             });
             
             // 按日期和时间段分组
@@ -88,28 +117,31 @@ const Schedule = {
                 // 计算与今天的天数差
                 const dayDiff = Math.floor((scheduleDate - today) / (1000 * 60 * 60 * 24));
                 
-                // 只处理未来7天的数据
+                // 只处理未来7天的数据，且跳过周一和周三
                 if (dayDiff >= 0 && dayDiff < 7) {
-                    schedule.times.forEach(time => {
-                        const cellId = `${time}${dayDiff}`;
-                        const cell = document.getElementById(cellId);
-                        
-                        if (cell) {
-                            // 添加玩家标签
-                            const playerTag = document.createElement('div');
-                            playerTag.className = 'player-tag';
-                            playerTag.innerHTML = `
-                                ${schedule.playerName}
-                                <span class="remove-btn" onclick="Schedule.removeSchedule('${schedule._id}', '${time}')">
-                                    <i class="fas fa-times"></i>
-                                </span>
-                            `;
-                            cell.appendChild(playerTag);
+                    const day = scheduleDate.getDay();
+                    if (day !== 1 && day !== 3) {
+                        schedule.times.forEach(time => {
+                            const cellId = `${time}${dayDiff}`;
+                            const cell = document.getElementById(cellId);
                             
-                            // 更新玩家数量
-                            this.updatePlayerCount(cellId);
-                        }
-                    });
+                            if (cell) {
+                                // 添加玩家标签
+                                const playerTag = document.createElement('div');
+                                playerTag.className = 'player-tag';
+                                playerTag.innerHTML = `
+                                    ${schedule.playerName}
+                                    <span class="remove-btn" onclick="Schedule.removeSchedule('${schedule._id}', '${time}')">
+                                        <i class="fas fa-times"></i>
+                                    </span>
+                                `;
+                                cell.appendChild(playerTag);
+                                
+                                // 更新玩家数量
+                                this.updatePlayerCount(cellId);
+                            }
+                        });
+                    }
                 }
             });
         } catch (error) {
@@ -148,6 +180,14 @@ const Schedule = {
                 alert('请填写完整信息！');
                 return;
             }
+
+            // 检查是否是周一或周三
+            const selectedDate = new Date(date);
+            const day = selectedDate.getDay();
+            if (day === 1 || day === 3) {
+                alert('周一和周三不开放约桌');
+                return;
+            }
             
             await api.addSchedule({
                 playerName,
@@ -171,14 +211,27 @@ const Schedule = {
             const date = document.getElementById('scheduleDate').value;
             const note = document.getElementById('scheduleNote').value;
             
+            if (!playerName || !date) {
+                alert('请填写完整信息！');
+                return;
+            }
+
+            // 检查是否是周一或周三
+            const selectedDate = new Date(date);
+            const day = selectedDate.getDay();
+            if (day === 1 || day === 3) {
+                alert('周一和周三不开放约桌');
+                return;
+            }
+            
             // 获取选中的时间段
             const times = [];
-            if (document.getElementById('timeMorning').checked) times.push('morning');
             if (document.getElementById('timeAfternoon').checked) times.push('afternoon');
             if (document.getElementById('timeEvening').checked) times.push('evening');
+            if (document.getElementById('timeNight').checked) times.push('night');
             
-            if (!playerName || !date || times.length === 0) {
-                alert('请填写完整信息！');
+            if (times.length === 0) {
+                alert('请至少选择一个时间段！');
                 return;
             }
             
