@@ -4,9 +4,7 @@
   "description": "麻将计分系统",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "build": "echo 'No build step required'",
-    "vercel-build": "echo 'No build step required'"
+    "start": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
