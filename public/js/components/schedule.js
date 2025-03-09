@@ -184,6 +184,17 @@ const Schedule = {
         cell.classList.toggle('can-play', playerCount >= 4);
     },
 
+    // 检查是否重复预约
+    checkDuplicate(playerName, date, time) {
+        const scheduleDateStr = date.split('T')[0];
+        return this.schedules.some(schedule => {
+            const existingDateStr = schedule.date.split('T')[0];
+            return schedule.playerName === playerName && 
+                   existingDateStr === scheduleDateStr && 
+                   schedule.times.includes(time);
+        });
+    },
+
     // 快速添加
     async quickAdd() {
         try {
@@ -201,6 +212,12 @@ const Schedule = {
             const day = selectedDate.getDay();
             if (day === 1 || day === 3) {
                 alert('周一和周三不开放约桌');
+                return;
+            }
+
+            // 检查是否重复预约
+            if (this.checkDuplicate(playerName, date, time)) {
+                alert('您已经预约了这个时间段！');
                 return;
             }
             
@@ -247,6 +264,13 @@ const Schedule = {
             
             if (times.length === 0) {
                 alert('请至少选择一个时间段！');
+                return;
+            }
+
+            // 检查每个时间段是否有重复预约
+            const hasDuplicate = times.some(time => this.checkDuplicate(playerName, date, time));
+            if (hasDuplicate) {
+                alert('您已经预约了所选时间段中的某个时间！');
                 return;
             }
             
