@@ -4,55 +4,21 @@ const API_BASE_URL = window.location.origin;
 window.api = {
     // 获取所有玩家
     async getPlayers() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/players`);
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({ error: '获取玩家列表失败' }));
-                throw new Error(error.error || '获取玩家列表失败');
-            }
-            return response.json();
-        } catch (error) {
-            console.error('获取玩家列表错误:', error);
-            throw error;
-        }
+        return storage.getPlayers();
     },
 
     // 添加新玩家
     async addPlayer(name) {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/players`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name })
-            });
-            
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({ error: '添加玩家失败' }));
-                throw new Error(error.error || '添加玩家失败');
-            }
-            
-            return response.json();
+            return storage.addPlayer(name);
         } catch (error) {
-            console.error('添加玩家错误:', error);
-            throw error;
+            throw new Error(error.message || '添加玩家失败');
         }
     },
 
     // 获取所有比赛记录
     async getGames() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/games`);
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({ error: '获取比赛记录失败' }));
-                throw new Error(error.error || '获取比赛记录失败');
-            }
-            return response.json();
-        } catch (error) {
-            console.error('获取比赛记录错误:', error);
-            throw error;
-        }
+        return storage.getGames();
     },
 
     // 添加新比赛记录
@@ -79,7 +45,21 @@ window.api = {
                 throw new Error('得点总和必须为120,000');
             }
 
-            return storage.addGame(players, parsedScores);
+            // 保存到本地存储
+            const game = storage.addGame(players, parsedScores);
+            
+            // 计算PT
+            const playersWithScores = players.map((name, index) => ({
+                name,
+                score: parsedScores[index]
+            }));
+            const sortedPlayers = [...playersWithScores].sort((a, b) => b.score - a.score);
+            const playersWithPT = ptUtils.calculateGamePTs(sortedPlayers);
+
+            // 更新游戏数据
+            game.players = playersWithPT;
+            
+            return game;
         } catch (error) {
             console.error('保存比赛记录失败:', error);
             throw new Error(error.message || '保存比赛记录失败');

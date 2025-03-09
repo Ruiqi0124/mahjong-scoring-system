@@ -2,10 +2,13 @@
 window.storage = {
     // 初始化：清理旧数据
     init() {
-        // 清理旧的本地存储数据
-        localStorage.removeItem('mahjongGames');
-        localStorage.removeItem('games');
-        localStorage.removeItem('players');
+        // 确保有初始数据
+        if (!localStorage.getItem('players')) {
+            localStorage.setItem('players', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('games')) {
+            localStorage.setItem('games', JSON.stringify([]));
+        }
     },
 
     // 获取所有玩家
@@ -54,15 +57,51 @@ window.storage = {
             throw new Error('得点总和必须为120,000');
         }
 
+        // 获取现有游戏记录
         const games = this.getGames();
+
+        // 创建新游戏记录
         const game = {
+            id: Date.now().toString(), // 使用时间戳作为ID
             timestamp: new Date().toISOString(),
             players: players.map((name, index) => ({
                 name,
                 score: parsedScores[index]
             }))
         };
-        games.unshift(game); // 添加到开头
+
+        // 添加到开头
+        games.unshift(game);
+        
+        // 保存到本地存储
+        localStorage.setItem('games', JSON.stringify(games));
+        
+        return game;
+    },
+
+    // 删除比赛记录
+    deleteGame(gameId) {
+        const games = this.getGames();
+        const index = games.findIndex(game => game.id === gameId);
+        
+        if (index === -1) {
+            throw new Error('找不到指定的比赛记录');
+        }
+
+        games.splice(index, 1);
+        localStorage.setItem('games', JSON.stringify(games));
+    },
+
+    // 更新比赛时间
+    updateGameTime(gameId, newTime) {
+        const games = this.getGames();
+        const game = games.find(game => game.id === gameId);
+        
+        if (!game) {
+            throw new Error('找不到指定的比赛记录');
+        }
+
+        game.timestamp = newTime;
         localStorage.setItem('games', JSON.stringify(games));
         return game;
     }
