@@ -5,6 +5,8 @@ const History = {
     editTimeModal: null,
     gameToDelete: null,
     gameToEdit: null,
+    currentPage: 1,
+    pageSize: 10,
 
     // 初始化
     async init() {
@@ -108,48 +110,149 @@ const History = {
     async updateHistory() {
         try {
             this.games = await api.getGames();
-            const tbody = document.getElementById('historyBody');
             
             // 按时间降序排序
             this.games.sort((a, b) => new Date(b.time) - new Date(a.time));
             
-            tbody.innerHTML = this.games.map(game => {
-                const time = new Date(game.time).toLocaleString('zh-CN', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                });
-
-                const players = game.players.map(p => 
-                    `${p.name}<br><small class="text-muted">${p.score.toLocaleString()}</small>`
-                );
-
-                return `
-                    <tr>
-                        <td>${time}</td>
-                        <td>${players[0]}</td>
-                        <td>${players[1]}</td>
-                        <td>${players[2]}</td>
-                        <td>${players[3]}</td>
-                        <td>
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-outline-primary" onclick="History.showEditTime('${game._id}')">
-                                    <i class="fas fa-clock"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="History.showDeleteConfirm('${game._id}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            this.renderCurrentPage();
         } catch (error) {
             console.error('更新历史记录失败:', error);
             alert('更新历史记录失败: ' + error.message);
         }
+    },
+
+    // 渲染当前页面
+    renderCurrentPage() {
+        const tbody = document.getElementById('historyBody');
+        const paginationDiv = document.getElementById('historyPagination');
+        
+        // 计算总页数
+        const totalPages = Math.ceil(this.games.length / this.pageSize);
+        
+        // 确保当前页面在有效范围内
+        if (this.currentPage < 1) this.currentPage = 1;
+        if (this.currentPage > totalPages) this.currentPage = totalPages;
+        
+        // 计算当前页的数据范围
+        const startIndex = (this.currentPage - 1) * this.pageSize;
+        const endIndex = Math.min(startIndex + this.pageSize, this.games.length);
+        const currentPageGames = this.games.slice(startIndex, endIndex);
+
+        // 渲染表格内容
+        tbody.innerHTML = currentPageGames.map(game => {
+            const time = new Date(game.time).toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+
+            const players = game.players.map(p => 
+                `${p.name}<br><small class="text-muted">${p.score.toLocaleString()}</small>`
+            );
+
+            return `
+                <tr>
+                    <td>${time}</td>
+                    <td>${players[0]}</td>
+                    <td>${players[1]}</td>
+                    <td>${players[2]}</td>
+                    <td>${players[3]}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary" onclick="History.showEditTime('${game._id}')">
+                                <i class="fas fa-clock"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="History.showDeleteConfirm('${game._id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // 渲染分页控件
+        paginationDiv.innerHTML = this.renderPagination(totalPages);
+
+        // 显示当前页码信息
+        document.getElementById('pageInfo').textContent = 
+            `第 ${this.currentPage} 页 / 共 ${totalPages} 页（共 ${this.games.length} 条记录）`;
+    },
+
+    // 渲染分页控件
+    renderPagination(totalPages) {
+        if (totalPages <= 1) return '';
+
+        let buttons = [];
+        
+        // 上一页按钮
+        buttons.push(`
+            <button class="btn btn-outline-primary ${this.currentPage === 1 ? 'disabled' : ''}"
+                    onclick="History.goToPage(${this.currentPage - 1})"
+                    ${this.currentPage === 1 ? 'disabled' : ''}>
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        `);
+
+        // 页码按钮
+        let startPage = Math.max(1, this.currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        
+        // 调整startPage确保显示5个按钮
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+
+        // 第一页
+        if (startPage > 1) {
+            buttons.push(`
+                <button class="btn btn-outline-primary" onclick="History.goToPage(1)">1</button>
+            `);
+            if (startPage > 2) {
+                buttons.push('<span class="btn btn-outline-primary disabled">...</span>');
+            }
+        }
+
+        // 页码按钮
+        for (let i = startPage; i <= endPage; i++) {
+            buttons.push(`
+                <button class="btn btn-outline-primary ${i === this.currentPage ? 'active' : ''}"
+                        onclick="History.goToPage(${i})">
+                    ${i}
+                </button>
+            `);
+        }
+
+        // 最后一页
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                buttons.push('<span class="btn btn-outline-primary disabled">...</span>');
+            }
+            buttons.push(`
+                <button class="btn btn-outline-primary" onclick="History.goToPage(${totalPages})">
+                    ${totalPages}
+                </button>
+            `);
+        }
+
+        // 下一页按钮
+        buttons.push(`
+            <button class="btn btn-outline-primary ${this.currentPage === totalPages ? 'disabled' : ''}"
+                    onclick="History.goToPage(${this.currentPage + 1})"
+                    ${this.currentPage === totalPages ? 'disabled' : ''}>
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        `);
+
+        return buttons.join('');
+    },
+
+    // 跳转到指定页
+    goToPage(page) {
+        this.currentPage = page;
+        this.renderCurrentPage();
     }
 }; 
