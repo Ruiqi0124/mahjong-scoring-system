@@ -245,6 +245,24 @@ const Player = {
                 hour12: false
             });
 
+            // 获取所有玩家（包括当前玩家）
+            const allPlayers = [...game.opponents];
+            allPlayers.push(this.stats.name);
+
+            // 按顺位排序玩家
+            const sortedPlayers = allPlayers.sort((a, b) => {
+                const playerA = game.players.find(p => p.name === a);
+                const playerB = game.players.find(p => p.name === b);
+                return playerB.score - playerA.score;
+            });
+
+            // 生成玩家名字的HTML，当前玩家高亮显示
+            const playersHtml = sortedPlayers.map(name => {
+                const score = game.players.find(p => p.name === name).score;
+                const isCurrentPlayer = name === this.stats.name;
+                return `<a href="?name=${encodeURIComponent(name)}" class="text-decoration-none${isCurrentPlayer ? ' fw-bold text-primary' : ''}">${name}</a> (${score.toLocaleString()})`;
+            }).join('、');
+
             return `
                 <tr>
                     <td>${time}</td>
@@ -253,11 +271,7 @@ const Player = {
                     <td class="text-${game.pt >= 0 ? 'success' : 'danger'}">
                         ${game.pt.toFixed(1)}
                     </td>
-                    <td>
-                        ${game.opponents.map(name => 
-                            `<a href="?name=${encodeURIComponent(name)}" class="text-decoration-none">${name}</a>`
-                        ).join('、')}
-                    </td>
+                    <td>${playersHtml}</td>
                 </tr>
             `;
         }).join('');
