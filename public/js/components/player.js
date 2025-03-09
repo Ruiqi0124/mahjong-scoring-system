@@ -210,7 +210,7 @@ const Player = {
         });
 
         const data = {
-            labels: paddedData.map(() => ''), // 移除x轴标签
+            labels: paddedData.map(() => ''),
             datasets: [
                 {
                     label: '顺位走势',
@@ -223,7 +223,7 @@ const Player = {
                     pointHoverRadius: 8,
                     borderWidth: 2,
                     yAxisID: 'y-rank',
-                    spanGaps: false // 不连接空数据点
+                    spanGaps: false
                 },
                 {
                     label: '累计PT走势',
@@ -237,7 +237,7 @@ const Player = {
                     pointHoverRadius: 6,
                     borderWidth: 1,
                     yAxisID: 'y-pt',
-                    spanGaps: false // 不连接空数据点
+                    spanGaps: false
                 }
             ]
         };
@@ -255,9 +255,7 @@ const Player = {
                 layout: {
                     padding: {
                         top: 10,
-                        bottom: 10,
-                        left: 10,
-                        right: 10
+                        bottom: 10
                     }
                 },
                 scales: {
@@ -266,10 +264,8 @@ const Player = {
                             display: false
                         },
                         ticks: {
-                            display: false // 隐藏x轴刻度
-                        },
-                        min: 0,
-                        max: maxGames - 1
+                            display: false
+                        }
                     },
                     'y-rank': {
                         position: 'left',
@@ -280,7 +276,7 @@ const Player = {
                             display: false
                         },
                         ticks: {
-                            display: false // 隐藏y轴刻度
+                            display: false
                         }
                     },
                     'y-pt': {
@@ -289,7 +285,7 @@ const Player = {
                             display: false
                         },
                         ticks: {
-                            display: false // 隐藏y轴刻度
+                            display: false
                         }
                     }
                 },
@@ -297,7 +293,6 @@ const Player = {
                     legend: {
                         labels: {
                             filter: function(item) {
-                                // 只显示顺位走势的图例
                                 return item.text === '顺位走势';
                             }
                         }
@@ -321,7 +316,6 @@ const Player = {
                             }
                         },
                         filter: function(tooltipItem) {
-                            // 只显示有数据的点的提示
                             return paddedData[tooltipItem.dataIndex] !== null;
                         }
                     }
