@@ -169,7 +169,7 @@ const History = {
             });
 
             const players = game.players.map(p => 
-                `${p.name}<br>
+                `<a href="/player.html?name=${encodeURIComponent(p.name)}" class="text-decoration-none">${p.name}</a><br>
                 <small class="text-muted">
                     ${p.score.toLocaleString()}<br>
                     <span class="text-${p.pt >= 0 ? 'success' : 'danger'}">
@@ -194,15 +194,6 @@ const History = {
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
-                    </td>
-                    <td>
-                        ${game.players.map(player => `
-                            <div class="player-score">
-                                <a href="/player.html?name=${encodeURIComponent(player.name)}" class="text-decoration-none">
-                                    ${player.name}
-                                </a>: ${player.score}
-                            </div>
-                        `).join('')}
                     </td>
                 </tr>
             `;
