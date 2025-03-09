@@ -99,6 +99,7 @@ const Schedule = {
                 // 如果是周一或周三的单元格，添加禁用样式
                 const dayIndex = cell.id.slice(-1);
                 const date = new Date();
+                date.setHours(0, 0, 0, 0);
                 date.setDate(date.getDate() + parseInt(dayIndex));
                 if (date.getDay() === 1 || date.getDay() === 3) {
                     cell.classList.add('bg-light');
@@ -115,7 +116,7 @@ const Schedule = {
                 scheduleDate.setHours(0, 0, 0, 0);
                 
                 // 计算与今天的天数差
-                const dayDiff = Math.floor((scheduleDate - today) / (1000 * 60 * 60 * 24));
+                const dayDiff = Math.floor((scheduleDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
                 
                 // 只处理未来7天的数据，且跳过周一和周三
                 if (dayDiff >= 0 && dayDiff < 7) {
