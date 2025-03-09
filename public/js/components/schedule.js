@@ -110,13 +110,16 @@ const Schedule = {
             // 按日期和时间段分组
             const today = new Date();
             today.setHours(0, 0, 0, 0);
+            const todayStr = today.toISOString().split('T')[0]; // 获取YYYY-MM-DD格式
             
             this.schedules.forEach(schedule => {
-                const scheduleDate = new Date(schedule.date);
-                scheduleDate.setHours(0, 0, 0, 0);
+                // 使用YYYY-MM-DD格式比较日期，避免时区问题
+                const scheduleDateStr = schedule.date.split('T')[0];
+                const scheduleDate = new Date(scheduleDateStr + 'T00:00:00');
+                const todayDate = new Date(todayStr + 'T00:00:00');
                 
                 // 计算与今天的天数差
-                const dayDiff = Math.floor((scheduleDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                const dayDiff = Math.floor((scheduleDate - todayDate) / (1000 * 60 * 60 * 24));
                 
                 // 只处理未来7天的数据，且跳过周一和周三
                 if (dayDiff >= 0 && dayDiff < 7) {
@@ -146,6 +149,8 @@ const Schedule = {
                                     cellId,
                                     playerName: schedule.playerName,
                                     date: schedule.date,
+                                    scheduleDateStr,
+                                    todayStr,
                                     time,
                                     dayDiff
                                 });
@@ -157,6 +162,8 @@ const Schedule = {
                 } else {
                     console.log('跳过日期:', {
                         scheduleDate,
+                        scheduleDateStr,
+                        todayStr,
                         dayDiff,
                         schedule
                     });
