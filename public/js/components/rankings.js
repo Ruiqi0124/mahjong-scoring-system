@@ -419,6 +419,11 @@ const Rankings = {
             // 按当前排序方式排序
             const sortedPlayers = this.sortStats(normalPlayers);
 
+            // 如果有"其他玩家"且满足最小场数要求，将其添加到列表末尾
+            if (otherPlayer && (!this.showMinGamesOnly || otherPlayer.games >= 16)) {
+                sortedPlayers.push(otherPlayer);
+            }
+
             // 渲染排名表格
             const tbody = document.getElementById('rankingsBody');
             tbody.innerHTML = sortedPlayers.map(player => {
@@ -430,9 +435,12 @@ const Rankings = {
                 return `
                     <tr class="${player.games === 0 ? 'inactive-player' : ''}">
                         <td>
-                            <a href="#" class="player-name-link text-decoration-none" onclick="Rankings.showPlayerHistory('${player.name}', event)">
+                            <a href="player.html?name=${encodeURIComponent(player.name)}" class="player-name-link text-decoration-none">
                                 ${player.name}
                             </a>
+                            <button class="btn btn-sm btn-link p-0 ms-2" onclick="Rankings.showPlayerHistory('${player.name}', event)">
+                                <i class="fas fa-history"></i>
+                            </button>
                         </td>
                         <td>${player.games}</td>
                         <td>${player.ranks[0]} (${rankRates[0]})</td>
