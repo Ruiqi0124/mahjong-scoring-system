@@ -3,8 +3,8 @@ const Rankings = {
     playerToDelete: null,
     deleteModal: null,
     currentSort: {
-        field: 'averageRank',
-        direction: 'asc'
+        field: 'totalPT',
+        direction: 'desc'
     },
     historyPopover: null,
     currentHistoryPlayer: null,
@@ -440,14 +440,14 @@ const Rankings = {
                             </a>
                         </td>
                         <td>${player.games}</td>
+                        <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
+                        <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
+                        <td>${player.avgRank.toFixed(2)}</td>
+                        <td>${player.avgScore.toLocaleString()}</td>
                         <td>${player.ranks[0]} (${rankRates[0]})</td>
                         <td>${player.ranks[1]} (${rankRates[1]})</td>
                         <td>${player.ranks[2]} (${rankRates[2]})</td>
                         <td>${player.ranks[3]} (${rankRates[3]})</td>
-                        <td>${player.avgRank.toFixed(2)}</td>
-                        <td>${player.avgScore.toLocaleString()}</td>
-                        <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
-                        <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
                         <td>
                             <button class="btn btn-sm btn-outline-danger" 
                                     onclick="Rankings.showDeleteConfirm('${player.name}')"
@@ -537,16 +537,27 @@ const Rankings = {
             
             return `
                 <tr class="${player.games === 0 ? 'inactive-player' : ''}">
-                    <td>${player.name}</td>
+                    <td>
+                        <a href="player.html?name=${encodeURIComponent(player.name)}" class="player-name-link text-decoration-none">
+                            ${player.name}
+                        </a>
+                    </td>
                     <td>${player.games}</td>
+                    <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
+                    <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
+                    <td>${player.avgRank.toFixed(2)}</td>
+                    <td>${player.avgScore.toLocaleString()}</td>
                     <td>${player.ranks[0]} (${rankRates[0]})</td>
                     <td>${player.ranks[1]} (${rankRates[1]})</td>
                     <td>${player.ranks[2]} (${rankRates[2]})</td>
                     <td>${player.ranks[3]} (${rankRates[3]})</td>
-                    <td>${player.avgRank.toFixed(2)}</td>
-                    <td>${player.avgScore.toLocaleString()}</td>
-                    <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
-                    <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger" 
+                                onclick="Rankings.showDeleteConfirm('${player.name}')"
+                                ${player.games > 0 ? 'disabled' : ''}>
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
                 </tr>
             `;
         }).join('');
