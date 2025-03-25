@@ -438,9 +438,6 @@ const Rankings = {
                             <a href="player.html?name=${encodeURIComponent(player.name)}" class="player-name-link text-decoration-none">
                                 ${player.name}
                             </a>
-                            <button class="btn btn-sm btn-link p-0 ms-2" onclick="Rankings.showPlayerHistory('${player.name}', event)">
-                                <i class="fas fa-history"></i>
-                            </button>
                         </td>
                         <td>${player.games}</td>
                         <td>${player.ranks[0]} (${rankRates[0]})</td>
