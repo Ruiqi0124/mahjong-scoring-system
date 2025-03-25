@@ -189,28 +189,28 @@ const Player = {
     drawTrendChart(recentGames) {
         const ctx = document.getElementById('trendChart').getContext('2d');
         
-        // 获取最新的20场对局并按时间排序（最新的在后）
-        const latestGames = recentGames
-            .slice(0, 20)
-            .sort((a, b) => new Date(a.time) - new Date(b.time));
+        // 先按时间排序所有对局并计算总累计PT
+        const allGamesWithPT = recentGames
+            .sort((a, b) => new Date(a.time) - new Date(b.time))
+            .reduce((acc, game) => {
+                const lastPT = acc.length > 0 ? acc[acc.length - 1].cumulativePT : 0;
+                acc.push({
+                    ...game,
+                    cumulativePT: lastPT + game.pt
+                });
+                return acc;
+            }, []);
         
-        // 计算累计PT
-        let cumulativePT = 0;
-        const gamesWithCumulativePT = latestGames.map(game => {
-            cumulativePT += game.pt;
-            return {
-                ...game,
-                cumulativePT: cumulativePT
-            };
-        });
+        // 获取最新的20场对局
+        const latestGames = allGamesWithPT.slice(-20);
 
         // 创建固定长度的数组，未使用的部分填充null
         const maxGames = 20;
         const paddedData = Array(maxGames).fill(null);
         
         // 从后向前填充数据，确保最新的数据在右侧
-        gamesWithCumulativePT.forEach((game, index) => {
-            paddedData[maxGames - gamesWithCumulativePT.length + index] = game;
+        latestGames.forEach((game, index) => {
+            paddedData[maxGames - latestGames.length + index] = game;
         });
 
         const data = {
