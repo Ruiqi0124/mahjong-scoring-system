@@ -189,8 +189,8 @@ const Player = {
     drawTrendChart(recentGames) {
         const ctx = document.getElementById('trendChart').getContext('2d');
         
-        // 获取最新的20场对局
-        const latestGames = recentGames.slice(0, 20);
+        // 获取最新的20场对局并反转顺序（最早的在前）
+        const latestGames = recentGames.slice(0, 20).reverse();
         
         // 计算累计PT
         let cumulativePT = 0;
@@ -206,7 +206,7 @@ const Player = {
         const maxGames = 20;
         const paddedData = Array(maxGames).fill(null);
         gamesWithCumulativePT.forEach((game, index) => {
-            paddedData[maxGames - gamesWithCumulativePT.length + index] = game;
+            paddedData[index] = game;
         });
 
         const data = {
