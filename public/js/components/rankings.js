@@ -421,31 +421,38 @@ const Rankings = {
 
             // 渲染排名表格
             const tbody = document.getElementById('rankingsBody');
-            tbody.innerHTML = sortedPlayers.map(player => `
-                <tr class="${player.games === 0 ? 'inactive-player' : ''}">
-                    <td>
-                        <a href="#" class="player-name-link text-decoration-none" onclick="Rankings.showPlayerHistory('${player.name}', event)">
-                            ${player.name}
-                        </a>
-                    </td>
-                    <td>${player.games}</td>
-                    <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
-                    <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
-                    <td>${player.avgRank.toFixed(2)}</td>
-                    <td>${player.avgScore.toLocaleString()}</td>
-                    <td>${player.ranks[0]}</td>
-                    <td>${player.ranks[1]}</td>
-                    <td>${player.ranks[2]}</td>
-                    <td>${player.ranks[3]}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-danger" 
-                                onclick="Rankings.showDeleteConfirm('${player.name}')"
-                                ${player.games > 0 ? 'disabled' : ''}>
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = sortedPlayers.map(player => {
+                // 计算顺位率
+                const rankRates = player.ranks.map(count => 
+                    player.games > 0 ? ((count / player.games) * 100).toFixed(1) + '%' : '0%'
+                );
+                
+                return `
+                    <tr class="${player.games === 0 ? 'inactive-player' : ''}">
+                        <td>
+                            <a href="#" class="player-name-link text-decoration-none" onclick="Rankings.showPlayerHistory('${player.name}', event)">
+                                ${player.name}
+                            </a>
+                        </td>
+                        <td>${player.games}</td>
+                        <td>${player.ranks[0]} (${rankRates[0]})</td>
+                        <td>${player.ranks[1]} (${rankRates[1]})</td>
+                        <td>${player.ranks[2]} (${rankRates[2]})</td>
+                        <td>${player.ranks[3]} (${rankRates[3]})</td>
+                        <td>${player.avgRank.toFixed(2)}</td>
+                        <td>${player.avgScore.toLocaleString()}</td>
+                        <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
+                        <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" 
+                                    onclick="Rankings.showDeleteConfirm('${player.name}')"
+                                    ${player.games > 0 ? 'disabled' : ''}>
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
 
             // 更新排序图标
             this.updateSortIcons();
@@ -517,20 +524,27 @@ const Rankings = {
         const tbody = document.getElementById('rankingsBody');
         const sortedStats = this.sortStats(stats, this.currentSort);
         
-        tbody.innerHTML = sortedStats.map(player => `
-            <tr class="${player.games === 0 ? 'inactive-player' : ''}">
-                <td>${player.name}</td>
-                <td>${player.games}</td>
-                <td>${player.ranks[0]}</td>
-                <td>${player.ranks[1]}</td>
-                <td>${player.ranks[2]}</td>
-                <td>${player.ranks[3]}</td>
-                <td>${player.avgRank.toFixed(2)}</td>
-                <td>${player.avgScore.toLocaleString()}</td>
-                <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
-                <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = sortedStats.map(player => {
+            // 计算顺位率
+            const rankRates = player.ranks.map(count => 
+                player.games > 0 ? ((count / player.games) * 100).toFixed(1) + '%' : '0%'
+            );
+            
+            return `
+                <tr class="${player.games === 0 ? 'inactive-player' : ''}">
+                    <td>${player.name}</td>
+                    <td>${player.games}</td>
+                    <td>${player.ranks[0]} (${rankRates[0]})</td>
+                    <td>${player.ranks[1]} (${rankRates[1]})</td>
+                    <td>${player.ranks[2]} (${rankRates[2]})</td>
+                    <td>${player.ranks[3]} (${rankRates[3]})</td>
+                    <td>${player.avgRank.toFixed(2)}</td>
+                    <td>${player.avgScore.toLocaleString()}</td>
+                    <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
+                    <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
+                </tr>
+            `;
+        }).join('');
     },
 
     // 排序统计数据
