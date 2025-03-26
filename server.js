@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
+const fs = require('fs');
 
 const app = express();
 
@@ -309,6 +310,134 @@ app.get('/api/health', (req, res) => {
 // 服务静态文件
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// 团队数据
+const teams = [];
+const teamMatches = [];
+
+// 获取所有团队
+app.get('/api/teams', (req, res) => {
+    res.json(teams);
+});
+
+// 创建团队
+app.post('/api/teams', async (req, res) => {
+    const { name, members } = req.body;
+
+    // 检查团队名是否已存在
+    if (teams.some(team => team.name === name)) {
+        return res.status(400).json({ error: '团队名称已存在' });
+    }
+
+    // 创建新团队
+    const newTeam = {
+        name,
+        members,
+        games: 0,
+        wins: 0,
+        winRate: 0,
+        totalPT: 0,
+        avgPT: 0,
+        createTime: new Date().toISOString()
+    };
+
+    teams.push(newTeam);
+    await saveData();
+    res.json(newTeam);
+});
+
+// 删除团队
+app.delete('/api/teams/:name', async (req, res) => {
+    const teamName = req.params.name;
+    const teamIndex = teams.findIndex(team => team.name === teamName);
+
+    if (teamIndex === -1) {
+        return res.status(404).json({ error: '团队不存在' });
+    }
+
+    // 检查团队是否有比赛记录
+    if (teams[teamIndex].games > 0) {
+        return res.status(400).json({ error: '无法删除已参赛的团队' });
+    }
+
+    teams.splice(teamIndex, 1);
+    await saveData();
+    res.json({ success: true });
+});
+
+// 获取团队比赛记录
+app.get('/api/team-matches', (req, res) => {
+    res.json(teamMatches);
+});
+
+// 记录团队比赛
+app.post('/api/team-matches', async (req, res) => {
+    const { time, teams: matchTeams } = req.body;
+
+    // 验证参赛团队
+    for (const matchTeam of matchTeams) {
+        const team = teams.find(t => t.name === matchTeam.name);
+        if (!team) {
+            return res.status(400).json({ error: `团队"${matchTeam.name}"不存在` });
+        }
+    }
+
+    // 记录比赛
+    const match = {
+        time,
+        teams: matchTeams,
+        id: Date.now().toString()
+    };
+
+    // 更新团队统计数据
+    matchTeams.forEach((matchTeam, index) => {
+        const team = teams.find(t => t.name === matchTeam.name);
+        team.games++;
+        team.totalPT += matchTeam.pt;
+        team.avgPT = team.totalPT / team.games;
+        if (index === 0) {
+            team.wins++;
+        }
+        team.winRate = team.wins / team.games;
+    });
+
+    teamMatches.push(match);
+    await saveData();
+    res.json(match);
+});
+
+// 保存数据到文件
+async function saveData() {
+    const data = {
+        players: await Player.find().exec(),
+        matches: await Game.find().exec(),
+        teams,
+        teamMatches
+    };
+    fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
+}
+
+// 从文件加载数据
+async function loadData() {
+    try {
+        const data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
+        await Player.deleteMany().exec();
+        await Game.deleteMany().exec();
+        teams.length = 0;
+        teamMatches.length = 0;
+        await Player.create(data.players);
+        await Game.create(data.matches);
+        if (data.teams) teams.push(...data.teams);
+        if (data.teamMatches) teamMatches.push(...data.teamMatches);
+    } catch (error) {
+        console.error('加载数据失败:', error);
+    }
+}
+
+// 初始化时加载数据
+loadData().catch(error => {
+    console.error('初始化数据失败:', error);
 });
 
 // 为了支持 Vercel，我们需要导出 app
