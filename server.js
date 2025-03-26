@@ -78,7 +78,8 @@ const teamMatchSchema = new mongoose.Schema({
         name: { type: String, required: true },
         team: { type: String, required: true },
         score: { type: Number, required: true },
-        pt: { type: Number, required: true }
+        pt: { type: Number, required: true },
+        chombo: { type: Boolean, default: false }
     }]
 });
 
@@ -518,10 +519,12 @@ app.post('/api/team-matches', async (req, res) => {
         }
 
         // 计算PT
-        const basePoints = [30000, 10000, -10000, -30000];
+        const basePoints = [45, 5, -15, -35];
         const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
         sortedPlayers.forEach((player, index) => {
-            player.pt = (player.score - 30000) / 1000 + basePoints[index] / 1000;
+            const basePt = (player.score - 30000) / 1000 + basePoints[index];
+            const chombo = player.chombo ? -20 : 0;
+            player.pt = basePt + chombo;
         });
 
         // 创建比赛记录
@@ -531,7 +534,8 @@ app.post('/api/team-matches', async (req, res) => {
                 name: p.name,
                 team: p.team,
                 score: p.score,
-                pt: p.pt
+                pt: p.pt,
+                chombo: p.chombo
             }))
         });
 

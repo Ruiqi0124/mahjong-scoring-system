@@ -186,6 +186,7 @@
                                         <th>玩家</th>
                                         <th>得点</th>
                                         <th>PT</th>
+                                        <th>Chombo</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -203,6 +204,11 @@
                                             <input type="number" class="form-control" name="score" required>
                                         </td>
                                         <td class="pt-value">-</td>
+                                        <td>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="chombo">
+                                            </div>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td>二位</td>
@@ -218,6 +224,11 @@
                                             <input type="number" class="form-control" name="score" required>
                                         </td>
                                         <td class="pt-value">-</td>
+                                        <td>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="chombo">
+                                            </div>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td>三位</td>
@@ -233,6 +244,11 @@
                                             <input type="number" class="form-control" name="score" required>
                                         </td>
                                         <td class="pt-value">-</td>
+                                        <td>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="chombo">
+                                            </div>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td>四位</td>
@@ -248,6 +264,11 @@
                                             <input type="number" class="form-control" name="score" required>
                                         </td>
                                         <td class="pt-value">-</td>
+                                        <td>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="chombo">
+                                            </div>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -442,13 +463,16 @@
                 
                 if (scores.some(isNaN)) return;
 
-                const basePoints = [30000, 10000, -10000, -30000];
+                const basePoints = [45, 5, -15, -35];
                 const ptCells = document.querySelectorAll('.pt-value');
+                const chomboChecks = document.querySelectorAll('input[name="chombo"]');
 
                 scores.forEach((score, index) => {
-                    const pt = (score - 30000) / 1000 + basePoints[index] / 1000;
-                    ptCells[index].textContent = pt.toFixed(1);
-                    ptCells[index].className = `pt-value ${pt >= 0 ? 'text-success' : 'text-danger'}`;
+                    const pt = (score - 30000) / 1000 + basePoints[index];
+                    const chombo = chomboChecks[index].checked ? -20 : 0;
+                    const totalPt = pt + chombo;
+                    ptCells[index].textContent = totalPt.toFixed(1);
+                    ptCells[index].className = `pt-value ${totalPt >= 0 ? 'text-success' : 'text-danger'}`;
                 });
             }
 
@@ -478,6 +502,54 @@
                 document.getElementById('recordMatchModal')?.addEventListener('show.bs.modal', () => {
                     this.loadPlayers();
                 });
+
+                // 添加chombo复选框事件监听器
+                document.querySelectorAll('input[name="chombo"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', () => this.updatePT());
+                });
+
+                // 添加删除和编辑时间按钮的事件监听器
+                document.addEventListener('click', async (e) => {
+                    if (e.target.closest('.delete-match')) {
+                        const button = e.target.closest('.delete-match');
+                        const matchId = button.dataset.matchId;
+                        if (confirm('确定要删除这条记录吗？')) {
+                            try {
+                                const response = await fetch(`/api/team-matches/${matchId}`, {
+                                    method: 'DELETE'
+                                });
+                                if (!response.ok) throw new Error('删除失败');
+                                await this.loadMatches();
+                                await this.loadRankings();
+                                alert('删除成功');
+                            } catch (error) {
+                                console.error('删除记录错误:', error);
+                                alert('删除失败');
+                            }
+                        }
+                    } else if (e.target.closest('.edit-time')) {
+                        const button = e.target.closest('.edit-time');
+                        const matchId = button.dataset.matchId;
+                        const newTime = prompt('请输入新的时间 (YYYY-MM-DD HH:mm:ss)');
+                        if (newTime) {
+                            try {
+                                const response = await fetch(`/api/team-matches/${matchId}/time`, {
+                                    method: 'PATCH',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ time: new Date(newTime).toISOString() })
+                                });
+                                if (!response.ok) throw new Error('更新时间失败');
+                                await this.loadMatches();
+                                alert('更新时间成功');
+                            } catch (error) {
+                                console.error('更新时间错误:', error);
+                                alert('更新时间失败');
+                            }
+                        }
+                    }
+                });
             }
 
             async recordMatch() {
@@ -486,7 +558,8 @@
                     const players = Array.from(playerRows).map(row => ({
                         name: row.querySelector('select[name="player"]').value,
                         team: row.querySelector('input[name="team"]').value,
-                        score: parseInt(row.querySelector('input[name="score"]').value, 10)
+                        score: parseInt(row.querySelector('input[name="score"]').value, 10),
+                        chombo: row.querySelector('input[name="chombo"]').checked
                     }));
 
                     // 验证数据
