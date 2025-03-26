@@ -332,11 +332,6 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// 服务静态文件
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
 // 团队数据API
 // 获取所有团队
 app.get('/api/teams', async (req, res) => {
@@ -636,6 +631,11 @@ async function loadData() {
 // 初始化时加载数据
 loadData().catch(error => {
     console.error('初始化数据失败:', error);
+});
+
+// 将通配符路由移到这里，所有API路由之后
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // 为了支持 Vercel，我们需要导出 app
