@@ -373,8 +373,8 @@ const Rankings = {
             // 计算每个玩家的统计数据
             const stats = {};
             players.forEach(player => {
-                stats[player] = {
-                    name: player,
+                stats[player.name] = {
+                    name: player.name,
                     games: 0,
                     totalScore: 0,
                     totalPT: 0,
