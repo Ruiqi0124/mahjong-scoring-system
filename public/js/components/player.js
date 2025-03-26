@@ -66,9 +66,12 @@ const Player = {
         };
 
         // 过滤并处理该玩家的所有对局
-        const playerGames = games.filter(game => 
+        let playerGames = games.filter(game => 
             game.players.some(p => p.name === playerName)
         );
+
+        // 按时间降序排序所有比赛
+        playerGames.sort((a, b) => new Date(b.time || b.timestamp) - new Date(a.time || a.timestamp));
 
         playerGames.forEach(game => {
             // 按分数排序玩家
@@ -109,9 +112,6 @@ const Player = {
             stats.avgRank = stats.ranks.reduce((sum, count, index) => 
                 sum + (count * (index + 1)), 0) / stats.games;
         }
-
-        // 对对局按时间排序（最新的在前）
-        stats.recentGames.sort((a, b) => new Date(b.time) - new Date(a.time));
 
         return stats;
     },
