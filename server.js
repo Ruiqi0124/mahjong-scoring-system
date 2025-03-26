@@ -71,13 +71,14 @@ const teamSchema = new mongoose.Schema({
     createTime: { type: Date, default: Date.now }
 });
 
-// 团队比赛模型
+// 团队赛记录Schema
 const teamMatchSchema = new mongoose.Schema({
-    time: { type: Date, default: Date.now },
-    teams: [{
-        name: String,
-        score: Number,
-        pt: Number
+    time: { type: Date, required: true },
+    players: [{
+        name: { type: String, required: true },
+        team: { type: String, required: true },
+        score: { type: Number, required: true },
+        pt: { type: Number, required: true }
     }]
 });
 
@@ -404,56 +405,83 @@ app.delete('/api/teams/:name', async (req, res) => {
     }
 });
 
-// 获取团队比赛记录
+// 获取团队赛记录
 app.get('/api/team-matches', async (req, res) => {
     try {
-        await connectDB();
-        const matches = await TeamMatch.find().sort({ time: -1 });
+        const matches = await TeamMatch.find()
+            .sort({ time: -1 })
+            .limit(50);
         res.json(matches);
-    } catch (err) {
-        console.error('获取团队比赛记录错误:', err);
-        res.status(500).json({ error: err.message });
+    } catch (error) {
+        console.error('获取团队赛记录失败:', error);
+        res.status(500).json({ error: '获取比赛记录失败' });
     }
 });
 
-// 记录团队比赛
+// 记录团队赛
 app.post('/api/team-matches', async (req, res) => {
     try {
-        await connectDB();
-        const { time, teams: matchTeams } = req.body;
-
-        // 验证参赛团队
-        for (const matchTeam of matchTeams) {
-            const team = await Team.findOne({ name: matchTeam.name });
-            if (!team) {
-                return res.status(400).json({ error: `团队"${matchTeam.name}"不存在` });
-            }
+        const { time, players } = req.body;
+        
+        // 验证数据
+        if (!time || !players || !Array.isArray(players) || players.length !== 4) {
+            return res.status(400).json({ error: '无效的比赛数据' });
         }
-
-        // 记录比赛
+        
+        // 验证总分
+        const totalScore = players.reduce((sum, p) => sum + p.score, 0);
+        if (totalScore !== 120000) {
+            return res.status(400).json({ error: '得点总和必须为120,000' });
+        }
+        
+        // 创建比赛记录
         const match = new TeamMatch({
-            time,
-            teams: matchTeams
+            time: new Date(time),
+            players
         });
-
-        // 更新团队统计数据
-        for (const [index, matchTeam] of matchTeams.entries()) {
-            const team = await Team.findOne({ name: matchTeam.name });
-            team.games++;
-            team.totalPT += matchTeam.pt;
-            team.avgPT = team.totalPT / team.games;
-            if (index === 0) {
-                team.wins++;
-            }
-            team.winRate = team.wins / team.games;
-            await team.save();
-        }
-
         await match.save();
-        res.json(match);
-    } catch (err) {
-        console.error('记录团队比赛错误:', err);
-        res.status(500).json({ error: err.message });
+        
+        // 更新队伍统计数据
+        const teams = await Team.find();
+        const teamUpdates = [];
+        
+        // 按队伍分组计算数据
+        const teamStats = new Map();
+        players.forEach(player => {
+            const stats = teamStats.get(player.team) || { 
+                totalScore: 0, 
+                totalPT: 0, 
+                count: 0,
+                wins: 0
+            };
+            stats.totalScore += player.score;
+            stats.totalPT += player.pt;
+            stats.count++;
+            if (player.score === Math.max(...players.map(p => p.score))) {
+                stats.wins++;
+            }
+            teamStats.set(player.team, stats);
+        });
+        
+        // 更新每个队伍的统计数据
+        for (const team of teams) {
+            const stats = teamStats.get(team.name);
+            if (stats) {
+                team.games++;
+                team.wins += stats.wins;
+                team.totalPT += stats.totalPT;
+                team.avgPT = team.totalPT / team.games;
+                team.winRate = (team.wins / team.games * 100).toFixed(1);
+                teamUpdates.push(team.save());
+            }
+        }
+        
+        await Promise.all(teamUpdates);
+        res.json({ message: '比赛记录成功' });
+        
+    } catch (error) {
+        console.error('记录团队赛失败:', error);
+        res.status(500).json({ error: '记录比赛失败' });
     }
 });
 

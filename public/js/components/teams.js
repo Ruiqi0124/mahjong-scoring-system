@@ -24,23 +24,203 @@ const Teams = {
 
     // 显示记录比赛模态框
     showRecordMatchModal() {
-        // 动态生成团队得分输入区域
         const teamScores = document.getElementById('teamScores');
-        teamScores.innerHTML = this.teams.map((team, index) => `
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">${team.name}</label>
-                </div>
-                <div class="col-md-3">
-                    <input type="number" class="form-control" id="score_${index}" placeholder="得分" required>
-                </div>
-                <div class="col-md-3">
-                    <input type="number" class="form-control" id="pt_${index}" placeholder="PT" required>
-                </div>
-            </div>
-        `).join('');
+        teamScores.innerHTML = '';
+        
+        // 创建4个玩家的输入行
+        for (let i = 0; i < 4; i++) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${i + 1}</td>
+                <td>
+                    <select class="form-select player-select" data-position="${i}" onchange="Teams.updateTeamInfo(this)">
+                        <option value="">选择玩家</option>
+                    </select>
+                </td>
+                <td class="team-name" data-position="${i}">-</td>
+                <td>
+                    <input type="number" class="form-control score-input" 
+                           data-position="${i}" 
+                           onchange="Teams.updatePT()"
+                           required>
+                </td>
+                <td class="pt" data-position="${i}">0</td>
+            `;
+            teamScores.appendChild(row);
+        }
+        
+        // 加载玩家列表
+        this.updatePlayerSelects();
+        
+        // 重置时间为当前时间
+        document.getElementById('matchTime').value = new Date().toISOString().slice(0, 16);
+        
+        // 显示模态框
+        const modal = new bootstrap.Modal(document.getElementById('recordMatchModal'));
+        modal.show();
+    },
 
-        this.recordMatchModal.show();
+    // 更新玩家选择器
+    async updatePlayerSelects() {
+        try {
+            const response = await fetch('/api/players');
+            const players = await response.json();
+            
+            const playerSelects = document.querySelectorAll('.player-select');
+            playerSelects.forEach(select => {
+                // 保存当前选中的值
+                const currentValue = select.value;
+                
+                // 清空并重新填充选项
+                select.innerHTML = '<option value="">选择玩家</option>';
+                players.forEach(playerName => {
+                    const option = document.createElement('option');
+                    option.value = playerName;
+                    option.textContent = playerName;
+                    select.appendChild(option);
+                });
+                
+                // 恢复之前选中的值
+                if (currentValue) {
+                    select.value = currentValue;
+                }
+            });
+        } catch (error) {
+            console.error('加载玩家列表失败:', error);
+            alert('加载玩家列表失败，请刷新页面重试');
+        }
+    },
+
+    // 更新队伍信息
+    async updateTeamInfo(selectElement) {
+        const position = selectElement.dataset.position;
+        const playerName = selectElement.value;
+        const teamNameCell = document.querySelector(`.team-name[data-position="${position}"]`);
+        
+        if (!playerName) {
+            teamNameCell.textContent = '-';
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/teams');
+            const teams = await response.json();
+            
+            // 查找玩家所属的队伍
+            const team = teams.find(t => t.members.includes(playerName));
+            teamNameCell.textContent = team ? team.name : '无队伍';
+        } catch (error) {
+            console.error('获取队伍信息失败:', error);
+            teamNameCell.textContent = '获取失败';
+        }
+    },
+
+    // 更新PT值
+    updatePT() {
+        const scores = Array.from(document.querySelectorAll('.score-input'))
+            .map(input => parseInt(input.value) || 0);
+        
+        // 计算总分
+        const totalScore = scores.reduce((sum, score) => sum + score, 0);
+        
+        // 如果总分不为120000，显示警告
+        if (totalScore !== 0 && totalScore !== 120000) {
+            alert('得点总和必须为120,000');
+            return;
+        }
+        
+        // 计算每个位置的PT
+        const ptElements = document.querySelectorAll('.pt');
+        scores.forEach((score, index) => {
+            const pt = this.calculatePT(score, index + 1);
+            ptElements[index].textContent = pt;
+        });
+    },
+
+    calculatePT(score, position) {
+        if (!score) return 0;
+        // 计算PT：(得点 - 30000) / 1000 + 顺位分
+        const positionPoints = [15, 5, -5, -15];
+        return ((score - 30000) / 1000 + positionPoints[position - 1]).toFixed(1);
+    },
+
+    // 记录比赛
+    async recordMatch() {
+        // 获取比赛时间
+        const matchTime = document.getElementById('matchTime').value;
+        if (!matchTime) {
+            alert('请选择比赛时间');
+            return;
+        }
+        
+        // 收集玩家数据
+        const playerData = [];
+        const playerSelects = document.querySelectorAll('.player-select');
+        const scoreInputs = document.querySelectorAll('.score-input');
+        const ptElements = document.querySelectorAll('.pt');
+        const teamNameElements = document.querySelectorAll('.team-name');
+        
+        for (let i = 0; i < 4; i++) {
+            const playerName = playerSelects[i].value;
+            const score = parseInt(scoreInputs[i].value) || 0;
+            const pt = parseFloat(ptElements[i].textContent) || 0;
+            const teamName = teamNameElements[i].textContent;
+            
+            if (!playerName) {
+                alert('请选择所有玩家');
+                return;
+            }
+            
+            if (!score) {
+                alert('请输入所有玩家的得点');
+                return;
+            }
+            
+            if (teamName === '-' || teamName === '获取失败') {
+                alert('请确保所有玩家的队伍信息正确');
+                return;
+            }
+            
+            playerData.push({
+                name: playerName,
+                team: teamName,
+                score: score,
+                pt: pt
+            });
+        }
+        
+        // 验证总分
+        const totalScore = playerData.reduce((sum, data) => sum + data.score, 0);
+        if (totalScore !== 120000) {
+            alert('得点总和必须为120,000');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/team-matches', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    time: matchTime,
+                    players: playerData
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('记录比赛失败');
+            }
+            
+            // 关闭模态框并刷新数据
+            bootstrap.Modal.getInstance(document.getElementById('recordMatchModal')).hide();
+            this.loadTeams();
+            this.loadMatches();
+            
+        } catch (error) {
+            console.error('记录比赛失败:', error);
+            alert('记录比赛失败，请重试');
+        }
     },
 
     // 加载玩家列表
@@ -81,11 +261,29 @@ const Teams = {
     async loadMatches() {
         try {
             const response = await fetch('/api/team-matches');
-            this.matches = await response.json();
-            this.updateMatchesList();
+            const matches = await response.json();
+            
+            const matchRecords = document.getElementById('matchRecords');
+            matchRecords.innerHTML = matches.map(match => {
+                // 按得分排序玩家
+                const sortedPlayers = [...match.players].sort((a, b) => b.score - a.score);
+                
+                // 生成每个玩家的行
+                return sortedPlayers.map((player, index) => `
+                    <tr>
+                        ${index === 0 ? `<td rowspan="4">${new Date(match.time).toLocaleString('zh-CN')}</td>` : ''}
+                        <td>${index + 1}</td>
+                        <td>${player.name}</td>
+                        <td>${player.team}</td>
+                        <td>${player.score.toLocaleString()}</td>
+                        <td>${player.pt}</td>
+                    </tr>
+                `).join('');
+            }).join('');
+            
         } catch (error) {
             console.error('加载比赛记录失败:', error);
-            alert('加载比赛记录失败');
+            alert('加载比赛记录失败，请刷新页面重试');
         }
     },
 
@@ -177,65 +375,6 @@ const Teams = {
         } catch (error) {
             console.error('创建团队失败:', error);
             alert('创建团队失败');
-        }
-    },
-
-    // 记录比赛
-    async recordMatch() {
-        const matchTime = document.getElementById('matchTime').value;
-        if (!matchTime) {
-            alert('请选择比赛时间');
-            return;
-        }
-
-        // 收集团队得分
-        const teamResults = this.teams.map((team, index) => {
-            const score = parseInt(document.getElementById(`score_${index}`).value);
-            const pt = parseFloat(document.getElementById(`pt_${index}`).value);
-            
-            if (isNaN(score) || isNaN(pt)) {
-                return null;
-            }
-
-            return {
-                name: team.name,
-                score,
-                pt
-            };
-        }).filter(result => result !== null);
-
-        if (teamResults.length < 2) {
-            alert('至少需要两个团队的完整得分');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/team-matches', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    time: matchTime,
-                    teams: teamResults
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('记录比赛失败');
-            }
-
-            // 重新加载数据
-            await Promise.all([
-                this.loadTeams(),
-                this.loadMatches()
-            ]);
-            
-            this.recordMatchModal.hide();
-            document.getElementById('recordMatchForm').reset();
-        } catch (error) {
-            console.error('记录比赛失败:', error);
-            alert('记录比赛失败');
         }
     },
 
