@@ -110,8 +110,8 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">团队赛记录</h5>
-                        <button class="btn btn-success" onclick="Teams.showRecordMatchModal()">
-                            <i class="fas fa-plus"></i> 记录比赛
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#recordMatchModal">
+                            记录比赛
                         </button>
                     </div>
                     <div class="card-body">
@@ -208,7 +208,36 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="Teams.recordMatch()">记录</button>
+                    <button type="submit" class="btn btn-primary">记录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑团队模态框 -->
+    <div class="modal fade" id="editTeamModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">编辑团队</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editTeamForm">
+                        <div class="mb-3">
+                            <label for="adminPassword" class="form-label">管理员密码</label>
+                            <input type="password" class="form-control" id="adminPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTeamName" class="form-label">团队名称</label>
+                            <input type="text" class="form-control" id="editTeamName" required>
+                            <input type="hidden" id="originalTeamName">
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-primary">保存</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -221,6 +250,7 @@
         class TeamLeague {
             constructor() {
                 this.recordMatchModal = new bootstrap.Modal(document.getElementById('recordMatchModal'));
+                this.editTeamModal = new bootstrap.Modal(document.getElementById('editTeamModal'));
                 this.init();
             }
 
@@ -312,9 +342,19 @@
                     this.recordMatch();
                 });
 
+                // 编辑团队表单提交
+                document.getElementById('editTeamForm')?.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveTeamEdit();
+                });
+
                 // 清空表单
                 document.getElementById('recordMatchModal')?.addEventListener('hidden.bs.modal', () => {
                     document.getElementById('recordMatchForm').reset();
+                });
+
+                document.getElementById('editTeamModal')?.addEventListener('hidden.bs.modal', () => {
+                    document.getElementById('editTeamForm').reset();
                 });
             }
 
@@ -364,6 +404,58 @@
                 } catch (error) {
                     console.error('记录比赛错误:', error);
                     alert(error.message || '记录比赛失败');
+                }
+            }
+
+            showEditTeamModal(teamName) {
+                document.getElementById('editTeamName').value = teamName;
+                document.getElementById('originalTeamName').value = teamName;
+                this.editTeamModal.show();
+            }
+
+            async saveTeamEdit() {
+                try {
+                    const adminPassword = document.getElementById('adminPassword').value;
+                    const newTeamName = document.getElementById('editTeamName').value.trim();
+                    const originalTeamName = document.getElementById('originalTeamName').value;
+
+                    if (adminPassword !== '巢league2024') {
+                        alert('管理员密码错误');
+                        return;
+                    }
+
+                    if (!newTeamName) {
+                        alert('团队名称不能为空');
+                        return;
+                    }
+
+                    const response = await fetch(`/api/teams/${encodeURIComponent(originalTeamName)}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            newName: newTeamName,
+                            adminPassword: adminPassword
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.message || '更新团队失败');
+                    }
+
+                    await this.loadRankings();
+                    this.editTeamModal.hide();
+                    document.getElementById('editTeamForm').reset();
+                    alert('更新团队成功！');
+                    // 通知团队管理器重新加载团队列表
+                    teamManager.loadTeams();
+
+                } catch (error) {
+                    console.error('更新团队错误:', error);
+                    alert(error.message || '更新团队失败');
                 }
             }
         }

@@ -434,6 +434,59 @@ app.delete('/api/teams/:name', async (req, res) => {
     }
 });
 
+// 编辑团队名称
+app.patch('/api/teams/:name', async (req, res) => {
+    try {
+        await connectDB();
+        const { name } = req.params;
+        const { newName, adminPassword } = req.body;
+
+        // 验证管理员密码
+        if (adminPassword !== '巢league2024') {
+            return res.status(403).json({ message: '管理员密码错误' });
+        }
+
+        // 验证新团队名
+        if (!newName || typeof newName !== 'string' || newName.trim().length === 0) {
+            return res.status(400).json({ message: '新团队名称不能为空' });
+        }
+
+        const trimmedNewName = newName.trim();
+
+        // 检查新团队名是否已存在（排除当前团队）
+        const existingTeam = await Team.findOne({ 
+            name: trimmedNewName,
+            _id: { $ne: (await Team.findOne({ name }))._id }
+        });
+        
+        if (existingTeam) {
+            return res.status(400).json({ message: '新团队名称已存在' });
+        }
+
+        // 更新团队名称
+        const team = await Team.findOne({ name });
+        if (!team) {
+            return res.status(404).json({ message: '团队不存在' });
+        }
+
+        // 更新团队名称
+        team.name = trimmedNewName;
+        await team.save();
+
+        // 更新所有相关的比赛记录中的团队名称
+        await TeamMatch.updateMany(
+            { 'players.team': name },
+            { $set: { 'players.$[elem].team': trimmedNewName } },
+            { arrayFilters: [{ 'elem.team': name }] }
+        );
+
+        res.json({ message: '团队名称更新成功' });
+    } catch (err) {
+        console.error('更新团队名称错误:', err);
+        res.status(500).json({ message: '更新团队名称失败：' + err.message });
+    }
+});
+
 // 获取团队赛记录
 app.get('/api/team-matches', async (req, res) => {
     try {

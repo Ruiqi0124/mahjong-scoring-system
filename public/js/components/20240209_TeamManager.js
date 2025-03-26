@@ -29,7 +29,7 @@ class TeamManager {
             const response = await fetch('/api/teams');
             if (!response.ok) throw new Error('加载团队列表失败');
             this.teams = await response.json();
-            this.updateTeamList();
+            this.renderTeams();
         } catch (error) {
             console.error('加载团队列表错误:', error);
             alert('加载团队列表失败');
@@ -50,32 +50,35 @@ class TeamManager {
         `).join('');
     }
 
-    updateTeamList() {
-        const teamList = document.getElementById('teamList');
-        if (!teamList) return;
+    renderTeams() {
+        const teamsContainer = document.getElementById('teamsList');
+        if (!teamsContainer) return;
 
-        teamList.innerHTML = this.teams.map(team => `
+        if (this.teams.length === 0) {
+            teamsContainer.innerHTML = '<p class="text-center text-muted">暂无团队</p>';
+            return;
+        }
+
+        const teamsList = this.teams.map(team => `
             <div class="card mb-3">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
                         <h5 class="card-title mb-0">${team.name}</h5>
-                        ${team.games === 0 ? `
-                            <button class="btn btn-danger btn-sm" onclick="teamManager.deleteTeam('${team.name}')">
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-primary me-2" onclick="teamLeague.showEditTeamModal('${team.name}')">
+                                编辑
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="teamManager.deleteTeam('${team.name}')" ${team.games > 0 ? 'disabled' : ''}>
                                 删除
                             </button>
-                        ` : ''}
+                        </div>
                     </div>
-                    <p class="card-text mt-2">
-                        <small class="text-muted">成员：${team.members.join('、')}</small>
-                    </p>
-                    <div class="team-stats">
-                        <span class="badge bg-primary me-2">比赛：${team.games}</span>
-                        <span class="badge bg-success me-2">胜率：${team.winRate}%</span>
-                        <span class="badge bg-info">平均PT：${team.avgPT.toFixed(1)}</span>
-                    </div>
+                    <p class="card-text">成员：${team.members.join('、')}</p>
                 </div>
             </div>
         `).join('');
+
+        teamsContainer.innerHTML = teamsList;
     }
 
     setupEventListeners() {
