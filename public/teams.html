@@ -618,6 +618,14 @@
                         return;
                     }
 
+                    // 验证队伍是否重复
+                    const teams = players.map(p => p.team);
+                    const uniqueTeams = new Set(teams);
+                    if (uniqueTeams.size !== 4) {
+                        alert('四个玩家必须来自不同的队伍');
+                        return;
+                    }
+
                     const totalScore = players.reduce((sum, p) => sum + p.score, 0);
                     if (totalScore !== 120000) {
                         alert('得点总和必须为120,000');

@@ -534,10 +534,25 @@ app.post('/api/team-matches', async (req, res) => {
             return res.status(400).json({ message: '数据格式错误' });
         }
 
+        // 验证队伍是否重复
+        const playerTeams = players.map(p => p.team);
+        const uniqueTeams = new Set(playerTeams);
+        if (uniqueTeams.size !== 4) {
+            return res.status(400).json({ message: '四个玩家必须来自不同的队伍' });
+        }
+
         // 验证得点总和
         const totalScore = players.reduce((sum, p) => sum + p.score, 0);
         if (totalScore !== 120000) {
             return res.status(400).json({ message: '得点总和必须为120,000' });
+        }
+
+        // 验证每个玩家是否属于其声称的队伍
+        for (const player of players) {
+            const team = await Team.findOne({ name: player.team, members: player.name });
+            if (!team) {
+                return res.status(400).json({ message: `玩家 ${player.name} 不属于队伍 ${player.team}` });
+            }
         }
 
         // 计算PT
@@ -593,8 +608,8 @@ app.post('/api/team-matches', async (req, res) => {
         await match.save();
 
         // 更新团队统计
-        const teams = [...new Set(players.map(p => p.team))];
-        for (const teamName of teams) {
+        const participatingTeams = [...new Set(players.map(p => p.team))];
+        for (const teamName of participatingTeams) {
             const team = await Team.findOne({ name: teamName });
             if (team) {
                 team.games = (team.games || 0) + 1;
