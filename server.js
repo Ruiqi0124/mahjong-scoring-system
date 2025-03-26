@@ -59,10 +59,34 @@ const scheduleSchema = new mongoose.Schema({
     note: String
 });
 
+// 团队模型
+const teamSchema = new mongoose.Schema({
+    name: { type: String, required: true, unique: true },
+    members: [{ type: String, required: true }],
+    games: { type: Number, default: 0 },
+    wins: { type: Number, default: 0 },
+    winRate: { type: Number, default: 0 },
+    totalPT: { type: Number, default: 0 },
+    avgPT: { type: Number, default: 0 },
+    createTime: { type: Date, default: Date.now }
+});
+
+// 团队比赛模型
+const teamMatchSchema = new mongoose.Schema({
+    time: { type: Date, default: Date.now },
+    teams: [{
+        name: String,
+        score: Number,
+        pt: Number
+    }]
+});
+
 // 确保模型只被创建一次
 let Player = mongoose.models.Player || mongoose.model('Player', playerSchema);
 let Game = mongoose.models.Game || mongoose.model('Game', gameSchema);
 let Schedule = mongoose.models.Schedule || mongoose.model('Schedule', scheduleSchema);
+let Team = mongoose.models.Team || mongoose.model('Team', teamSchema);
+let TeamMatch = mongoose.models.TeamMatch || mongoose.model('TeamMatch', teamMatchSchema);
 
 // API路由
 // 获取所有玩家
@@ -312,99 +336,125 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 团队数据
-const teams = [];
-const teamMatches = [];
-
+// 团队数据API
 // 获取所有团队
-app.get('/api/teams', (req, res) => {
-    res.json(teams);
+app.get('/api/teams', async (req, res) => {
+    try {
+        await connectDB();
+        const teams = await Team.find().sort({ name: 1 });
+        res.json(teams);
+    } catch (err) {
+        console.error('获取团队列表错误:', err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // 创建团队
 app.post('/api/teams', async (req, res) => {
-    const { name, members } = req.body;
+    try {
+        await connectDB();
+        const { name, members } = req.body;
 
-    // 检查团队名是否已存在
-    if (teams.some(team => team.name === name)) {
-        return res.status(400).json({ error: '团队名称已存在' });
+        // 检查团队名是否已存在
+        const existingTeam = await Team.findOne({ name });
+        if (existingTeam) {
+            return res.status(400).json({ error: '团队名称已存在' });
+        }
+
+        // 创建新团队
+        const team = new Team({
+            name,
+            members,
+            games: 0,
+            wins: 0,
+            winRate: 0,
+            totalPT: 0,
+            avgPT: 0
+        });
+
+        await team.save();
+        res.json(team);
+    } catch (err) {
+        console.error('创建团队错误:', err);
+        res.status(500).json({ error: err.message });
     }
-
-    // 创建新团队
-    const newTeam = {
-        name,
-        members,
-        games: 0,
-        wins: 0,
-        winRate: 0,
-        totalPT: 0,
-        avgPT: 0,
-        createTime: new Date().toISOString()
-    };
-
-    teams.push(newTeam);
-    await saveData();
-    res.json(newTeam);
 });
 
 // 删除团队
 app.delete('/api/teams/:name', async (req, res) => {
-    const teamName = req.params.name;
-    const teamIndex = teams.findIndex(team => team.name === teamName);
+    try {
+        await connectDB();
+        const teamName = req.params.name;
+        const team = await Team.findOne({ name: teamName });
 
-    if (teamIndex === -1) {
-        return res.status(404).json({ error: '团队不存在' });
+        if (!team) {
+            return res.status(404).json({ error: '团队不存在' });
+        }
+
+        // 检查团队是否有比赛记录
+        if (team.games > 0) {
+            return res.status(400).json({ error: '无法删除已参赛的团队' });
+        }
+
+        await Team.deleteOne({ name: teamName });
+        res.json({ success: true });
+    } catch (err) {
+        console.error('删除团队错误:', err);
+        res.status(500).json({ error: err.message });
     }
-
-    // 检查团队是否有比赛记录
-    if (teams[teamIndex].games > 0) {
-        return res.status(400).json({ error: '无法删除已参赛的团队' });
-    }
-
-    teams.splice(teamIndex, 1);
-    await saveData();
-    res.json({ success: true });
 });
 
 // 获取团队比赛记录
-app.get('/api/team-matches', (req, res) => {
-    res.json(teamMatches);
+app.get('/api/team-matches', async (req, res) => {
+    try {
+        await connectDB();
+        const matches = await TeamMatch.find().sort({ time: -1 });
+        res.json(matches);
+    } catch (err) {
+        console.error('获取团队比赛记录错误:', err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // 记录团队比赛
 app.post('/api/team-matches', async (req, res) => {
-    const { time, teams: matchTeams } = req.body;
+    try {
+        await connectDB();
+        const { time, teams: matchTeams } = req.body;
 
-    // 验证参赛团队
-    for (const matchTeam of matchTeams) {
-        const team = teams.find(t => t.name === matchTeam.name);
-        if (!team) {
-            return res.status(400).json({ error: `团队"${matchTeam.name}"不存在` });
+        // 验证参赛团队
+        for (const matchTeam of matchTeams) {
+            const team = await Team.findOne({ name: matchTeam.name });
+            if (!team) {
+                return res.status(400).json({ error: `团队"${matchTeam.name}"不存在` });
+            }
         }
+
+        // 记录比赛
+        const match = new TeamMatch({
+            time,
+            teams: matchTeams
+        });
+
+        // 更新团队统计数据
+        for (const [index, matchTeam] of matchTeams.entries()) {
+            const team = await Team.findOne({ name: matchTeam.name });
+            team.games++;
+            team.totalPT += matchTeam.pt;
+            team.avgPT = team.totalPT / team.games;
+            if (index === 0) {
+                team.wins++;
+            }
+            team.winRate = team.wins / team.games;
+            await team.save();
+        }
+
+        await match.save();
+        res.json(match);
+    } catch (err) {
+        console.error('记录团队比赛错误:', err);
+        res.status(500).json({ error: err.message });
     }
-
-    // 记录比赛
-    const match = {
-        time,
-        teams: matchTeams,
-        id: Date.now().toString()
-    };
-
-    // 更新团队统计数据
-    matchTeams.forEach((matchTeam, index) => {
-        const team = teams.find(t => t.name === matchTeam.name);
-        team.games++;
-        team.totalPT += matchTeam.pt;
-        team.avgPT = team.totalPT / team.games;
-        if (index === 0) {
-            team.wins++;
-        }
-        team.winRate = team.wins / team.games;
-    });
-
-    teamMatches.push(match);
-    await saveData();
-    res.json(match);
 });
 
 // 保存数据到文件
@@ -412,8 +462,8 @@ async function saveData() {
     const data = {
         players: await Player.find().exec(),
         matches: await Game.find().exec(),
-        teams,
-        teamMatches
+        teams: await Team.find().exec(),
+        teamMatches: await TeamMatch.find().exec()
     };
     fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
 }
@@ -424,12 +474,12 @@ async function loadData() {
         const data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
         await Player.deleteMany().exec();
         await Game.deleteMany().exec();
-        teams.length = 0;
-        teamMatches.length = 0;
+        await Team.deleteMany().exec();
+        await TeamMatch.deleteMany().exec();
         await Player.create(data.players);
         await Game.create(data.matches);
-        if (data.teams) teams.push(...data.teams);
-        if (data.teamMatches) teamMatches.push(...data.teamMatches);
+        if (data.teams) await Team.create(data.teams);
+        if (data.teamMatches) await TeamMatch.create(data.teamMatches);
     } catch (error) {
         console.error('加载数据失败:', error);
     }

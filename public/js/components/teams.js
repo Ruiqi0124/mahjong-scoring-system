@@ -51,11 +51,11 @@ const Teams = {
             
             // 更新成员选择区域
             const memberSelection = document.getElementById('memberSelection');
-            memberSelection.innerHTML = players.map(player => `
+            memberSelection.innerHTML = players.map(playerName => `
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="${player.name}" id="player_${player.name}">
-                    <label class="form-check-label" for="player_${player.name}">
-                        ${player.name}
+                    <input class="form-check-input" type="checkbox" value="${playerName}" id="player_${playerName}">
+                    <label class="form-check-label" for="player_${playerName}">
+                        ${playerName}
                     </label>
                 </div>
             `).join('');
