@@ -405,7 +405,8 @@ const Teams = {
             });
 
             if (!response.ok) {
-                throw new Error('创建团队失败');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `创建团队失败 (HTTP ${response.status})`);
             }
 
             // 重新加载团队列表
@@ -414,7 +415,7 @@ const Teams = {
             document.getElementById('createTeamForm').reset();
         } catch (error) {
             console.error('创建团队失败:', error);
-            alert('创建团队失败');
+            alert(`创建团队失败: ${error.message}`);
         }
     },
 
