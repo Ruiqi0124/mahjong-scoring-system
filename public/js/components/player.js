@@ -341,12 +341,12 @@ const Player = {
         if (this.currentPage > totalPages) this.currentPage = totalPages;
         
         // 计算当前页的数据范围（从最新的记录开始）
-        const startIndex = (this.currentPage - 1) * this.pageSize;
-        const endIndex = Math.min(startIndex + this.pageSize, recentGames.length);
+        const endIndex = recentGames.length - (this.currentPage - 1) * this.pageSize;
+        const startIndex = Math.max(0, endIndex - this.pageSize);
         const currentPageGames = recentGames.slice(startIndex, endIndex);
 
         // 渲染表格内容
-        tbody.innerHTML = currentPageGames.map(game => {
+        tbody.innerHTML = currentPageGames.reverse().map(game => {
             const time = new Date(game.time).toLocaleString('zh-CN', {
                 year: 'numeric',
                 month: '2-digit',
