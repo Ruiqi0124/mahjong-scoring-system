@@ -78,8 +78,7 @@ const teamMatchSchema = new mongoose.Schema({
         name: { type: String, required: true },
         team: { type: String, required: true },
         score: { type: Number, required: true },
-        pt: { type: Number, required: true },
-        position: { type: String, required: true }
+        pt: { type: Number, required: true }
     }]
 });
 
@@ -515,12 +514,11 @@ app.post('/api/team-matches', async (req, res) => {
         // 创建比赛记录
         const match = new TeamMatch({
             time: new Date(time),
-            players: players.map(p => ({
+            players: sortedPlayers.map(p => ({
                 name: p.name,
                 team: p.team,
                 score: p.score,
-                pt: p.pt,
-                position: p.position
+                pt: p.pt
             }))
         });
 
@@ -532,6 +530,12 @@ app.post('/api/team-matches', async (req, res) => {
             const team = await Team.findOne({ name: teamName });
             if (team) {
                 team.games = (team.games || 0) + 1;
+                team.totalPT = (team.totalPT || 0) + sortedPlayers
+                    .filter(p => p.team === teamName)
+                    .reduce((sum, p) => sum + p.pt, 0);
+                team.avgPT = team.totalPT / team.games;
+                team.wins = (team.wins || 0) + (sortedPlayers[0].team === teamName ? 1 : 0);
+                team.winRate = (team.wins / team.games * 100).toFixed(1);
                 await team.save();
             }
         }
@@ -554,6 +558,66 @@ app.get('/api/team-matches', async (req, res) => {
     } catch (err) {
         console.error('获取比赛记录错误:', err);
         res.status(500).json({ message: '获取比赛记录失败' });
+    }
+});
+
+// 删除团队赛记录
+app.delete('/api/team-matches/:id', async (req, res) => {
+    try {
+        await connectDB();
+        const { id } = req.params;
+
+        const match = await TeamMatch.findById(id);
+        if (!match) {
+            return res.status(404).json({ message: '比赛记录不存在' });
+        }
+
+        // 更新团队统计
+        const teams = [...new Set(match.players.map(p => p.team))];
+        for (const teamName of teams) {
+            const team = await Team.findOne({ name: teamName });
+            if (team) {
+                team.games--;
+                team.totalPT -= match.players
+                    .filter(p => p.team === teamName)
+                    .reduce((sum, p) => sum + p.pt, 0);
+                team.avgPT = team.games > 0 ? team.totalPT / team.games : 0;
+                team.wins -= (match.players.sort((a, b) => b.score - a.score)[0].team === teamName ? 1 : 0);
+                team.winRate = team.games > 0 ? (team.wins / team.games * 100).toFixed(1) : '0.0';
+                await team.save();
+            }
+        }
+
+        await TeamMatch.findByIdAndDelete(id);
+        res.json({ message: '删除成功' });
+    } catch (err) {
+        console.error('删除比赛记录错误:', err);
+        res.status(500).json({ message: '删除比赛记录失败：' + err.message });
+    }
+});
+
+// 更新团队赛记录时间
+app.patch('/api/team-matches/:id/time', async (req, res) => {
+    try {
+        await connectDB();
+        const { id } = req.params;
+        const { time } = req.body;
+
+        if (!time) {
+            return res.status(400).json({ message: '时间不能为空' });
+        }
+
+        const match = await TeamMatch.findById(id);
+        if (!match) {
+            return res.status(404).json({ message: '比赛记录不存在' });
+        }
+
+        match.time = new Date(time);
+        await match.save();
+        res.json({ message: '更新成功' });
+    } catch (err) {
+        console.error('更新比赛时间错误:', err);
+        res.status(500).json({ message: '更新比赛时间失败：' + err.message });
     }
 });
 

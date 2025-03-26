@@ -51,10 +51,11 @@
                                 <thead class="table-primary">
                                     <tr>
                                         <th>时间</th>
-                                        <th>东</th>
-                                        <th>南</th>
-                                        <th>西</th>
-                                        <th>北</th>
+                                        <th>一位</th>
+                                        <th>二位</th>
+                                        <th>三位</th>
+                                        <th>四位</th>
+                                        <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="matchRecords">
@@ -177,69 +178,79 @@
                 </div>
                 <div class="modal-body">
                     <form id="recordMatchForm">
-                        <div class="row mb-3">
-                            <div class="col">
-                                <label class="form-label">比赛时间</label>
-                                <input type="datetime-local" class="form-control" id="matchTime" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">东家</label>
-                                <select class="form-select" name="player" required>
-                                    <option value="">选择玩家</option>
-                                </select>
-                                <div class="mt-2">
-                                    <label class="form-label">所属队伍</label>
-                                    <input type="text" class="form-control" name="team" readonly>
-                                </div>
-                                <div class="mt-2">
-                                    <label class="form-label">得点</label>
-                                    <input type="number" class="form-control" name="score" required>
-                                </div>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">南家</label>
-                                <select class="form-select" name="player" required>
-                                    <option value="">选择玩家</option>
-                                </select>
-                                <div class="mt-2">
-                                    <label class="form-label">所属队伍</label>
-                                    <input type="text" class="form-control" name="team" readonly>
-                                </div>
-                                <div class="mt-2">
-                                    <label class="form-label">得点</label>
-                                    <input type="number" class="form-control" name="score" required>
-                                </div>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">西家</label>
-                                <select class="form-select" name="player" required>
-                                    <option value="">选择玩家</option>
-                                </select>
-                                <div class="mt-2">
-                                    <label class="form-label">所属队伍</label>
-                                    <input type="text" class="form-control" name="team" readonly>
-                                </div>
-                                <div class="mt-2">
-                                    <label class="form-label">得点</label>
-                                    <input type="number" class="form-control" name="score" required>
-                                </div>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">北家</label>
-                                <select class="form-select" name="player" required>
-                                    <option value="">选择玩家</option>
-                                </select>
-                                <div class="mt-2">
-                                    <label class="form-label">所属队伍</label>
-                                    <input type="text" class="form-control" name="team" readonly>
-                                </div>
-                                <div class="mt-2">
-                                    <label class="form-label">得点</label>
-                                    <input type="number" class="form-control" name="score" required>
-                                </div>
-                            </div>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>顺位</th>
+                                        <th>玩家</th>
+                                        <th>得点</th>
+                                        <th>PT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>一位</td>
+                                        <td>
+                                            <select class="form-select" name="player" required>
+                                                <option value="">选择玩家</option>
+                                            </select>
+                                            <div class="mt-1">
+                                                <input type="text" class="form-control form-control-sm" name="team" readonly placeholder="所属队伍">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control" name="score" required>
+                                        </td>
+                                        <td class="pt-value">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>二位</td>
+                                        <td>
+                                            <select class="form-select" name="player" required>
+                                                <option value="">选择玩家</option>
+                                            </select>
+                                            <div class="mt-1">
+                                                <input type="text" class="form-control form-control-sm" name="team" readonly placeholder="所属队伍">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control" name="score" required>
+                                        </td>
+                                        <td class="pt-value">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>三位</td>
+                                        <td>
+                                            <select class="form-select" name="player" required>
+                                                <option value="">选择玩家</option>
+                                            </select>
+                                            <div class="mt-1">
+                                                <input type="text" class="form-control form-control-sm" name="team" readonly placeholder="所属队伍">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control" name="score" required>
+                                        </td>
+                                        <td class="pt-value">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>四位</td>
+                                        <td>
+                                            <select class="form-select" name="player" required>
+                                                <option value="">选择玩家</option>
+                                            </select>
+                                            <div class="mt-1">
+                                                <input type="text" class="form-control form-control-sm" name="team" readonly placeholder="所属队伍">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control" name="score" required>
+                                        </td>
+                                        <td class="pt-value">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                         <div class="text-muted mt-2">
                             <small>注意：得点总和应为 120,000</small>
@@ -360,10 +371,7 @@
                 if (!tbody) return;
 
                 tbody.innerHTML = matches.map(match => {
-                    const sortedPlayers = match.players.sort((a, b) => {
-                        const positions = ['东', '南', '西', '北'];
-                        return positions.indexOf(a.position) - positions.indexOf(b.position);
-                    });
+                    const sortedPlayers = [...match.players].sort((a, b) => b.score - a.score);
 
                     return `
                         <tr>
@@ -372,12 +380,22 @@
                                 <td>
                                     <div>${player.name}</div>
                                     <div class="text-muted small">${player.team}</div>
-                                    <div class="mt-1">
-                                        <span class="badge bg-secondary">${player.score.toLocaleString()}</span>
-                                        <span class="badge ${player.pt >= 0 ? 'bg-success' : 'bg-danger'}">${player.pt > 0 ? '+' : ''}${player.pt.toFixed(1)}</span>
+                                    <div>
+                                        <span>${player.score.toLocaleString()}</span>
+                                        <span class="${player.pt >= 0 ? 'text-success' : 'text-danger'}">${player.pt > 0 ? '+' : ''}${player.pt.toFixed(1)}pt</span>
                                     </div>
                                 </td>
                             `).join('')}
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" title="编辑时间">
+                                        <i class="fas fa-clock"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" title="删除记录">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                     `;
                 }).join('');
@@ -401,15 +419,37 @@
                         
                         // 添加change事件监听器
                         select.addEventListener('change', (e) => {
-                            const teamInput = e.target.closest('.col-md-3').querySelector('input[name="team"]');
+                            const teamInput = e.target.closest('td').querySelector('input[name="team"]');
                             const selectedOption = e.target.options[e.target.selectedIndex];
                             teamInput.value = selectedOption.dataset.team || '';
+                            this.updatePT();
                         });
+                    });
+
+                    // 添加得点输入事件监听器
+                    document.querySelectorAll('input[name="score"]').forEach(input => {
+                        input.addEventListener('input', () => this.updatePT());
                     });
                 } catch (error) {
                     console.error('加载玩家列表错误:', error);
                     alert('加载玩家列表失败');
                 }
+            }
+
+            updatePT() {
+                const scores = Array.from(document.querySelectorAll('input[name="score"]'))
+                    .map(input => parseInt(input.value) || 0);
+                
+                if (scores.some(isNaN)) return;
+
+                const basePoints = [30000, 10000, -10000, -30000];
+                const ptCells = document.querySelectorAll('.pt-value');
+
+                scores.forEach((score, index) => {
+                    const pt = (score - 30000) / 1000 + basePoints[index] / 1000;
+                    ptCells[index].textContent = pt.toFixed(1);
+                    ptCells[index].className = `pt-value ${pt >= 0 ? 'text-success' : 'text-danger'}`;
+                });
             }
 
             setupEventListeners() {
@@ -442,19 +482,16 @@
 
             async recordMatch() {
                 try {
-                    const time = document.getElementById('matchTime').value;
-                    const positions = ['东', '南', '西', '北'];
-                    const playerInputs = document.querySelectorAll('.col-md-3');
-                    const players = Array.from(playerInputs).map((div, index) => ({
-                        name: div.querySelector('select[name="player"]').value,
-                        team: div.querySelector('input[name="team"]').value,
-                        score: parseInt(div.querySelector('input[name="score"]').value, 10),
-                        position: positions[index]
+                    const playerRows = document.querySelectorAll('#recordMatchForm tbody tr');
+                    const players = Array.from(playerRows).map(row => ({
+                        name: row.querySelector('select[name="player"]').value,
+                        team: row.querySelector('input[name="team"]').value,
+                        score: parseInt(row.querySelector('input[name="score"]').value, 10)
                     }));
 
                     // 验证数据
-                    if (!time) {
-                        alert('请选择比赛时间');
+                    if (players.some(p => !p.name || !p.team)) {
+                        alert('请选择所有玩家');
                         return;
                     }
 
@@ -470,7 +507,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            time,
+                            time: new Date().toISOString(),
                             players
                         })
                     });
@@ -483,6 +520,10 @@
                     await this.loadRankings();
                     this.recordMatchModal.hide();
                     document.getElementById('recordMatchForm').reset();
+                    document.querySelectorAll('.pt-value').forEach(cell => {
+                        cell.textContent = '-';
+                        cell.className = 'pt-value';
+                    });
                     alert('记录比赛成功！');
 
                 } catch (error) {
