@@ -299,9 +299,8 @@ const Teams = {
             
             // 更新团队排名
             const teamRankingsBody = document.getElementById('teamRankings');
-            teamRankingsBody.innerHTML = teamRankings.map((team, index) => `
+            teamRankingsBody.innerHTML = teamRankings.map(team => `
                 <tr>
-                    <td>${index + 1}</td>
                     <td>${team.name}</td>
                     <td>${team.progress}</td>
                     <td>${team.winRate}%</td>
@@ -312,13 +311,11 @@ const Teams = {
             
             // 更新个人排名
             const playerRankingsBody = document.getElementById('playerRankings');
-            playerRankingsBody.innerHTML = playerRankings.map((player, index) => `
+            playerRankingsBody.innerHTML = playerRankings.map(player => `
                 <tr>
-                    <td>${index + 1}</td>
                     <td>${player.name}</td>
                     <td>${player.team}</td>
                     <td>${player.games}</td>
-                    <td>${player.winRate}%</td>
                     <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
                     <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
                 </tr>
