@@ -12,6 +12,7 @@ const Teams = {
         // 加载团队和比赛数据
         this.loadTeams();
         this.loadMatches();
+        this.loadRankings();
 
         // 加载玩家列表用于创建团队
         this.loadPlayers();
@@ -214,8 +215,11 @@ const Teams = {
             
             // 关闭模态框并刷新数据
             bootstrap.Modal.getInstance(document.getElementById('recordMatchModal')).hide();
-            this.loadTeams();
-            this.loadMatches();
+            await Promise.all([
+                this.loadTeams(),
+                this.loadMatches(),
+                this.loadRankings()
+            ]);
             
         } catch (error) {
             console.error('记录比赛失败:', error);
@@ -284,6 +288,45 @@ const Teams = {
         } catch (error) {
             console.error('加载比赛记录失败:', error);
             alert('加载比赛记录失败，请刷新页面重试');
+        }
+    },
+
+    // 加载排名数据
+    async loadRankings() {
+        try {
+            const response = await fetch('/api/team-rankings');
+            const { teamRankings, playerRankings } = await response.json();
+            
+            // 更新团队排名
+            const teamRankingsBody = document.getElementById('teamRankings');
+            teamRankingsBody.innerHTML = teamRankings.map((team, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${team.name}</td>
+                    <td>${team.progress}</td>
+                    <td>${team.winRate}%</td>
+                    <td class="text-${team.totalPT >= 0 ? 'success' : 'danger'}">${team.totalPT.toFixed(1)}</td>
+                    <td class="text-${team.avgPT >= 0 ? 'success' : 'danger'}">${team.avgPT.toFixed(1)}</td>
+                </tr>
+            `).join('');
+            
+            // 更新个人排名
+            const playerRankingsBody = document.getElementById('playerRankings');
+            playerRankingsBody.innerHTML = playerRankings.map((player, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${player.name}</td>
+                    <td>${player.team}</td>
+                    <td>${player.games}</td>
+                    <td>${player.winRate}%</td>
+                    <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
+                    <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
+                </tr>
+            `).join('');
+            
+        } catch (error) {
+            console.error('加载排名数据失败:', error);
+            alert('加载排名数据失败，请刷新页面重试');
         }
     },
 

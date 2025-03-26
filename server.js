@@ -485,6 +485,79 @@ app.post('/api/team-matches', async (req, res) => {
     }
 });
 
+// 获取团队赛排名数据
+app.get('/api/team-rankings', async (req, res) => {
+    try {
+        await connectDB();
+        
+        // 获取所有团队和比赛数据
+        const teams = await Team.find();
+        const matches = await TeamMatch.find();
+        
+        // 计算团队排名
+        const teamRankings = teams.map(team => ({
+            name: team.name,
+            games: team.games,
+            progress: `${team.games}/16`,
+            winRate: team.winRate,
+            totalPT: team.totalPT,
+            avgPT: team.avgPT
+        })).sort((a, b) => b.avgPT - a.avgPT);
+
+        // 计算个人排名
+        const playerStats = new Map();
+        
+        // 初始化玩家数据
+        teams.forEach(team => {
+            team.members.forEach(playerName => {
+                playerStats.set(playerName, {
+                    name: playerName,
+                    team: team.name,
+                    games: 0,
+                    wins: 0,
+                    totalPT: 0,
+                    avgPT: 0
+                });
+            });
+        });
+        
+        // 统计比赛数据
+        matches.forEach(match => {
+            match.players.forEach(player => {
+                const stats = playerStats.get(player.name);
+                if (stats) {
+                    stats.games++;
+                    stats.totalPT += player.pt;
+                    stats.avgPT = stats.totalPT / stats.games;
+                    
+                    // 判断是否为一位
+                    const isWinner = player.score === Math.max(...match.players.map(p => p.score));
+                    if (isWinner) {
+                        stats.wins++;
+                    }
+                }
+            });
+        });
+        
+        // 转换为数组并排序
+        const playerRankings = Array.from(playerStats.values())
+            .map(stats => ({
+                ...stats,
+                winRate: stats.games > 0 ? ((stats.wins / stats.games) * 100).toFixed(1) : '0.0'
+            }))
+            .sort((a, b) => b.avgPT - a.avgPT);
+        
+        res.json({
+            teamRankings,
+            playerRankings
+        });
+        
+    } catch (error) {
+        console.error('获取排名数据失败:', error);
+        res.status(500).json({ error: '获取排名数据失败' });
+    }
+});
+
 // 保存数据到文件
 async function saveData() {
     const data = {
