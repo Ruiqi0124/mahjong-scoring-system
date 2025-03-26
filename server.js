@@ -591,6 +591,19 @@ app.get('/api/team-rankings', async (req, res) => {
     }
 });
 
+// 临时：清理团队数据
+app.delete('/api/teams/clear-all', async (req, res) => {
+    try {
+        await connectDB();
+        await Team.deleteMany({});
+        console.log('所有团队数据已清理');
+        res.json({ message: '所有团队数据已清理' });
+    } catch (err) {
+        console.error('清理团队数据错误:', err);
+        res.status(500).json({ message: '清理团队数据失败：' + err.message });
+    }
+});
+
 // 保存数据到文件
 async function saveData() {
     const data = {
