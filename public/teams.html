@@ -215,6 +215,161 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/components/teams.js"></script>
+    <script src="js/components/20240209_TeamManager.js"></script>
+    <script>
+        // 初始化排名和比赛记录功能
+        class TeamLeague {
+            constructor() {
+                this.recordMatchModal = new bootstrap.Modal(document.getElementById('recordMatchModal'));
+                this.init();
+            }
+
+            async init() {
+                await this.loadRankings();
+                await this.loadMatches();
+                this.setupEventListeners();
+            }
+
+            async loadRankings() {
+                try {
+                    const response = await fetch('/api/team-rankings');
+                    if (!response.ok) throw new Error('加载排名数据失败');
+                    const { teamRankings, playerRankings } = await response.json();
+                    this.updateTeamRankings(teamRankings);
+                    this.updatePlayerRankings(playerRankings);
+                } catch (error) {
+                    console.error('加载排名错误:', error);
+                    alert('加载排名数据失败');
+                }
+            }
+
+            updateTeamRankings(rankings) {
+                const tbody = document.getElementById('teamRankings');
+                if (!tbody) return;
+
+                tbody.innerHTML = rankings.map(team => `
+                    <tr>
+                        <td>${team.name}</td>
+                        <td>${team.progress}</td>
+                        <td>${team.winRate}%</td>
+                        <td class="${team.totalPT >= 0 ? 'text-success' : 'text-danger'}">${team.totalPT.toFixed(1)}</td>
+                        <td class="${team.avgPT >= 0 ? 'text-success' : 'text-danger'}">${team.avgPT.toFixed(1)}</td>
+                    </tr>
+                `).join('');
+            }
+
+            updatePlayerRankings(rankings) {
+                const tbody = document.getElementById('playerRankings');
+                if (!tbody) return;
+
+                tbody.innerHTML = rankings.map(player => `
+                    <tr>
+                        <td>${player.name}</td>
+                        <td>${player.team}</td>
+                        <td>${player.games}</td>
+                        <td class="${player.totalPT >= 0 ? 'text-success' : 'text-danger'}">${player.totalPT.toFixed(1)}</td>
+                        <td class="${player.avgPT >= 0 ? 'text-success' : 'text-danger'}">${player.avgPT.toFixed(1)}</td>
+                    </tr>
+                `).join('');
+            }
+
+            async loadMatches() {
+                try {
+                    const response = await fetch('/api/team-matches');
+                    if (!response.ok) throw new Error('加载比赛记录失败');
+                    const matches = await response.json();
+                    this.updateMatchRecords(matches);
+                } catch (error) {
+                    console.error('加载比赛记录错误:', error);
+                    alert('加载比赛记录失败');
+                }
+            }
+
+            updateMatchRecords(matches) {
+                const tbody = document.getElementById('matchRecords');
+                if (!tbody) return;
+
+                tbody.innerHTML = matches.flatMap(match => 
+                    match.players
+                        .sort((a, b) => b.score - a.score)
+                        .map((player, index) => `
+                            <tr>
+                                ${index === 0 ? `<td rowspan="4">${new Date(match.time).toLocaleString()}</td>` : ''}
+                                <td>${index + 1}</td>
+                                <td>${player.name}</td>
+                                <td>${player.team}</td>
+                                <td>${player.score.toLocaleString()}</td>
+                                <td class="${player.pt >= 0 ? 'text-success' : 'text-danger'}">${player.pt.toFixed(1)}</td>
+                            </tr>
+                        `)
+                ).join('');
+            }
+
+            setupEventListeners() {
+                // 记录比赛表单提交
+                document.getElementById('recordMatchForm')?.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.recordMatch();
+                });
+
+                // 清空表单
+                document.getElementById('recordMatchModal')?.addEventListener('hidden.bs.modal', () => {
+                    document.getElementById('recordMatchForm').reset();
+                });
+            }
+
+            async recordMatch() {
+                try {
+                    const time = document.getElementById('matchTime').value;
+                    const playerRows = document.querySelectorAll('#teamScores tr');
+                    const players = Array.from(playerRows).map(row => ({
+                        name: row.querySelector('select[name="player"]').value,
+                        team: row.querySelector('select[name="team"]').value,
+                        score: parseInt(row.querySelector('input[name="score"]').value, 10)
+                    }));
+
+                    // 验证数据
+                    if (!time) {
+                        alert('请选择比赛时间');
+                        return;
+                    }
+
+                    const totalScore = players.reduce((sum, p) => sum + p.score, 0);
+                    if (totalScore !== 120000) {
+                        alert('得点总和必须为120,000');
+                        return;
+                    }
+
+                    const response = await fetch('/api/team-matches', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            time,
+                            players
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('记录比赛失败');
+                    }
+
+                    await this.loadMatches();
+                    await this.loadRankings();
+                    this.recordMatchModal.hide();
+                    document.getElementById('recordMatchForm').reset();
+                    alert('记录比赛成功！');
+
+                } catch (error) {
+                    console.error('记录比赛错误:', error);
+                    alert(error.message || '记录比赛失败');
+                }
+            }
+        }
+
+        // 初始化团队联赛功能
+        const teamLeague = new TeamLeague();
+    </script>
 </body>
 </html> 
