@@ -340,7 +340,7 @@ const Player = {
         if (this.currentPage < 1) this.currentPage = 1;
         if (this.currentPage > totalPages) this.currentPage = totalPages;
         
-        // 计算当前页的数据范围
+        // 计算当前页的数据范围（从最新的记录开始）
         const startIndex = (this.currentPage - 1) * this.pageSize;
         const endIndex = Math.min(startIndex + this.pageSize, recentGames.length);
         const currentPageGames = recentGames.slice(startIndex, endIndex);
