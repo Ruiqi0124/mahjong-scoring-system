@@ -68,7 +68,8 @@ const teamSchema = new mongoose.Schema({
     winRate: { type: Number, default: 0 },
     totalPT: { type: Number, default: 0 },
     avgPT: { type: Number, default: 0 },
-    createTime: { type: Date, default: Date.now }
+    createTime: { type: Date, default: Date.now },
+    color: { type: String, default: '#000000' }
 });
 
 // 团队赛记录Schema
@@ -189,36 +190,46 @@ app.post('/api/games', async (req, res) => {
         }
 
         // 计算PT
+        const basePoints = [45, 5, -15, -35];
         const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-        const firstScore = sortedPlayers[0].score;
-        const sameScoreWithFirst = sortedPlayers[1].score === firstScore;
 
-        const playersWithPT = sortedPlayers.map((player, index) => {
-            const basePT = (player.score - 30000) / 1000;
-            let rankPT = 0;
-            switch(index + 1) {
-                case 1:
-                    rankPT = sameScoreWithFirst ? 25 : 45;
-                    break;
-                case 2:
-                    rankPT = sameScoreWithFirst ? 25 : 5;
-                    break;
-                case 3:
-                    rankPT = -15;
-                    break;
-                case 4:
-                    rankPT = -35;
-                    break;
+        // 计算同分情况
+        const scoreGroups = new Map();
+        sortedPlayers.forEach((player, index) => {
+            if (!scoreGroups.has(player.score)) {
+                scoreGroups.set(player.score, []);
             }
-            return {
-                ...player,
-                pt: basePT + rankPT
-            };
+            scoreGroups.get(player.score).push(index);
+        });
+
+        // 按分数从高到低排序
+        const sortedScores = [...scoreGroups.keys()].sort((a, b) => b - a);
+
+        // 计算每个位置的PT
+        const positionPts = new Array(4).fill(0);
+        let currentPosition = 0;
+
+        sortedScores.forEach(score => {
+            const positions = scoreGroups.get(score);
+            const totalPt = positions.reduce((sum, pos) => sum + basePoints[pos], 0);
+            const avgPt = totalPt / positions.length;
+            positions.forEach(pos => {
+                positionPts[pos] = avgPt;
+            });
+            currentPosition += positions.length;
+        });
+
+        // 计算最终PT
+        sortedPlayers.forEach((player, index) => {
+            const basePt = (player.score - 30000) / 1000;
+            const positionPt = positionPts[index];
+            const chombo = player.chombo ? -20 : 0;
+            player.pt = basePt + positionPt + chombo;
         });
 
         const game = new Game({
             time: new Date(),
-            players: playersWithPT
+            players: sortedPlayers
         });
 
         await game.save();
@@ -363,7 +374,7 @@ app.get('/api/teams', async (req, res) => {
 app.post('/api/teams', async (req, res) => {
     try {
         await connectDB();
-        const { name, members } = req.body;
+        const { name, members, color } = req.body;
 
         // 验证团队名称
         if (!name || typeof name !== 'string' || name.trim().length === 0) {
@@ -375,6 +386,11 @@ app.post('/api/teams', async (req, res) => {
         // 验证成员列表
         if (!members || !Array.isArray(members) || members.length === 0) {
             return res.status(400).json({ message: '团队必须至少包含一名成员' });
+        }
+
+        // 验证颜色
+        if (!color || typeof color !== 'string' || !color.match(/^#[0-9A-Fa-f]{6}$/)) {
+            return res.status(400).json({ message: '请选择有效的颜色' });
         }
 
         // 验证每个成员
@@ -411,7 +427,8 @@ app.post('/api/teams', async (req, res) => {
             winRate: 0,
             totalPT: 0,
             avgPT: 0,
-            createTime: new Date()
+            createTime: new Date(),
+            color
         });
 
         await team.save();
@@ -453,16 +470,21 @@ app.patch('/api/teams/:name', async (req, res) => {
     try {
         await connectDB();
         const { name } = req.params;
-        const { newName, adminPassword } = req.body;
+        const { newName, adminPassword, color } = req.body;
 
         // 验证管理员密码
-        if (adminPassword !== '巢league2024') {
+        if (adminPassword !== 'admin123') {
             return res.status(403).json({ message: '管理员密码错误' });
         }
 
         // 验证新团队名
         if (!newName || typeof newName !== 'string' || newName.trim().length === 0) {
             return res.status(400).json({ message: '新团队名称不能为空' });
+        }
+
+        // 验证颜色
+        if (!color || typeof color !== 'string' || !color.match(/^#[0-9A-Fa-f]{6}$/)) {
+            return res.status(400).json({ message: '请选择有效的颜色' });
         }
 
         const trimmedNewName = newName.trim();
@@ -477,14 +499,14 @@ app.patch('/api/teams/:name', async (req, res) => {
             return res.status(400).json({ message: '新团队名称已存在' });
         }
 
-        // 更新团队名称
+        // 更新团队名称和颜色
         const team = await Team.findOne({ name });
         if (!team) {
             return res.status(404).json({ message: '团队不存在' });
         }
 
-        // 更新团队名称
         team.name = trimmedNewName;
+        team.color = color;
         await team.save();
 
         // 更新所有相关的比赛记录中的团队名称
@@ -496,8 +518,8 @@ app.patch('/api/teams/:name', async (req, res) => {
 
         res.json({ message: '团队名称更新成功' });
     } catch (err) {
-        console.error('更新团队名称错误:', err);
-        res.status(500).json({ message: '更新团队名称失败：' + err.message });
+        console.error('更新团队错误:', err);
+        res.status(500).json({ message: '更新团队失败：' + err.message });
     }
 });
 
@@ -521,10 +543,39 @@ app.post('/api/team-matches', async (req, res) => {
         // 计算PT
         const basePoints = [45, 5, -15, -35];
         const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+
+        // 计算同分情况
+        const scoreGroups = new Map();
         sortedPlayers.forEach((player, index) => {
-            const basePt = (player.score - 30000) / 1000 + basePoints[index];
+            if (!scoreGroups.has(player.score)) {
+                scoreGroups.set(player.score, []);
+            }
+            scoreGroups.get(player.score).push(index);
+        });
+
+        // 按分数从高到低排序
+        const sortedScores = [...scoreGroups.keys()].sort((a, b) => b - a);
+
+        // 计算每个位置的PT
+        const positionPts = new Array(4).fill(0);
+        let currentPosition = 0;
+
+        sortedScores.forEach(score => {
+            const positions = scoreGroups.get(score);
+            const totalPt = positions.reduce((sum, pos) => sum + basePoints[pos], 0);
+            const avgPt = totalPt / positions.length;
+            positions.forEach(pos => {
+                positionPts[pos] = avgPt;
+            });
+            currentPosition += positions.length;
+        });
+
+        // 计算最终PT
+        sortedPlayers.forEach((player, index) => {
+            const basePt = (player.score - 30000) / 1000;
+            const positionPt = positionPts[index];
             const chombo = player.chombo ? -20 : 0;
-            player.pt = basePt + chombo;
+            player.pt = basePt + positionPt + chombo;
         });
 
         // 创建比赛记录
@@ -583,6 +634,12 @@ app.delete('/api/team-matches/:id', async (req, res) => {
     try {
         await connectDB();
         const { id } = req.params;
+        const { adminPassword } = req.body;
+
+        // 验证管理员密码
+        if (adminPassword !== 'admin123') {
+            return res.status(403).json({ message: '管理员密码错误' });
+        }
 
         const match = await TeamMatch.findById(id);
         if (!match) {
@@ -618,7 +675,12 @@ app.patch('/api/team-matches/:id/time', async (req, res) => {
     try {
         await connectDB();
         const { id } = req.params;
-        const { time } = req.body;
+        const { time, adminPassword } = req.body;
+
+        // 验证管理员密码
+        if (adminPassword !== 'admin123') {
+            return res.status(403).json({ message: '管理员密码错误' });
+        }
 
         if (!time) {
             return res.status(400).json({ message: '时间不能为空' });
@@ -654,7 +716,8 @@ app.get('/api/team-rankings', async (req, res) => {
             progress: `${team.games}/16`,
             winRate: team.winRate,
             totalPT: team.totalPT,
-            avgPT: team.avgPT
+            avgPT: team.avgPT,
+            color: team.color
         })).sort((a, b) => b.avgPT - a.avgPT);
 
         // 计算个人排名
@@ -666,6 +729,7 @@ app.get('/api/team-rankings', async (req, res) => {
                 playerStats.set(playerName, {
                     name: playerName,
                     team: team.name,
+                    teamColor: team.color,
                     games: 0,
                     wins: 0,
                     totalPT: 0,

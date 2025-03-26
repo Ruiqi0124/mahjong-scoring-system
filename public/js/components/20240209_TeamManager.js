@@ -28,8 +28,8 @@ class TeamManager {
         try {
             const response = await fetch('/api/teams');
             if (!response.ok) throw new Error('加载团队列表失败');
-            this.teams = await response.json();
-            this.renderTeams();
+            const teams = await response.json();
+            this.updateTeamsList(teams);
         } catch (error) {
             console.error('加载团队列表错误:', error);
             alert('加载团队列表失败');
@@ -50,45 +50,55 @@ class TeamManager {
         `).join('');
     }
 
-    renderTeams() {
-        const teamsContainer = document.getElementById('teamsList');
-        if (!teamsContainer) return;
+    updateTeamsList(teams) {
+        const container = document.getElementById('teamsList');
+        if (!container) return;
 
-        if (this.teams.length === 0) {
-            teamsContainer.innerHTML = '<p class="text-center text-muted">暂无团队</p>';
-            return;
-        }
-
-        const teamsList = this.teams.map(team => `
+        container.innerHTML = teams.map(team => `
             <div class="card mb-3">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="card-title mb-0">${team.name}</h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 team-color" style="color: ${team.color}">${team.name}</h5>
                         <div class="btn-group">
-                            <button class="btn btn-sm btn-primary me-2" onclick="teamLeague.showEditTeamModal('${team.name}')">
-                                编辑
+                            <button class="btn btn-outline-primary btn-sm edit-team" data-team-name="${team.name}" data-team-color="${team.color}">
+                                <i class="fas fa-edit"></i> 编辑
                             </button>
-                            <button class="btn btn-sm btn-danger" onclick="teamManager.deleteTeam('${team.name}')" ${team.games > 0 ? 'disabled' : ''}>
-                                删除
+                            <button class="btn btn-outline-danger btn-sm delete-team" data-team-name="${team.name}">
+                                <i class="fas fa-trash"></i> 删除
                             </button>
                         </div>
                     </div>
-                    <p class="card-text">成员：${team.members.join('、')}</p>
+                    <div class="mt-2">
+                        <strong>成员：</strong>
+                        ${team.members.map(member => `<span class="badge bg-secondary me-1">${member}</span>`).join('')}
+                    </div>
                 </div>
             </div>
         `).join('');
 
-        teamsContainer.innerHTML = teamsList;
+        // 添加事件监听器
+        container.querySelectorAll('.edit-team').forEach(button => {
+            button.addEventListener('click', () => {
+                const teamName = button.dataset.teamName;
+                const teamColor = button.dataset.teamColor;
+                document.getElementById('editTeamName').value = teamName;
+                document.getElementById('originalTeamName').value = teamName;
+                document.getElementById('editTeamColor').value = teamColor;
+                teamLeague.editTeamModal.show();
+            });
+        });
+
+        container.querySelectorAll('.delete-team').forEach(button => {
+            button.addEventListener('click', () => this.deleteTeam(button.dataset.teamName));
+        });
     }
 
     setupEventListeners() {
-        // 创建团队表单提交
-        document.getElementById('createTeamForm')?.addEventListener('submit', (e) => {
+        document.getElementById('createTeamForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            this.createTeam();
+            await this.createTeam();
         });
 
-        // 清空表单
         document.getElementById('createTeamModal')?.addEventListener('hidden.bs.modal', () => {
             document.getElementById('createTeamForm').reset();
         });
@@ -96,17 +106,18 @@ class TeamManager {
 
     async createTeam() {
         try {
-            const teamName = document.getElementById('teamName').value.trim();
-            const selectedMembers = Array.from(document.querySelectorAll('#memberSelection input:checked'))
-                .map(input => input.value);
+            const name = document.getElementById('teamName').value.trim();
+            const color = document.getElementById('teamColor').value;
+            const memberCheckboxes = document.querySelectorAll('#memberSelection input[type="checkbox"]:checked');
+            const members = Array.from(memberCheckboxes).map(cb => cb.value);
 
-            if (!teamName) {
+            if (!name) {
                 alert('请输入团队名称');
                 return;
             }
 
-            if (selectedMembers.length === 0) {
-                alert('请选择团队成员');
+            if (members.length === 0) {
+                alert('请选择至少一名成员');
                 return;
             }
 
@@ -115,10 +126,7 @@ class TeamManager {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    name: teamName,
-                    members: selectedMembers
-                })
+                body: JSON.stringify({ name, members, color })
             });
 
             const result = await response.json();
@@ -127,7 +135,6 @@ class TeamManager {
                 throw new Error(result.message || '创建团队失败');
             }
 
-            // 重新加载团队列表
             await this.loadTeams();
             this.createTeamModal.hide();
             document.getElementById('createTeamForm').reset();
@@ -140,9 +147,11 @@ class TeamManager {
     }
 
     async deleteTeam(teamName) {
-        if (!confirm(`确定要删除团队"${teamName}"吗？`)) return;
-
         try {
+            if (!confirm(`确定要删除团队 "${teamName}" 吗？`)) {
+                return;
+            }
+
             const response = await fetch(`/api/teams/${encodeURIComponent(teamName)}`, {
                 method: 'DELETE'
             });
