@@ -95,9 +95,22 @@ app.get('/api/players', async (req, res) => {
     console.log('Received GET request for /api/players');
     try {
         await connectDB();
-        const players = await Player.find().sort({ name: 1 });
-        console.log('Successfully retrieved players:', players.length);
-        res.json(players.map(p => p.name));
+        // 获取所有团队
+        const teams = await Team.find();
+        // 提取所有团队成员
+        const teamMembers = [...new Set(teams.flatMap(team => team.members))];
+        // 获取这些成员的详细信息
+        const players = await Player.find({ name: { $in: teamMembers } }).sort({ name: 1 });
+        // 为每个玩家添加所属团队信息
+        const playersWithTeams = players.map(player => {
+            const team = teams.find(t => t.members.includes(player.name));
+            return {
+                name: player.name,
+                team: team ? team.name : null
+            };
+        });
+        console.log('Successfully retrieved team players:', playersWithTeams.length);
+        res.json(playersWithTeams);
     } catch (err) {
         console.error('获取玩家列表错误:', err);
         res.status(500).json({ error: err.message });
