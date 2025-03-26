@@ -356,15 +356,37 @@ app.post('/api/teams', async (req, res) => {
         await connectDB();
         const { name, members } = req.body;
 
+        // 验证团队名称
+        if (!name || typeof name !== 'string' || name.trim().length === 0) {
+            return res.status(400).json({ message: '团队名称不能为空' });
+        }
+
+        // 验证成员列表
+        if (!members || !Array.isArray(members) || members.length === 0) {
+            return res.status(400).json({ message: '团队必须至少包含一名成员' });
+        }
+
+        // 验证每个成员名称
+        for (const member of members) {
+            if (!member || typeof member !== 'string' || member.trim().length === 0) {
+                return res.status(400).json({ message: '成员名称不能为空' });
+            }
+            // 检查成员是否存在
+            const playerExists = await Player.findOne({ name: member });
+            if (!playerExists) {
+                return res.status(400).json({ message: `成员 "${member}" 不存在` });
+            }
+        }
+
         // 检查团队名是否已存在
-        const existingTeam = await Team.findOne({ name });
+        const existingTeam = await Team.findOne({ name: name.trim() });
         if (existingTeam) {
-            return res.status(400).json({ error: '团队名称已存在' });
+            return res.status(400).json({ message: '团队名称已存在' });
         }
 
         // 创建新团队
         const team = new Team({
-            name,
+            name: name.trim(),
             members,
             games: 0,
             wins: 0,
@@ -374,10 +396,10 @@ app.post('/api/teams', async (req, res) => {
         });
 
         await team.save();
-        res.json(team);
+        res.status(201).json(team);
     } catch (err) {
         console.error('创建团队错误:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: '创建团队失败：' + err.message });
     }
 });
 
