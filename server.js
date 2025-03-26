@@ -78,7 +78,8 @@ const teamMatchSchema = new mongoose.Schema({
         name: { type: String, required: true },
         team: { type: String, required: true },
         score: { type: Number, required: true },
-        pt: { type: Number, required: true }
+        pt: { type: Number, required: true },
+        position: { type: String, required: true }
     }]
 });
 
@@ -487,83 +488,72 @@ app.patch('/api/teams/:name', async (req, res) => {
     }
 });
 
+// 记录团队赛
+app.post('/api/team-matches', async (req, res) => {
+    try {
+        await connectDB();
+        const { time, players } = req.body;
+
+        // 验证数据
+        if (!time || !players || !Array.isArray(players) || players.length !== 4) {
+            return res.status(400).json({ message: '数据格式错误' });
+        }
+
+        // 验证得点总和
+        const totalScore = players.reduce((sum, p) => sum + p.score, 0);
+        if (totalScore !== 120000) {
+            return res.status(400).json({ message: '得点总和必须为120,000' });
+        }
+
+        // 计算PT
+        const basePoints = [30000, 10000, -10000, -30000];
+        const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+        sortedPlayers.forEach((player, index) => {
+            player.pt = (player.score - 30000) / 1000 + basePoints[index] / 1000;
+        });
+
+        // 创建比赛记录
+        const match = new TeamMatch({
+            time: new Date(time),
+            players: players.map(p => ({
+                name: p.name,
+                team: p.team,
+                score: p.score,
+                pt: p.pt,
+                position: p.position
+            }))
+        });
+
+        await match.save();
+
+        // 更新团队统计
+        const teams = [...new Set(players.map(p => p.team))];
+        for (const teamName of teams) {
+            const team = await Team.findOne({ name: teamName });
+            if (team) {
+                team.games = (team.games || 0) + 1;
+                await team.save();
+            }
+        }
+
+        res.json({ message: '比赛记录成功' });
+    } catch (err) {
+        console.error('记录比赛错误:', err);
+        res.status(500).json({ message: '记录比赛失败：' + err.message });
+    }
+});
+
 // 获取团队赛记录
 app.get('/api/team-matches', async (req, res) => {
     try {
+        await connectDB();
         const matches = await TeamMatch.find()
             .sort({ time: -1 })
             .limit(50);
         res.json(matches);
-    } catch (error) {
-        console.error('获取团队赛记录失败:', error);
-        res.status(500).json({ error: '获取比赛记录失败' });
-    }
-});
-
-// 记录团队赛
-app.post('/api/team-matches', async (req, res) => {
-    try {
-        const { time, players } = req.body;
-        
-        // 验证数据
-        if (!time || !players || !Array.isArray(players) || players.length !== 4) {
-            return res.status(400).json({ error: '无效的比赛数据' });
-        }
-        
-        // 验证总分
-        const totalScore = players.reduce((sum, p) => sum + p.score, 0);
-        if (totalScore !== 120000) {
-            return res.status(400).json({ error: '得点总和必须为120,000' });
-        }
-        
-        // 创建比赛记录
-        const match = new TeamMatch({
-            time: new Date(time),
-            players
-        });
-        await match.save();
-        
-        // 更新队伍统计数据
-        const teams = await Team.find();
-        const teamUpdates = [];
-        
-        // 按队伍分组计算数据
-        const teamStats = new Map();
-        players.forEach(player => {
-            const stats = teamStats.get(player.team) || { 
-                totalScore: 0, 
-                totalPT: 0, 
-                count: 0,
-                wins: 0
-            };
-            stats.totalScore += player.score;
-            stats.totalPT += player.pt;
-            stats.count++;
-            if (player.score === Math.max(...players.map(p => p.score))) {
-                stats.wins++;
-            }
-            teamStats.set(player.team, stats);
-        });
-        
-        // 更新每个队伍的统计数据
-        for (const team of teams) {
-            const stats = teamStats.get(team.name);
-            if (stats) {
-                team.games++;
-                team.wins += stats.wins;
-                team.totalPT += stats.totalPT;
-                team.avgPT = team.totalPT / team.games;
-                team.winRate = (team.wins / team.games * 100).toFixed(1);
-                teamUpdates.push(team.save());
-            }
-        }
-        
-        await Promise.all(teamUpdates);
-        res.json({ message: '比赛记录成功' });
-        
-    } catch (error) {
-        console.error('记录团队赛失败:', error);
-        res.status(500).json({ error: '记录比赛失败' });
+    } catch (err) {
+        console.error('获取比赛记录错误:', err);
+        res.status(500).json({ message: '获取比赛记录失败' });
     }
 });
 
