@@ -342,11 +342,11 @@ app.get('*', (req, res) => {
 app.get('/api/teams', async (req, res) => {
     try {
         await connectDB();
-        const teams = await Team.find().sort({ name: 1 });
+        const teams = await Team.find().sort({ createTime: -1 });
         res.json(teams);
     } catch (err) {
         console.error('获取团队列表错误:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: '获取团队列表失败' });
     }
 });
 
@@ -355,42 +355,41 @@ app.post('/api/teams', async (req, res) => {
     try {
         await connectDB();
         const { name, members } = req.body;
-        console.log('尝试创建团队:', { name, members });
 
         // 验证团队名称
         if (!name || typeof name !== 'string' || name.trim().length === 0) {
-            console.log('团队名称验证失败');
             return res.status(400).json({ message: '团队名称不能为空' });
         }
 
+        const trimmedName = name.trim();
+
         // 验证成员列表
         if (!members || !Array.isArray(members) || members.length === 0) {
-            console.log('成员列表验证失败');
             return res.status(400).json({ message: '团队必须至少包含一名成员' });
         }
 
-        // 验证每个成员名称
+        // 验证每个成员
         for (const member of members) {
             if (!member || typeof member !== 'string' || member.trim().length === 0) {
-                console.log('成员名称验证失败:', member);
                 return res.status(400).json({ message: '成员名称不能为空' });
             }
+
             // 检查成员是否存在
             const playerExists = await Player.findOne({ name: member });
             if (!playerExists) {
-                console.log('成员不存在:', member);
                 return res.status(400).json({ message: `成员 "${member}" 不存在` });
+            }
+
+            // 检查成员是否已经在其他团队中
+            const existingTeamWithMember = await Team.findOne({ members: member });
+            if (existingTeamWithMember) {
+                return res.status(400).json({ message: `成员 "${member}" 已经在团队 "${existingTeamWithMember.name}" 中` });
             }
         }
 
         // 检查团队名是否已存在
-        const trimmedName = name.trim();
-        console.log('检查团队名是否存在:', trimmedName);
         const existingTeam = await Team.findOne({ name: trimmedName });
-        console.log('已存在的团队:', existingTeam);
-        
         if (existingTeam) {
-            console.log('团队名称已存在:', trimmedName);
             return res.status(400).json({ message: '团队名称已存在' });
         }
 
@@ -402,11 +401,11 @@ app.post('/api/teams', async (req, res) => {
             wins: 0,
             winRate: 0,
             totalPT: 0,
-            avgPT: 0
+            avgPT: 0,
+            createTime: new Date()
         });
 
         await team.save();
-        console.log('团队创建成功:', team);
         res.status(201).json(team);
     } catch (err) {
         console.error('创建团队错误:', err);
@@ -419,22 +418,24 @@ app.delete('/api/teams/:name', async (req, res) => {
     try {
         await connectDB();
         const teamName = req.params.name;
-        const team = await Team.findOne({ name: teamName });
 
+        // 查找团队
+        const team = await Team.findOne({ name: teamName });
         if (!team) {
-            return res.status(404).json({ error: '团队不存在' });
+            return res.status(404).json({ message: '团队不存在' });
         }
 
         // 检查团队是否有比赛记录
         if (team.games > 0) {
-            return res.status(400).json({ error: '无法删除已参赛的团队' });
+            return res.status(400).json({ message: '无法删除已参赛的团队' });
         }
 
+        // 删除团队
         await Team.deleteOne({ name: teamName });
-        res.json({ success: true });
+        res.json({ message: '删除成功' });
     } catch (err) {
         console.error('删除团队错误:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: '删除团队失败：' + err.message });
     }
 });
 

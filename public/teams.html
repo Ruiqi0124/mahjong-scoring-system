@@ -91,28 +91,13 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">团队管理</h5>
-                        <button class="btn btn-primary" onclick="Teams.showCreateTeamModal()">
-                            <i class="fas fa-plus"></i> 创建团队
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTeamModal">
+                            创建团队
                         </button>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-primary">
-                                    <tr>
-                                        <th>团队名称</th>
-                                        <th>成员</th>
-                                        <th>比赛场数</th>
-                                        <th>胜率</th>
-                                        <th>总PT</th>
-                                        <th>平均PT</th>
-                                        <th>操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="teamsList">
-                                    <!-- 团队列表将通过JavaScript动态填充 -->
-                                </tbody>
-                            </table>
+                        <div id="teamList">
+                            <!-- 团队列表将通过JavaScript动态加载 -->
                         </div>
                     </div>
                 </div>
@@ -159,26 +144,26 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">创建团队</h5>
+                    <h5 class="modal-title">创建新团队</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="createTeamForm">
                         <div class="mb-3">
-                            <label class="form-label">团队名称</label>
+                            <label for="teamName" class="form-label">团队名称</label>
                             <input type="text" class="form-control" id="teamName" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">选择成员</label>
-                            <div id="memberSelection">
-                                <!-- 成员选择将通过JavaScript动态填充 -->
+                            <div id="memberSelection" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                <!-- 成员选择列表将通过JavaScript动态加载 -->
                             </div>
                         </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-primary">创建</button>
+                        </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="Teams.createTeam()">创建</button>
                 </div>
             </div>
         </div>
