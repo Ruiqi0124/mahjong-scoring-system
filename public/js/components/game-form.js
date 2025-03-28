@@ -26,9 +26,11 @@ const GameForm = {
             // 更新选项
             selects.forEach((select, index) => {
                 select.innerHTML = '<option value="">选择玩家</option>' + 
-                    players.map(player => 
-                        `<option value="${player}" ${player === currentValues[index] ? 'selected' : ''}>${player}</option>`
-                    ).join('');
+                    players.map(player => {
+                        // 如果player是对象，使用其name属性
+                        const playerName = typeof player === 'object' ? player.name : player;
+                        return `<option value="${playerName}" ${playerName === currentValues[index] ? 'selected' : ''}>${playerName}</option>`;
+                    }).join('');
             });
         } catch (error) {
             console.error('更新玩家列表失败:', error);
