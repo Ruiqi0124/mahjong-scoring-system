@@ -19,7 +19,7 @@ const connectDB = async () => {
             console.log('Using existing MongoDB connection');
             return;
         }
-        
+
         const mongoUri = process.env.MONGODB_URI;
         if (!mongoUri) {
             throw new Error('MongoDB URI is not defined in environment variables');
@@ -69,12 +69,14 @@ const teamSchema = new mongoose.Schema({
     totalPT: { type: Number, default: 0 },
     avgPT: { type: Number, default: 0 },
     createTime: { type: Date, default: Date.now },
-    color: { type: String, default: '#000000' }
+    color: { type: String, default: '#000000' },
+    season: { type: Number, default: 0 }
 });
 
 // 团队赛记录Schema
 const teamMatchSchema = new mongoose.Schema({
     time: { type: Date, required: true },
+    season: { type: Number, default: 0 },
     players: [{
         name: { type: String, required: true },
         team: { type: String, required: true },
@@ -88,8 +90,20 @@ const teamMatchSchema = new mongoose.Schema({
 let Player = mongoose.models.Player || mongoose.model('Player', playerSchema);
 let Game = mongoose.models.Game || mongoose.model('Game', gameSchema);
 let Schedule = mongoose.models.Schedule || mongoose.model('Schedule', scheduleSchema);
-let Team = mongoose.models.Team || mongoose.model('Team', teamSchema);
-let TeamMatch = mongoose.models.TeamMatch || mongoose.model('TeamMatch', teamMatchSchema);
+
+let TOTAL_SEASON_NUM = 2
+let teams = []
+let team_matches = []
+for (let season = 0; season < TOTAL_SEASON_NUM; season++) {
+    teams[season] = mongoose.models[`Team-S${season}`] || mongoose.model(`Team-S${season}`, teamSchema);
+    team_matches[season] = mongoose.models[`TeamMatch-S${season}`] || mongoose.model(`TeamMatch-S${season}`, teamMatchSchema);
+}
+function getTeam(season) {
+    return teams[Math.min(Math.max(season, 0), TOTAL_SEASON_NUM - 1)];
+}
+function getTeamMatch(season) {
+    return team_matches[Math.min(Math.max(season, 0), TOTAL_SEASON_NUM - 1)];
+}
 
 // API路由
 // 获取所有玩家
@@ -99,20 +113,8 @@ app.get('/api/players', async (req, res) => {
         await connectDB();
         // 获取所有玩家
         const players = await Player.find().sort({ name: 1 });
-        // 获取所有团队
-        const teams = await Team.find();
-        
-        // 为每个玩家添加所属团队信息
-        const playersWithTeams = players.map(player => {
-            const team = teams.find(t => t.members.includes(player.name));
-            return {
-                name: player.name,
-                team: team ? team.name : null
-            };
-        });
-        
-        console.log('Successfully retrieved all players:', playersWithTeams.length);
-        res.json(playersWithTeams);
+        console.log('Successfully retrieved all players:', players.length);
+        res.json(players);
     } catch (err) {
         console.error('获取玩家列表错误:', err);
         res.status(500).json({ error: err.message });
@@ -125,7 +127,7 @@ app.post('/api/players', async (req, res) => {
     try {
         await connectDB();
         const { name } = req.body;
-        
+
         if (!name || typeof name !== 'string' || name.trim().length === 0) {
             console.log('Invalid player name received');
             return res.status(400).json({ error: '玩家名称不能为空' });
@@ -133,7 +135,7 @@ app.post('/api/players', async (req, res) => {
 
         const trimmedName = name.trim();
         console.log('Checking if player exists:', trimmedName);
-        
+
         // 检查玩家是否已存在
         const existingPlayer = await Player.findOne({ name: trimmedName });
         if (existingPlayer) {
@@ -247,7 +249,7 @@ app.delete('/api/games/:id', async (req, res) => {
     try {
         await connectDB();
         const gameId = req.params.id;
-        
+
         // 检查对局是否存在
         const game = await Game.findById(gameId);
         if (!game) {
@@ -271,7 +273,7 @@ app.patch('/api/games/:id', async (req, res) => {
         await connectDB();
         const { id } = req.params;
         const { timestamp } = req.body;
-        
+
         if (!timestamp) {
             return res.status(400).json({ error: '时间戳不能为空' });
         }
@@ -362,6 +364,8 @@ app.get('/api/health', (req, res) => {
 app.get('/api/teams', async (req, res) => {
     try {
         await connectDB();
+        const season = req.query.season || 0;
+        const Team = getTeam(season);
         const teams = await Team.find().sort({ createTime: -1 });
         res.json(teams);
     } catch (err) {
@@ -374,7 +378,8 @@ app.get('/api/teams', async (req, res) => {
 app.post('/api/teams', async (req, res) => {
     try {
         await connectDB();
-        const { name, members, color } = req.body;
+        const { name, members, color, season = 0 } = req.body;
+        const Team = getTeam(season);
 
         // 验证团队名称
         if (!name || typeof name !== 'string' || name.trim().length === 0) {
@@ -443,6 +448,8 @@ app.post('/api/teams', async (req, res) => {
 app.delete('/api/teams/:name', async (req, res) => {
     try {
         await connectDB();
+        const { season = 0 } = req.body;
+        const Team = getTeam(season);
         const teamName = req.params.name;
 
         // 查找团队
@@ -470,7 +477,9 @@ app.patch('/api/teams/:name', async (req, res) => {
     try {
         await connectDB();
         const { name } = req.params;
-        const { newName, adminPassword, color } = req.body;
+        const { newName, adminPassword, color, season = 0 } = req.body;
+        const Team = getTeam(season);
+        const TeamMatch = getTeamMatch(season);
 
         // 验证管理员密码
         if (adminPassword !== 'admin123') {
@@ -490,11 +499,11 @@ app.patch('/api/teams/:name', async (req, res) => {
         const trimmedNewName = newName.trim();
 
         // 检查新团队名是否已存在（排除当前团队）
-        const existingTeam = await Team.findOne({ 
+        const existingTeam = await Team.findOne({
             name: trimmedNewName,
             _id: { $ne: (await Team.findOne({ name }))._id }
         });
-        
+
         if (existingTeam) {
             return res.status(400).json({ message: '新团队名称已存在' });
         }
@@ -527,7 +536,9 @@ app.patch('/api/teams/:name', async (req, res) => {
 app.post('/api/team-matches', async (req, res) => {
     try {
         await connectDB();
-        const { time, players } = req.body;
+        const { time, players, season = 0 } = req.body;
+        const Team = getTeam(season);
+        const TeamMatch = getTeamMatch(season);
 
         // 验证数据
         if (!time || !players || !Array.isArray(players) || players.length !== 4) {
@@ -634,6 +645,8 @@ app.post('/api/team-matches', async (req, res) => {
 app.get('/api/team-matches', async (req, res) => {
     try {
         await connectDB();
+        const season = req.query.season || 0;
+        const TeamMatch = getTeamMatch(season);
         const matches = await TeamMatch.find()
             .sort({ time: -1 })
             .limit(50);
@@ -649,7 +662,9 @@ app.delete('/api/team-matches/:id', async (req, res) => {
     try {
         await connectDB();
         const { id } = req.params;
-        const { adminPassword } = req.body;
+        const { adminPassword, season = 0 } = req.body;
+        const Team = getTeam(season);
+        const TeamMatch = getTeamMatch(season);
 
         // 验证管理员密码
         if (adminPassword !== 'admin123') {
@@ -690,7 +705,8 @@ app.patch('/api/team-matches/:id/time', async (req, res) => {
     try {
         await connectDB();
         const { id } = req.params;
-        const { time, adminPassword } = req.body;
+        const { time, adminPassword, season = 0 } = req.body;
+        const TeamMatch = getTeamMatch(season);
 
         // 验证管理员密码
         if (adminPassword !== 'admin123') {
@@ -719,11 +735,14 @@ app.patch('/api/team-matches/:id/time', async (req, res) => {
 app.get('/api/team-rankings', async (req, res) => {
     try {
         await connectDB();
-        
+        const season = req.query.season || 0
+        const Team = getTeam(season);
+        const TeamMatch = getTeamMatch(season);
+
         // 获取所有团队和比赛数据
         const teams = await Team.find();
         const matches = await TeamMatch.find();
-        
+
         // 计算团队排名
         const teamRankings = teams.map(team => ({
             name: team.name,
@@ -737,7 +756,7 @@ app.get('/api/team-rankings', async (req, res) => {
 
         // 计算个人排名
         const playerStats = new Map();
-        
+
         // 初始化玩家数据
         teams.forEach(team => {
             team.members.forEach(playerName => {
@@ -752,7 +771,7 @@ app.get('/api/team-rankings', async (req, res) => {
                 });
             });
         });
-        
+
         // 统计比赛数据
         matches.forEach(match => {
             match.players.forEach(player => {
@@ -761,7 +780,7 @@ app.get('/api/team-rankings', async (req, res) => {
                     stats.games++;
                     stats.totalPT += player.pt;
                     stats.avgPT = stats.totalPT / stats.games;
-                    
+
                     // 判断是否为一位
                     const isWinner = player.score === Math.max(...match.players.map(p => p.score));
                     if (isWinner) {
@@ -770,7 +789,7 @@ app.get('/api/team-rankings', async (req, res) => {
                 }
             });
         });
-        
+
         // 转换为数组并排序
         const playerRankings = Array.from(playerStats.values())
             .map(stats => ({
@@ -778,12 +797,12 @@ app.get('/api/team-rankings', async (req, res) => {
                 winRate: stats.games > 0 ? ((stats.wins / stats.games) * 100).toFixed(1) : '0.0'
             }))
             .sort((a, b) => b.avgPT - a.avgPT);
-        
+
         res.json({
             teamRankings,
             playerRankings
         });
-        
+
     } catch (error) {
         console.error('获取排名数据失败:', error);
         res.status(500).json({ error: '获取排名数据失败' });
@@ -794,6 +813,8 @@ app.get('/api/team-rankings', async (req, res) => {
 app.delete('/api/teams/clear-all', async (req, res) => {
     try {
         await connectDB();
+        const { season = 0 } = req.body;
+        const Team = getTeam(season);
         await Team.deleteMany({});
         console.log('所有团队数据已清理');
         res.json({ message: '所有团队数据已清理' });
@@ -808,9 +829,13 @@ async function saveData() {
     const data = {
         players: await Player.find().exec(),
         matches: await Game.find().exec(),
-        teams: await Team.find().exec(),
-        teamMatches: await TeamMatch.find().exec()
+        teams: [],
+        teamMatches: []
     };
+    for (let season = 0; season < TOTAL_SEASON_NUM; season++) {
+        data.teams[season] = await getTeam(season).find().exec();
+        data.teamMatches[season] = await getTeamMatch(season).find().exec()
+    }
     fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
 }
 
@@ -820,12 +845,16 @@ async function loadData() {
         const data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
         await Player.deleteMany().exec();
         await Game.deleteMany().exec();
-        await Team.deleteMany().exec();
-        await TeamMatch.deleteMany().exec();
         await Player.create(data.players);
         await Game.create(data.matches);
-        if (data.teams) await Team.create(data.teams);
-        if (data.teamMatches) await TeamMatch.create(data.teamMatches);
+        for (let season = 0; season < TOTAL_SEASON_NUM; season++) {
+            const Team = getTeam(season);
+            const TeamMatch = getTeamMatch(season);
+            await Team.deleteMany().exec();
+            await TeamMatch.deleteMany().exec();
+            if (data.teams[season]) await Team.create(data.teams[season]);
+            if (data.teamMatches[season]) await TeamMatch.create(data.teamMatches[season]);
+        }
     } catch (error) {
         console.error('加载数据失败:', error);
     }
