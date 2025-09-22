@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,11 +9,13 @@
     <link href="css/styles.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
+
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" href="/">巢</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -27,7 +30,7 @@
                         <a class="nav-link" href="/schedule.html">约桌表</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/teams.html">巢League</a>
+                        <a class="nav-link" href="/teams.html">巢League S1</a>
                     </li>
                 </ul>
             </div>
@@ -58,7 +61,8 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" id="score1" class="form-control" placeholder="输入得点" onchange="GameForm.updatePT()">
+                                    <input type="number" id="score1" class="form-control" placeholder="输入得点"
+                                        onchange="GameForm.updatePT()">
                                 </td>
                                 <td>
                                     <span id="pt1" class="pt-value">-</span>
@@ -72,7 +76,8 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" id="score2" class="form-control" placeholder="输入得点" onchange="GameForm.updatePT()">
+                                    <input type="number" id="score2" class="form-control" placeholder="输入得点"
+                                        onchange="GameForm.updatePT()">
                                 </td>
                                 <td>
                                     <span id="pt2" class="pt-value">-</span>
@@ -86,7 +91,8 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" id="score3" class="form-control" placeholder="输入得点" onchange="GameForm.updatePT()">
+                                    <input type="number" id="score3" class="form-control" placeholder="输入得点"
+                                        onchange="GameForm.updatePT()">
                                 </td>
                                 <td>
                                     <span id="pt3" class="pt-value">-</span>
@@ -100,7 +106,8 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" id="score4" class="form-control" placeholder="输入得点" onchange="GameForm.updatePT()">
+                                    <input type="number" id="score4" class="form-control" placeholder="输入得点"
+                                        onchange="GameForm.updatePT()">
                                 </td>
                                 <td>
                                     <span id="pt4" class="pt-value">-</span>
@@ -185,7 +192,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="GameForm.confirmSaveWithDuplicates()">继续保存</button>
+                    <button type="button" class="btn btn-primary"
+                        onclick="GameForm.confirmSaveWithDuplicates()">继续保存</button>
                 </div>
             </div>
         </div>
@@ -230,4 +238,5 @@
         });
     </script>
 </body>
-</html> 
+
+</html>
