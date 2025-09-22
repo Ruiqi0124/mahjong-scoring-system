@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
         }
     </style>
 </head>
+
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
@@ -32,7 +34,7 @@
                         <a class="nav-link" href="/schedule.html">约桌表</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/teams.html">巢 League</a>
+                        <a class="nav-link active" href="/teams.html">巢 League S1</a>
                     </li>
                 </ul>
             </div>
@@ -78,7 +80,7 @@
             <div class="col">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">巢 League 排名</h5>
+                        <h5 class="mb-0">巢 League S1 排名</h5>
                     </div>
                     <div class="card-body">
                         <!-- 团队排名 -->
@@ -159,11 +161,13 @@
                         </div>
                         <div class="mb-3">
                             <label for="teamColor" class="form-label">团队颜色</label>
-                            <input type="color" class="form-control form-control-color" id="teamColor" value="#000000" required>
+                            <input type="color" class="form-control form-control-color" id="teamColor" value="#000000"
+                                required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">选择成员</label>
-                            <div id="memberSelection" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                            <div id="memberSelection" class="border rounded p-3"
+                                style="max-height: 200px; overflow-y: auto;">
                                 <!-- 成员选择列表将通过JavaScript动态加载 -->
                             </div>
                         </div>
@@ -206,7 +210,8 @@
                                                 <option value="">选择玩家</option>
                                             </select>
                                             <div class="mt-1">
-                                                <input type="text" class="form-control form-control-sm" name="team" readonly placeholder="所属队伍">
+                                                <input type="text" class="form-control form-control-sm" name="team"
+                                                    readonly placeholder="所属队伍">
                                             </div>
                                         </td>
                                         <td>
@@ -226,7 +231,8 @@
                                                 <option value="">选择玩家</option>
                                             </select>
                                             <div class="mt-1">
-                                                <input type="text" class="form-control form-control-sm" name="team" readonly placeholder="所属队伍">
+                                                <input type="text" class="form-control form-control-sm" name="team"
+                                                    readonly placeholder="所属队伍">
                                             </div>
                                         </td>
                                         <td>
@@ -246,7 +252,8 @@
                                                 <option value="">选择玩家</option>
                                             </select>
                                             <div class="mt-1">
-                                                <input type="text" class="form-control form-control-sm" name="team" readonly placeholder="所属队伍">
+                                                <input type="text" class="form-control form-control-sm" name="team"
+                                                    readonly placeholder="所属队伍">
                                             </div>
                                         </td>
                                         <td>
@@ -266,7 +273,8 @@
                                                 <option value="">选择玩家</option>
                                             </select>
                                             <div class="mt-1">
-                                                <input type="text" class="form-control form-control-sm" name="team" readonly placeholder="所属队伍">
+                                                <input type="text" class="form-control form-control-sm" name="team"
+                                                    readonly placeholder="所属队伍">
                                             </div>
                                         </td>
                                         <td>
@@ -440,7 +448,7 @@
                     const response = await fetch('/api/players');
                     if (!response.ok) throw new Error('加载玩家列表失败');
                     const players = await response.json();
-                    
+
                     // 更新所有玩家选择框
                     const selects = document.querySelectorAll('select[name="player"]');
                     selects.forEach(select => {
@@ -450,7 +458,7 @@
                                 <option value="${player.name}" data-team="${player.team || ''}">${player.name}</option>
                             `).join('')}
                         `;
-                        
+
                         // 添加change事件监听器
                         select.addEventListener('change', (e) => {
                             const teamInput = e.target.closest('td').querySelector('input[name="team"]');
@@ -473,7 +481,7 @@
             updatePT() {
                 const scores = Array.from(document.querySelectorAll('input[name="score"]'))
                     .map(input => parseInt(input.value) || 0);
-                
+
                 if (scores.some(isNaN)) return;
 
                 const basePoints = [45, 5, -15, -35];
@@ -495,7 +503,7 @@
                 // 计算每个位置的PT
                 const positionPts = new Array(4).fill(0);
                 let currentPosition = 0;
-                
+
                 sortedScores.forEach(score => {
                     const positions = scoreGroups.get(score);
                     const totalPt = positions.reduce((sum, pos) => sum + basePoints[pos], 0);
@@ -584,7 +592,7 @@
                                         headers: {
                                             'Content-Type': 'application/json'
                                         },
-                                        body: JSON.stringify({ 
+                                        body: JSON.stringify({
                                             time: new Date(newTime).toISOString(),
                                             adminPassword: 'admin123'
                                         })
@@ -733,4 +741,5 @@
         const teamLeague = new TeamLeague();
     </script>
 </body>
-</html> 
+
+</html>

@@ -40,11 +40,11 @@ class TeamManager {
         const memberSelection = document.getElementById('memberSelection');
         if (!memberSelection) return;
 
-        memberSelection.innerHTML = this.players.map(playerName => `
+        memberSelection.innerHTML = this.players.map(player => `
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="${playerName}" id="player_${playerName}">
-                <label class="form-check-label" for="player_${playerName}">
-                    ${playerName}
+                <input class="form-check-input" type="checkbox" value="${player.name}" id="player_${player.name}">
+                <label class="form-check-label" for="player_${player.name}">
+                    ${player.name}
                 </label>
             </div>
         `).join('');

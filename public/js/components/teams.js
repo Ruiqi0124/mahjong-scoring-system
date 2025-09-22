@@ -27,7 +27,7 @@ const Teams = {
     showRecordMatchModal() {
         const teamScores = document.getElementById('teamScores');
         teamScores.innerHTML = '';
-        
+
         // 创建4个玩家的输入行
         for (let i = 0; i < 4; i++) {
             const row = document.createElement('tr');
@@ -49,13 +49,13 @@ const Teams = {
             `;
             teamScores.appendChild(row);
         }
-        
+
         // 加载玩家列表
         this.updatePlayerSelects();
-        
+
         // 重置时间为当前时间
         document.getElementById('matchTime').value = new Date().toISOString().slice(0, 16);
-        
+
         // 显示模态框
         const modal = new bootstrap.Modal(document.getElementById('recordMatchModal'));
         modal.show();
@@ -66,12 +66,12 @@ const Teams = {
         try {
             const response = await fetch('/api/players');
             const players = await response.json();
-            
+
             const playerSelects = document.querySelectorAll('.player-select');
             playerSelects.forEach(select => {
                 // 保存当前选中的值
                 const currentValue = select.value;
-                
+
                 // 清空并重新填充选项
                 select.innerHTML = '<option value="">选择玩家</option>';
                 players.forEach(playerName => {
@@ -80,7 +80,7 @@ const Teams = {
                     option.textContent = playerName;
                     select.appendChild(option);
                 });
-                
+
                 // 恢复之前选中的值
                 if (currentValue) {
                     select.value = currentValue;
@@ -97,16 +97,16 @@ const Teams = {
         const position = selectElement.dataset.position;
         const playerName = selectElement.value;
         const teamNameCell = document.querySelector(`.team-name[data-position="${position}"]`);
-        
+
         if (!playerName) {
             teamNameCell.textContent = '-';
             return;
         }
-        
+
         try {
             const response = await fetch('/api/teams');
             const teams = await response.json();
-            
+
             // 查找玩家所属的队伍
             const team = teams.find(t => t.members.includes(playerName));
             teamNameCell.textContent = team ? team.name : '无队伍';
@@ -120,16 +120,16 @@ const Teams = {
     updatePT() {
         const scores = Array.from(document.querySelectorAll('.score-input'))
             .map(input => parseInt(input.value) || 0);
-        
+
         // 计算总分
         const totalScore = scores.reduce((sum, score) => sum + score, 0);
-        
+
         // 如果总分不为120000，显示警告
         if (totalScore !== 0 && totalScore !== 120000) {
             alert('得点总和必须为120,000');
             return;
         }
-        
+
         // 计算每个位置的PT
         const ptElements = document.querySelectorAll('.pt');
         scores.forEach((score, index) => {
@@ -153,35 +153,35 @@ const Teams = {
             alert('请选择比赛时间');
             return;
         }
-        
+
         // 收集玩家数据
         const playerData = [];
         const playerSelects = document.querySelectorAll('.player-select');
         const scoreInputs = document.querySelectorAll('.score-input');
         const ptElements = document.querySelectorAll('.pt');
         const teamNameElements = document.querySelectorAll('.team-name');
-        
+
         for (let i = 0; i < 4; i++) {
             const playerName = playerSelects[i].value;
             const score = parseInt(scoreInputs[i].value) || 0;
             const pt = parseFloat(ptElements[i].textContent) || 0;
             const teamName = teamNameElements[i].textContent;
-            
+
             if (!playerName) {
                 alert('请选择所有玩家');
                 return;
             }
-            
+
             if (!score) {
                 alert('请输入所有玩家的得点');
                 return;
             }
-            
+
             if (teamName === '-' || teamName === '获取失败') {
                 alert('请确保所有玩家的队伍信息正确');
                 return;
             }
-            
+
             playerData.push({
                 name: playerName,
                 team: teamName,
@@ -189,14 +189,14 @@ const Teams = {
                 pt: pt
             });
         }
-        
+
         // 验证总分
         const totalScore = playerData.reduce((sum, data) => sum + data.score, 0);
         if (totalScore !== 120000) {
             alert('得点总和必须为120,000');
             return;
         }
-        
+
         try {
             const response = await fetch('/api/team-matches', {
                 method: 'POST',
@@ -208,11 +208,11 @@ const Teams = {
                     players: playerData
                 })
             });
-            
+
             if (!response.ok) {
                 throw new Error('记录比赛失败');
             }
-            
+
             // 关闭模态框并刷新数据
             bootstrap.Modal.getInstance(document.getElementById('recordMatchModal')).hide();
             await Promise.all([
@@ -220,7 +220,7 @@ const Teams = {
                 this.loadMatches(),
                 this.loadRankings()
             ]);
-            
+
         } catch (error) {
             console.error('记录比赛失败:', error);
             alert('记录比赛失败，请重试');
@@ -232,14 +232,14 @@ const Teams = {
         try {
             const response = await fetch('/api/players');
             const players = await response.json();
-            
+
             // 更新成员选择区域
             const memberSelection = document.getElementById('memberSelection');
-            memberSelection.innerHTML = players.map(playerName => `
+            memberSelection.innerHTML = players.map(player => `
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="${playerName}" id="player_${playerName}">
-                    <label class="form-check-label" for="player_${playerName}">
-                        ${playerName}
+                    <input class="form-check-input" type="checkbox" value="${player.name}" id="player_${player.name}">
+                    <label class="form-check-label" for="player_${player.name}">
+                        ${player.name}
                     </label>
                 </div>
             `).join('');
@@ -266,12 +266,12 @@ const Teams = {
         try {
             const response = await fetch('/api/team-matches');
             const matches = await response.json();
-            
+
             const matchRecords = document.getElementById('matchRecords');
             matchRecords.innerHTML = matches.map(match => {
                 // 按得分排序玩家
                 const sortedPlayers = [...match.players].sort((a, b) => b.score - a.score);
-                
+
                 // 生成每个玩家的行
                 return sortedPlayers.map((player, index) => `
                     <tr>
@@ -284,7 +284,7 @@ const Teams = {
                     </tr>
                 `).join('');
             }).join('');
-            
+
         } catch (error) {
             console.error('加载比赛记录失败:', error);
             alert('加载比赛记录失败，请刷新页面重试');
@@ -296,7 +296,7 @@ const Teams = {
         try {
             const response = await fetch('/api/team-rankings');
             const { teamRankings, playerRankings } = await response.json();
-            
+
             // 更新团队排名
             const teamRankingsBody = document.getElementById('teamRankings');
             teamRankingsBody.innerHTML = teamRankings.map(team => `
@@ -308,7 +308,7 @@ const Teams = {
                     <td class="text-${team.avgPT >= 0 ? 'success' : 'danger'}">${team.avgPT.toFixed(1)}</td>
                 </tr>
             `).join('');
-            
+
             // 更新个人排名
             const playerRankingsBody = document.getElementById('playerRankings');
             playerRankingsBody.innerHTML = playerRankings.map(player => `
@@ -320,7 +320,7 @@ const Teams = {
                     <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
                 </tr>
             `).join('');
-            
+
         } catch (error) {
             console.error('加载排名数据失败:', error);
             alert('加载排名数据失败，请刷新页面重试');
@@ -354,7 +354,7 @@ const Teams = {
         tbody.innerHTML = this.matches.map(match => {
             // 按分数排序的团队
             const sortedTeams = [...match.teams].sort((a, b) => b.score - a.score);
-            
+
             return `
                 <tr>
                     <td>${this.formatDate(match.time)}</td>
