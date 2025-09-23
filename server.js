@@ -95,8 +95,9 @@ let TOTAL_SEASON_NUM = 2
 let teams = []
 let team_matches = []
 for (let season = 0; season < TOTAL_SEASON_NUM; season++) {
-    teams[season] = mongoose.models[`Team-S${season}`] || mongoose.model(`Team-S${season}`, teamSchema);
-    team_matches[season] = mongoose.models[`TeamMatch-S${season}`] || mongoose.model(`TeamMatch-S${season}`, teamMatchSchema);
+    const name = season == 0 ? "" : `-S${season}`;
+    teams[season] = mongoose.models[`Team${name}`] || mongoose.model(`Team${name}`, teamSchema);
+    team_matches[season] = mongoose.models[`TeamMatch${name}`] || mongoose.model(`TeamMatch${name}`, teamMatchSchema);
 }
 function getTeam(season) {
     return teams[Math.min(Math.max(season, 0), TOTAL_SEASON_NUM - 1)];
