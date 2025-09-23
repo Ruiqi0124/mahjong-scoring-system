@@ -340,7 +340,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/components/20240209_TeamManager.js"></script>
+    <script src="js/components/20240209_TeamManager.js" data-season="0"></script>
     <script>
         // 初始化排名和比赛记录功能
         class TeamLeague {
@@ -358,7 +358,7 @@
 
             async loadRankings() {
                 try {
-                    const response = await fetch('/api/team-rankings');
+                    const response = await fetch('/api/team-rankings?season=0');
                     if (!response.ok) throw new Error('加载排名数据失败');
                     const { teamRankings, playerRankings } = await response.json();
                     this.updateTeamRankings(teamRankings);
@@ -401,7 +401,7 @@
 
             async loadMatches() {
                 try {
-                    const response = await fetch('/api/team-matches');
+                    const response = await fetch('/api/team-matches?season=0');
                     if (!response.ok) throw new Error('加载比赛记录失败');
                     const matches = await response.json();
                     this.updateMatchRecords(matches);
@@ -448,7 +448,7 @@
 
             async loadPlayers() {
                 try {
-                    const response = await fetch('/api/players');
+                    const response = await fetch('/api/players?season=0');
                     if (!response.ok) throw new Error('加载玩家列表失败');
                     const players = await response.json();
 
@@ -458,7 +458,7 @@
                         select.innerHTML = `
                             <option value="">选择玩家</option>
                             ${players.map(player => `
-                                <option value="${player.name}"}">${player.name}</option>
+                                <option value="${player.name}" data-team="${player.team || ''}">${player.name}</option>
                             `).join('')}
                         `;
 
@@ -572,7 +572,7 @@
                                     headers: {
                                         'Content-Type': 'application/json'
                                     },
-                                    body: JSON.stringify({ adminPassword: 'admin123' })
+                                    body: JSON.stringify({ adminPassword: 'admin123', season: 0 })
                                 });
                                 if (!response.ok) throw new Error('删除失败');
                                 await this.loadMatches();
@@ -597,7 +597,8 @@
                                         },
                                         body: JSON.stringify({
                                             time: new Date(newTime).toISOString(),
-                                            adminPassword: 'admin123'
+                                            adminPassword: 'admin123',
+                                            season: 0
                                         })
                                     });
                                     if (!response.ok) throw new Error('更新时间失败');
@@ -650,7 +651,8 @@
                         },
                         body: JSON.stringify({
                             time: new Date().toISOString(),
-                            players
+                            players,
+                            season: 0
                         })
                     });
 
@@ -705,7 +707,8 @@
                         body: JSON.stringify({
                             newName: newTeamName,
                             adminPassword: adminPassword,
-                            color: color
+                            color: color,
+                            season: 0
                         })
                     });
 

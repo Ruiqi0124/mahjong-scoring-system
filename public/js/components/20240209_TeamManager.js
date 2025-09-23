@@ -1,3 +1,6 @@
+const thisScript = document.currentScript;
+const season = parseInt(thisScript.getAttribute('data-season'), 10);
+
 class TeamManager {
     constructor() {
         this.teams = [];
@@ -14,7 +17,7 @@ class TeamManager {
 
     async loadPlayers() {
         try {
-            const response = await fetch('/api/players');
+            const response = await fetch(`/api/players?season=${season}`);
             if (!response.ok) throw new Error('加载玩家列表失败');
             this.players = await response.json();
             this.updatePlayerSelection();
@@ -26,7 +29,7 @@ class TeamManager {
 
     async loadTeams() {
         try {
-            const response = await fetch('/api/teams');
+            const response = await fetch(`/api/teams?season=${season}`);
             if (!response.ok) throw new Error('加载团队列表失败');
             const teams = await response.json();
             this.updateTeamsList(teams);
@@ -126,7 +129,7 @@ class TeamManager {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name, members, color })
+                body: JSON.stringify({ name, members, color, season })
             });
 
             const result = await response.json();
@@ -153,7 +156,8 @@ class TeamManager {
             }
 
             const response = await fetch(`/api/teams/${encodeURIComponent(teamName)}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                body: JSON.stringify({ season })
             });
 
             if (!response.ok) {
