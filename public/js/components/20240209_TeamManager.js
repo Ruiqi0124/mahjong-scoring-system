@@ -1,5 +1,6 @@
 const thisScript = document.currentScript;
 const season = parseInt(thisScript.getAttribute('data-season'), 10);
+const lang = thisScript.getAttribute('data-lang');
 
 class TeamManager {
     constructor() {
@@ -64,15 +65,15 @@ class TeamManager {
                         <h5 class="card-title mb-0 team-color" style="color: ${team.color}">${team.name}</h5>
                         <div class="btn-group">
                             <button class="btn btn-outline-primary btn-sm edit-team" data-team-name="${team.name}" data-team-color="${team.color}">
-                                <i class="fas fa-edit"></i> 编辑
+                                <i class="fas fa-edit"></i> ${lang == 'zh' ? '编辑' : 'Modify'}
                             </button>
                             <button class="btn btn-outline-danger btn-sm delete-team" data-team-name="${team.name}">
-                                <i class="fas fa-trash"></i> 删除
+                                <i class="fas fa-trash"></i> ${lang == 'zh' ? '删除' : 'Delete'}
                             </button>
                         </div>
                     </div>
                     <div class="mt-2">
-                        <strong>成员：</strong>
+                        <strong>${lang == 'zh' ? '成员' : 'Members'}：</strong>
                         ${team.members.map(member => `<span class="badge bg-secondary me-1">${member}</span>`).join('')}
                     </div>
                 </div>
