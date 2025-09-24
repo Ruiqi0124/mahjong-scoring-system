@@ -746,6 +746,10 @@ app.patch('/api/team-matches/:id/time', async (req, res) => {
     }
 });
 
+const TOTAL_GAMES = [
+    { "default": 16 }, { "default": 50 }
+]
+
 // 获取团队赛排名数据
 app.get('/api/team-rankings', async (req, res) => {
     try {
@@ -759,15 +763,18 @@ app.get('/api/team-rankings', async (req, res) => {
         const matches = await TeamMatch.find();
 
         // 计算团队排名
-        const teamRankings = teams.map(team => ({
-            name: team.name,
-            games: team.games,
-            progress: `${team.games}/16`,
-            winRate: team.winRate,
-            totalPT: team.totalPT,
-            avgPT: team.avgPT,
-            color: team.color
-        })).sort((a, b) => b.avgPT - a.avgPT);
+        const teamRankings = teams.map(team => {
+            const total_game = TOTAL_GAMES[season][team.name] ?? TOTAL_GAMES[season]["default"];
+            return {
+                name: team.name,
+                games: team.games,
+                progress: `${team.games}/${total_game}`,
+                winRate: team.winRate,
+                totalPT: team.totalPT,
+                avgPT: team.avgPT,
+                color: team.color
+            };
+        }).sort((a, b) => b.avgPT - a.avgPT);
 
         // 计算个人排名
         const playerStats = new Map();
