@@ -26,7 +26,7 @@ const Rankings = {
 
             // 初始化历史对局气泡框
             this.initHistoryPopover();
-            
+
             // 添加排序按钮和表头点击事件监听
             document.querySelectorAll('.sortable').forEach(th => {
                 const sortField = th.dataset.sort;
@@ -48,12 +48,12 @@ const Rankings = {
 
             // 添加点击空白区域关闭气泡框的事件
             document.addEventListener('click', (e) => {
-                if (!e.target.closest('#playerHistoryPopover') && 
+                if (!e.target.closest('#playerHistoryPopover') &&
                     !e.target.closest('.player-name-link')) {
                     this.hidePlayerHistory();
                 }
             });
-            
+
             await this.updateRankings();
         } catch (error) {
             console.error('初始化失败:', error);
@@ -73,12 +73,12 @@ const Rankings = {
     // 格式化日期
     formatDate(dateString) {
         if (!dateString) return '-';
-        
+
         try {
             const date = new Date(dateString);
             // 检查是否为有效日期
             if (isNaN(date.getTime())) return '-';
-            
+
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
@@ -126,7 +126,7 @@ const Rankings = {
 
         try {
             const games = await api.getGames();
-            let playerGames = games.filter(game => 
+            let playerGames = games.filter(game =>
                 game.players.some(player => player.name === name)
             );
 
@@ -146,22 +146,22 @@ const Rankings = {
                 playerGames.sort((a, b) => {
                     const timeA = this.getGameTime(a);
                     const timeB = this.getGameTime(b);
-                    
+
                     // 如果两个时间都无效，按原顺序保持不变
                     if (!timeA && !timeB) return 0;
                     // 无效时间排在后面
                     if (!timeA) return 1;
                     if (!timeB) return -1;
-                    
+
                     return new Date(timeB) - new Date(timeA);
                 });
                 playerGames = playerGames.slice(0, 10);
-                
+
                 tbody.innerHTML = playerGames.map(game => {
                     // 获取当前玩家的信息
                     const playerInfo = game.players.find(p => p.name === name);
                     const rank = game.players.indexOf(playerInfo) + 1;
-                    
+
                     // 按顺位排序其他玩家
                     const sortedPlayers = [...game.players].sort((a, b) => {
                         if (a.name === name) return -1;
@@ -206,7 +206,7 @@ const Rankings = {
                 const rect = event.target.getBoundingClientRect();
                 const popoverWidth = Math.min(500, window.innerWidth - 40);
                 this.historyPopover.style.width = `${popoverWidth}px`;
-                
+
                 const popoverHeight = this.historyPopover.offsetHeight;
                 const spaceBelow = window.innerHeight - rect.bottom;
                 const spaceRight = window.innerWidth - rect.left;
@@ -284,7 +284,7 @@ const Rankings = {
     async addNewPlayer() {
         const input = document.getElementById('newPlayerName');
         const name = input.value.trim();
-        
+
         if (!name) {
             alert('请输入玩家名称！');
             return;
@@ -350,14 +350,14 @@ const Rankings = {
                 api.getGames(),
                 api.getPlayers()
             ]);
-            
+
             // 处理游戏数据，确保每个玩家都有PT值
             const processedGames = games.map(game => {
                 // 按分数排序玩家
                 const sortedPlayers = [...game.players].sort((a, b) => b.score - a.score);
                 // 检查是否有同分情况
                 const sameScoreWithFirst = sortedPlayers[1] && sortedPlayers[0].score === sortedPlayers[1].score;
-                
+
                 // 计算每个玩家的PT
                 const playersWithPT = sortedPlayers.map((player, index) => ({
                     ...player,
@@ -428,10 +428,10 @@ const Rankings = {
             const tbody = document.getElementById('rankingsBody');
             tbody.innerHTML = sortedPlayers.map(player => {
                 // 计算顺位率
-                const rankRates = player.ranks.map(count => 
+                const rankRates = player.ranks.map(count =>
                     player.games > 0 ? ((count / player.games) * 100).toFixed(1) + '%' : '0%'
                 );
-                
+
                 return `
                     <tr class="${player.games === 0 ? 'inactive-player' : ''}">
                         <td>
@@ -471,7 +471,7 @@ const Rankings = {
     // 计算玩家统计数据
     calculateStats(games) {
         const stats = {};
-        
+
         // 初始化统计数据
         games.forEach(game => {
             game.players.forEach(player => {
@@ -488,18 +488,18 @@ const Rankings = {
                         recentGames: []
                     };
                 }
-                
+
                 const playerStats = stats[player.name];
                 playerStats.games++;
                 playerStats.totalScore += player.score;
                 playerStats.totalPT += player.pt;
-                
+
                 // 计算顺位（根据分数排序后的位置）
                 const rank = game.players
                     .sort((a, b) => b.score - a.score)
                     .findIndex(p => p.name === player.name);
                 playerStats.ranks[rank]++;
-                
+
                 // 保存最近比赛记录
                 if (playerStats.recentGames.length < 10) {
                     playerStats.recentGames.push({
@@ -511,7 +511,7 @@ const Rankings = {
                 }
             });
         });
-        
+
         // 计算平均值
         Object.values(stats).forEach(player => {
             player.avgScore = Math.round(player.totalScore / player.games);
@@ -520,7 +520,7 @@ const Rankings = {
             // 对最近比赛按时间排序
             player.recentGames.sort((a, b) => new Date(b.time) - new Date(a.time));
         });
-        
+
         return Object.values(stats);
     },
 
@@ -528,13 +528,13 @@ const Rankings = {
     renderRankings(stats) {
         const tbody = document.getElementById('rankingsBody');
         const sortedStats = this.sortStats(stats, this.currentSort);
-        
+
         tbody.innerHTML = sortedStats.map(player => {
             // 计算顺位率
-            const rankRates = player.ranks.map(count => 
+            const rankRates = player.ranks.map(count =>
                 player.games > 0 ? ((count / player.games) * 100).toFixed(1) + '%' : '0%'
             );
-            
+
             return `
                 <tr class="${player.games === 0 ? 'inactive-player' : ''}">
                     <td>

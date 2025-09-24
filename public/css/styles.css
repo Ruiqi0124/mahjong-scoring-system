@@ -270,7 +270,7 @@ h2 {
 
 /* 导航栏样式 */
 .navbar {
-    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
     padding: 0.75rem 1rem;
 }
 
@@ -332,7 +332,8 @@ h2 {
         margin: 0 -1rem;
     }
 
-    .table td, .table th {
+    .table td,
+    .table th {
         padding: 0.5rem;
     }
 }
@@ -388,15 +389,15 @@ h2 {
 }
 
 /* 确保固定列的背景色正确且不透明 */
-.table-striped > tbody > tr:nth-of-type(odd) > td:first-child {
+.table-striped>tbody>tr:nth-of-type(odd)>td:first-child {
     background-color: #f2f2f2;
 }
 
-.table-striped > tbody > tr:nth-of-type(even) > td:first-child {
+.table-striped>tbody>tr:nth-of-type(even)>td:first-child {
     background-color: #ffffff;
 }
 
-.table > thead > tr > th:first-child {
+.table>thead>tr>th:first-child {
     background-color: #cfe2ff;
     border-right: 1px solid #dee2e6;
     z-index: 2;
@@ -412,17 +413,21 @@ h2 {
     bottom: 0;
     width: 5px;
     pointer-events: none;
-    background: linear-gradient(to right, rgba(0,0,0,0.1), rgba(0,0,0,0));
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0));
 }
 
 /* 处理悬停效果 */
-.table-hover > tbody > tr:hover > td:first-child {
+.table-hover>tbody>tr:hover>td:first-child {
     background-color: #ebebeb !important;
 }
 
 /* 处理不活跃玩家的样式 */
-.table-striped > tbody > tr.inactive-player > td:first-child {
+.table-striped>tbody>tr.inactive-player>td:first-child {
     background-color: #f8f8f8;
+}
+
+.table thead {
+    border-top: none !important;
 }
 
 /* 可排序表头样式 */
@@ -478,7 +483,7 @@ h2 {
     display: none;
     max-width: 600px;
     background-color: #fff;
-    border: 1px solid rgba(0,0,0,.2);
+    border: 1px solid rgba(0, 0, 0, .2);
     border-radius: 0.5rem;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
@@ -631,13 +636,13 @@ h2 {
         flex-wrap: wrap;
         justify-content: center;
     }
-    
+
     #historyPagination .btn {
         min-width: 35px;
         padding: 0.25rem;
         font-size: 0.8rem;
     }
-    
+
     .d-flex.justify-content-between.align-items-center.mt-3 {
         flex-direction: column;
         gap: 1rem;
@@ -714,4 +719,4 @@ h2 {
     color: #28a745;
     font-weight: bold;
 }
-*/ 
+*/
