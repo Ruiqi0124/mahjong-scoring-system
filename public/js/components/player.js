@@ -111,17 +111,18 @@ const Player = {
 
             // 计算相对PT
             for (const opponent of playersWithPT) {
-                if (opponent.name === playerName) continue;
-                if (!relativePt[opponent.name]) {
-                    relativePt[opponent.name] = {
-                        relative_pt: 0,
-                        game_count: 0,
-                        total_rank: 0
-                    };
+                if (opponent.name !== playerName && opponent.name !== '其他玩家') {
+                    if (!relativePt[opponent.name]) {
+                        relativePt[opponent.name] = {
+                            relative_pt: 0,
+                            game_count: 0,
+                            total_rank: 0
+                        };
+                    }
+                    relativePt[opponent.name].relative_pt += playerInfo.pt - opponent.pt;
+                    relativePt[opponent.name].game_count += 1;
+                    relativePt[opponent.name].total_rank += rank + 1;
                 }
-                relativePt[opponent.name].relative_pt += playerInfo.pt - opponent.pt;
-                relativePt[opponent.name].game_count += 1;
-                relativePt[opponent.name].total_rank += rank + 1;
             }
         });
         stats.relativePt = Object.entries(relativePt)
