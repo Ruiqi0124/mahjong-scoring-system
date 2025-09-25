@@ -142,12 +142,12 @@ const Player = {
                         relativePt[opponent.name] = {
                             relative_pt: 0,
                             game_count: 0,
-                            total_rank: 0
+                            total_placement: 0
                         };
                     }
                     relativePt[opponent.name].relative_pt += playerInfo.pt - opponent.pt;
                     relativePt[opponent.name].game_count += 1;
-                    relativePt[opponent.name].total_rank += rank + 1;
+                    relativePt[opponent.name].total_placement += rank + 1;
                 }
             }
         });
@@ -156,7 +156,7 @@ const Player = {
                 opponent_name,
                 relative_pt: data.relative_pt,
                 game_count: data.game_count,
-                average_placement: data.total_rank / data.game_count
+                average_placement: data.total_placement / data.game_count
             }))
             .sort((a, b) => b.relative_pt - a.relative_pt);
 
@@ -577,7 +577,7 @@ const Player = {
             this.currentSort.field = field;
             // 平均顺位是越小越好，所以默认升序
             // 其他字段（场数、得点、PT等）是越大越好，所以默认降序
-            this.currentSort.direction = field === 'averageRank' ? 'asc' : 'desc';
+            this.currentSort.direction = field === 'avgPlacement' ? 'asc' : 'desc';
         }
 
         // 更新排序图标
@@ -624,8 +624,8 @@ const Player = {
                 case 'avgPlacement':
                 default:
                     // 默认按平均顺位排序
-                    aValue = a.total_rank / a.game_count;
-                    bValue = b.total_rank / b.game_count
+                    aValue = a.average_placement;
+                    bValue = b.average_placement;
             }
             // 根据排序方向返回比较结果
             const compareResult = aValue - bValue;
