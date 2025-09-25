@@ -3,6 +3,10 @@ const Player = {
     stats: null, // 添加stats属性
     currentPage: 1,
     pageSize: 10,
+    currentSort: {
+        field: 'totalPT',
+        direction: 'desc'
+    },
 
     // 初始化
     async init() {
@@ -20,6 +24,25 @@ const Player = {
             // 设置页面标题
             document.title = `${playerName} 的资料 - 巢计分系统`;
             document.getElementById('playerName').textContent = playerName;
+
+            // 添加排序按钮和表头点击事件监听
+            document.querySelectorAll('.sortable').forEach(th => {
+                const sortField = th.dataset.sort;
+                // 为表头添加点击事件
+                th.addEventListener('click', (e) => {
+                    // 如果点击的是按钮，不处理（让按钮自己的事件处理）
+                    if (e.target.closest('.sort-btn')) return;
+                    this.handleSort(sortField);
+                });
+                // 为排序按钮添加点击事件
+                const btn = th.querySelector('.sort-btn');
+                if (btn) {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // 阻止事件冒泡到表头
+                        this.handleSort(sortField);
+                    });
+                }
+            });
 
             // 获取数据
             const [games, players] = await Promise.all([
@@ -43,6 +66,7 @@ const Player = {
             this.drawTrendChart(this.stats.recentGames);
 
             // 绘制相对pt表
+            this.showMinGamesOnly = document.getElementById('filterMinGames').checked;
             this.drawRelativePtChart(this.stats.relativePt);
 
             // 更新最近对局记录
@@ -62,7 +86,7 @@ const Player = {
             totalScore: 0,
             totalPT: 0,
             ranks: [0, 0, 0, 0], // 一位到四位的次数
-            avgRank: 0,
+            avgPlacement: 0,
             avgScore: 0,
             avgPT: 0,
             recentGames: [],
@@ -138,7 +162,7 @@ const Player = {
         if (stats.games > 0) {
             stats.avgScore = Math.round(stats.totalScore / stats.games);
             stats.avgPT = stats.totalPT / stats.games;
-            stats.avgRank = stats.ranks.reduce((sum, count, index) =>
+            stats.avgPlacement = stats.ranks.reduce((sum, count, index) =>
                 sum + (count * (index + 1)), 0) / stats.games;
         }
 
@@ -148,7 +172,7 @@ const Player = {
     // 更新基本信息
     updateBasicInfo(stats) {
         document.getElementById('totalGames').textContent = stats.games;
-        document.getElementById('averageRank').textContent = stats.avgRank.toFixed(2);
+        document.getElementById('averageRank').textContent = stats.avgPlacement.toFixed(2);
         document.getElementById('averageScore').textContent = stats.avgScore.toLocaleString();
         document.getElementById('totalPT').textContent = stats.totalPT.toFixed(1);
         document.getElementById('averagePT').textContent = stats.avgPT.toFixed(1);
@@ -359,9 +383,13 @@ const Player = {
 
     drawRelativePtChart(relativePt) {
         const tbody = document.getElementById('relativePt');
+        if (this.showMinGamesOnly) {
+            relativePt = relativePt.filter(a => a.game_count >= 16);
+        }
+        const sortedRelativePt = this.sortRelativePt(relativePt, this.currentSort);
 
         // 渲染表格内容
-        tbody.innerHTML = relativePt.map(opponent => `
+        tbody.innerHTML = sortedRelativePt.map(opponent => `
         <tr>
             <td>
                 <a href="?name=${encodeURIComponent(opponent.opponent_name)}" class="text-decoration-none">
@@ -535,5 +563,72 @@ const Player = {
             console.error('日期格式化错误:', error);
             return '-';
         }
+    },
+
+    // 处理排序
+    async handleSort(field) {
+        if (this.currentSort.field === field) {
+            // 如果点击的是当前排序字段，则切换排序方向
+            this.currentSort.direction = this.currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            // 如果是新字段，根据字段类型设置默认排序方向
+            this.currentSort.field = field;
+            // 平均顺位是越小越好，所以默认升序
+            // 其他字段（场数、得点、PT等）是越大越好，所以默认降序
+            this.currentSort.direction = field === 'averageRank' ? 'asc' : 'desc';
+        }
+
+        // 更新排序图标
+        this.updateSortIcons();
+        this.drawRelativePtChart(this.stats.relativePt);
+    },
+
+    // 切换最小场数过滤器
+    toggleMinGamesFilter() {
+        this.showMinGamesOnly = document.getElementById('filterMinGames').checked;
+        this.drawRelativePtChart(this.stats.relativePt);
+    },
+
+    // 更新排序图标
+    updateSortIcons() {
+        document.querySelectorAll('.sort-btn i').forEach(icon => {
+            const button = icon.closest('.sort-btn');
+            if (button.dataset.sort === this.currentSort.field) {
+                icon.className = `fas fa-sort-${this.currentSort.direction === 'asc' ? 'up' : 'down'}`;
+            } else {
+                icon.className = 'fas fa-sort';
+            }
+        });
+    },
+
+    // 排序统计数据
+    sortRelativePt(relativePt) {
+        return relativePt.sort((a, b) => {
+            // 获取排序字段的值
+            let aValue, bValue;
+            switch (this.currentSort.field) {
+                case 'pt':
+                    aValue = a.relative_pt;
+                    bValue = b.relative_pt;
+                    break;
+                case 'avgPt':
+                    aValue = a.relative_pt / a.game_count;
+                    bValue = b.relative_pt / b.game_count
+                    break;
+                case 'gameCount':
+                    aValue = a.game_count;
+                    bValue = b.game_count;
+                    break;
+                case 'avgPlacement':
+                default:
+                    // 默认按平均顺位排序
+                    aValue = a.total_rank / a.game_count;
+                    bValue = b.total_rank / b.game_count
+            }
+            // 根据排序方向返回比较结果
+            const compareResult = aValue - bValue;
+            return this.currentSort.direction === 'asc' ? compareResult : -compareResult;
+        });
     }
+
 }; 

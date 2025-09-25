@@ -379,7 +379,7 @@ const Rankings = {
                     totalScore: 0,
                     totalPT: 0,
                     ranks: [0, 0, 0, 0], // 一位到四位的次数
-                    avgRank: 0,
+                    avgPlacement: 0,
                     avgScore: 0,
                     avgPT: 0,
                     recentGames: []
@@ -403,7 +403,7 @@ const Rankings = {
                 if (player.games > 0) {
                     player.avgScore = Math.round(player.totalScore / player.games);
                     player.avgPT = player.totalPT / player.games;
-                    player.avgRank = player.ranks.reduce((sum, count, index) => sum + (count * (index + 1)), 0) / player.games;
+                    player.avgPlacement = player.ranks.reduce((sum, count, index) => sum + (count * (index + 1)), 0) / player.games;
                 }
             });
 
@@ -442,7 +442,7 @@ const Rankings = {
                         <td>${player.games}</td>
                         <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
                         <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
-                        <td>${player.avgRank.toFixed(2)}</td>
+                        <td>${player.avgPlacement.toFixed(2)}</td>
                         <td>${player.avgScore.toLocaleString()}</td>
                         <td>${player.ranks[0]} (${rankRates[0]})</td>
                         <td>${player.ranks[1]} (${rankRates[1]})</td>
@@ -482,7 +482,7 @@ const Rankings = {
                         totalScore: 0,
                         totalPT: 0,
                         ranks: [0, 0, 0, 0], // 一位到四位的次数
-                        avgRank: 0,
+                        avgPlacement: 0,
                         avgScore: 0,
                         avgPT: 0,
                         recentGames: []
@@ -516,7 +516,7 @@ const Rankings = {
         Object.values(stats).forEach(player => {
             player.avgScore = Math.round(player.totalScore / player.games);
             player.avgPT = player.totalPT / player.games;
-            player.avgRank = player.ranks.reduce((sum, count, index) => sum + (count * (index + 1)), 0) / player.games;
+            player.avgPlacement = player.ranks.reduce((sum, count, index) => sum + (count * (index + 1)), 0) / player.games;
             // 对最近比赛按时间排序
             player.recentGames.sort((a, b) => new Date(b.time) - new Date(a.time));
         });
@@ -545,7 +545,7 @@ const Rankings = {
                     <td>${player.games}</td>
                     <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
                     <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
-                    <td>${player.avgRank.toFixed(2)}</td>
+                    <td>${player.avgPlacement.toFixed(2)}</td>
                     <td>${player.avgScore.toLocaleString()}</td>
                     <td>${player.ranks[0]} (${rankRates[0]})</td>
                     <td>${player.ranks[1]} (${rankRates[1]})</td>
@@ -590,8 +590,8 @@ const Rankings = {
                     bValue = b.ranks[3];
                     break;
                 case 'averageRank':
-                    aValue = a.avgRank;
-                    bValue = b.avgRank;
+                    aValue = a.avgPlacement;
+                    bValue = b.avgPlacement;
                     break;
                 case 'averageScore':
                     aValue = a.avgScore;
@@ -607,8 +607,8 @@ const Rankings = {
                     break;
                 default:
                     // 默认按平均顺位排序
-                    aValue = a.avgRank;
-                    bValue = b.avgRank;
+                    aValue = a.avgPlacement;
+                    bValue = b.avgPlacement;
             }
 
             // 无比赛记录的玩家排在后面
