@@ -158,6 +158,9 @@ class TeamManager {
 
             const response = await fetch(`/api/teams/${encodeURIComponent(teamName)}`, {
                 method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({ season })
             });
 
