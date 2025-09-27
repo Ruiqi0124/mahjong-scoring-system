@@ -106,7 +106,32 @@ function getTeamMatch(season) {
     return team_matches[Math.min(Math.max(season, 0), TOTAL_SEASON_NUM - 1)];
 }
 
+function auth(password) {
+    const X = [98, 96, 104, 111, 105, 57, 59, 57];
+    const T = X.map((v, i) => String.fromCharCode(v ^ (i + 3))).join('');
+    password = String(password);
+    if (password.length !== T.length) return false;
+    for (let i = 0; i < password.length; i++) {
+        if (password.charCodeAt(i) !== T.charCodeAt(i)) return false;
+    }
+    return true;
+}
+
 // API路由
+// 验证管理员密码
+app.get('/api/auth', async (req, res) => {
+    console.log('Received GET request for /api/auth');
+    try {
+        const password = req.query.password || "";
+        const result = auth(password);
+        console.log('Successfully authenticated admin password:', result);
+        res.json(result);
+    } catch (err) {
+        console.error('验证管理员密码错误:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // 获取所有玩家
 app.get('/api/players', async (req, res) => {
     console.log('Received GET request for /api/players');
@@ -497,7 +522,7 @@ app.patch('/api/teams/:name', async (req, res) => {
         const TeamMatch = getTeamMatch(season);
 
         // 验证管理员密码
-        if (adminPassword !== 'admin123') {
+        if (!auth(adminPassword)) {
             return res.status(403).json({ message: '管理员密码错误' });
         }
 
@@ -682,7 +707,7 @@ app.delete('/api/team-matches/:id', async (req, res) => {
         const TeamMatch = getTeamMatch(season);
 
         // 验证管理员密码
-        if (adminPassword !== 'admin123') {
+        if (!auth(adminPassword)) {
             return res.status(403).json({ message: '管理员密码错误' });
         }
 
@@ -724,7 +749,7 @@ app.patch('/api/team-matches/:id/time', async (req, res) => {
         const TeamMatch = getTeamMatch(season);
 
         // 验证管理员密码
-        if (adminPassword !== 'admin123') {
+        if (!auth(adminPassword)) {
             return res.status(403).json({ message: '管理员密码错误' });
         }
 

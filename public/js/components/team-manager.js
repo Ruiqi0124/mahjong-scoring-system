@@ -1,9 +1,8 @@
-const thisScript = document.currentScript;
-const season = parseInt(thisScript.getAttribute('data-season'), 10);
-const lang = thisScript.getAttribute('data-lang');
-
 class TeamManager {
     constructor() {
+        const thisScript = document.currentScript;
+        this.season = parseInt(thisScript.getAttribute('data-season'), 10);
+        this.lang = thisScript.getAttribute('data-lang');
         this.teams = [];
         this.players = [];
         this.createTeamModal = new bootstrap.Modal(document.getElementById('createTeamModal'));
@@ -18,7 +17,7 @@ class TeamManager {
 
     async loadPlayers() {
         try {
-            const response = await fetch(`/api/players?season=${season}`);
+            const response = await fetch(`/api/players?season=${this.season}`);
             if (!response.ok) throw new Error('加载玩家列表失败');
             this.players = await response.json();
             this.updatePlayerSelection();
@@ -30,7 +29,7 @@ class TeamManager {
 
     async loadTeams() {
         try {
-            const response = await fetch(`/api/teams?season=${season}`);
+            const response = await fetch(`/api/teams?season=${this.season}`);
             if (!response.ok) throw new Error('加载团队列表失败');
             const teams = await response.json();
             this.updateTeamsList(teams);
@@ -65,15 +64,15 @@ class TeamManager {
                         <h5 class="card-title mb-0 team-color" style="color: ${team.color}">${team.name}</h5>
                         <div class="btn-group">
                             <button class="btn btn-outline-primary btn-sm edit-team" data-team-name="${team.name}" data-team-color="${team.color}">
-                                <i class="fas fa-edit"></i> ${lang === 'zh' ? '编辑' : 'Modify'}
+                                <i class="fas fa-edit"></i> ${this.lang === 'zh' ? '编辑' : 'Modify'}
                             </button>
                             <button class="btn btn-outline-danger btn-sm delete-team" data-team-name="${team.name}">
-                                <i class="fas fa-trash"></i> ${lang === 'zh' ? '删除' : 'Delete'}
+                                <i class="fas fa-trash"></i> ${this.lang === 'zh' ? '删除' : 'Delete'}
                             </button>
                         </div>
                     </div>
                     <div class="mt-2">
-                        <strong>${lang === 'zh' ? '成员' : 'Members'}：</strong>
+                        <strong>${this.lang === 'zh' ? '成员' : 'Members'}：</strong>
                         ${team.members.map(member => `<span class="badge bg-secondary me-1">${member}</span>`).join('')}
                     </div>
                 </div>
@@ -88,7 +87,7 @@ class TeamManager {
                 document.getElementById('editTeamName').value = teamName;
                 document.getElementById('originalTeamName').value = teamName;
                 document.getElementById('editTeamColor').value = teamColor;
-                teamLeague.editTeamModal.show();
+                TeamMatchManager.editTeamModal.show();
             });
         });
 
@@ -130,7 +129,7 @@ class TeamManager {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name, members, color, season })
+                body: JSON.stringify({ name, members, color, season: this.season })
             });
 
             const result = await response.json();
@@ -161,7 +160,7 @@ class TeamManager {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ season })
+                body: JSON.stringify({ season: this.season })
             });
 
             if (!response.ok) {

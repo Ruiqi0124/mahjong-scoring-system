@@ -1,15 +1,21 @@
 // 权限控制工具
 const auth = {
-    // 管理员密码 (这里使用一个简单的密码，实际应用中应该使用更安全的方式)
-    adminPassword: 'admin123',
+    async verifyPassword(password) {
+        const response = await fetch(`/api/auth?password=${encodeURIComponent(password)}`);
+        if (!response.ok) throw new Error('验证密码失败');
+        return await response.json();
+    },
 
     // 验证管理员权限
     async verifyAdmin() {
         const password = prompt('请输入管理员密码：');
         if (!password) return false;
-        
-        // 这里使用一个简单的密码验证，实际应用中应该使用更安全的方式
-        return password === 'admin123';
+        const result = await this.verifyPassword(password);
+        if (result) {
+            return password;
+        } else {
+            return null;
+        }
     },
 
     // 显示密码输入弹窗
