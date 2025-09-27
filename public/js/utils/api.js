@@ -147,40 +147,23 @@ window.api = {
 
 // PT计算工具
 const ptUtils = {
-    // 计算单个玩家的PT
-    calculatePT(score, rank, sameScoreWithFirst = false) {
-        // 基础分：(素点-30000)/1000
-        const basePT = (score - 30000) / 1000;
-        
-        // 顺位分
-        let rankPT = 0;
-        switch(rank) {
-            case 1:
-                rankPT = sameScoreWithFirst ? 25 : 45; // 如果和一位同分，平分45pt
-                break;
-            case 2:
-                rankPT = sameScoreWithFirst ? 25 : 5;
-                break;
-            case 3:
-                rankPT = -15;
-                break;
-            case 4:
-                rankPT = -35;
-                break;
-        }
-        
-        return basePT + rankPT;
+    calculateGamePtsFromScoresWithIndex(scoresWithIndex) {
+        const basePTs = [45, 5, -15, -35];
+        const indicesOfScore = (targetScore) => scoresWithIndex.map(({ score, index }) => score === targetScore ? index : null).filter(index => index !== null);
+        return scoresWithIndex.map(({ score }) => {
+            const umaIndices = indicesOfScore(score);
+            const umaTotal = umaIndices.reduce((sum, index) => sum + basePTs[index], 0);
+            const uma = umaTotal / umaIndices.length;
+            const pt = (score - 30000) / 1000 + uma;
+            return {
+                score, pt
+            };
+        });
     },
 
-    // 计算一局游戏中所有玩家的PT
-    calculateGamePTs(players) {
-        // 检查是否有同分情况
-        const firstScore = players[0].score;
-        const sameScoreWithFirst = players[1].score === firstScore;
-
-        return players.map((player, index) => ({
-            ...player,
-            pt: this.calculatePT(player.score, index + 1, sameScoreWithFirst)
-        }));
-    }
+    calculateGamePtsFromScores(scores) {
+        scores = scores.sort((a, b) => b - a);
+        const scoresWithIndex = scores.map((score, index) => ({ score, index }));
+        return this.calculateGamePtsFromScoresWithIndex(scoresWithIndex);
+    },
 }; 

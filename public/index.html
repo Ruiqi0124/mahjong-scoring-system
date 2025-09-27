@@ -62,6 +62,21 @@
                             <tr>
                                 <td>一位</td>
                                 <td>
+                                    <select id="player0" class="form-select">
+                                        <option value="">选择玩家</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" id="score0" class="form-control" placeholder="输入得点"
+                                        onchange="GameForm.updatePT()">
+                                </td>
+                                <td>
+                                    <span id="pt0" class="pt-value">-</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>二位</td>
+                                <td>
                                     <select id="player1" class="form-select">
                                         <option value="">选择玩家</option>
                                     </select>
@@ -75,7 +90,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td>二位</td>
+                                <td>三位</td>
                                 <td>
                                     <select id="player2" class="form-select">
                                         <option value="">选择玩家</option>
@@ -90,7 +105,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td>三位</td>
+                                <td>四位</td>
                                 <td>
                                     <select id="player3" class="form-select">
                                         <option value="">选择玩家</option>
@@ -102,21 +117,6 @@
                                 </td>
                                 <td>
                                     <span id="pt3" class="pt-value">-</span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>四位</td>
-                                <td>
-                                    <select id="player4" class="form-select">
-                                        <option value="">选择玩家</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="number" id="score4" class="form-control" placeholder="输入得点"
-                                        onchange="GameForm.updatePT()">
-                                </td>
-                                <td>
-                                    <span id="pt4" class="pt-value">-</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -231,7 +231,6 @@
     <script src="js/utils/auth.js"></script>
     <script src="js/utils/storage.js"></script>
     <script src="js/utils/api.js"></script>
-    <script src="js/utils/pt.js"></script>
     <script src="js/components/game-form.js"></script>
     <script src="js/components/history.js"></script>
     <script>

@@ -110,18 +110,18 @@ const History = {
     async updateHistory() {
         try {
             this.games = await api.getGames();
-            
+
             // 确保每个游戏记录都有PT值
             this.games = this.games.map(game => {
                 // 按分数排序玩家
                 const sortedPlayers = [...game.players].sort((a, b) => b.score - a.score);
-                // 检查是否有同分情况
-                const sameScoreWithFirst = sortedPlayers[1] && sortedPlayers[0].score === sortedPlayers[1].score;
-                
+                const playerScores = sortedPlayers.map(player => player.score);
+                const pts = ptUtils.calculateGamePtsFromScores(playerScores);
+
                 // 计算每个玩家的PT
                 const playersWithPT = sortedPlayers.map((player, index) => ({
                     ...player,
-                    pt: player.pt || ptUtils.calculatePT(player.score, index + 1, sameScoreWithFirst)
+                    pt:  pts[index].pt
                 }));
 
                 return {
@@ -129,10 +129,10 @@ const History = {
                     players: playersWithPT
                 };
             });
-            
+
             // 按时间降序排序
             this.games.sort((a, b) => new Date(b.time) - new Date(a.time));
-            
+
             this.renderCurrentPage();
         } catch (error) {
             console.error('更新历史记录失败:', error);
@@ -144,14 +144,14 @@ const History = {
     renderCurrentPage() {
         const tbody = document.getElementById('historyBody');
         const paginationDiv = document.getElementById('historyPagination');
-        
+
         // 计算总页数
         const totalPages = Math.ceil(this.games.length / this.pageSize);
-        
+
         // 确保当前页面在有效范围内
         if (this.currentPage < 1) this.currentPage = 1;
         if (this.currentPage > totalPages) this.currentPage = totalPages;
-        
+
         // 计算当前页的数据范围
         const startIndex = (this.currentPage - 1) * this.pageSize;
         const endIndex = Math.min(startIndex + this.pageSize, this.games.length);
@@ -168,7 +168,7 @@ const History = {
                 hour12: false
             });
 
-            const players = game.players.map(p => 
+            const players = game.players.map(p =>
                 `<a href="/player.html?name=${encodeURIComponent(p.name)}" class="text-decoration-none">${p.name}</a><br>
                 <small class="text-muted">
                     ${p.score.toLocaleString()}<br>
@@ -203,7 +203,7 @@ const History = {
         paginationDiv.innerHTML = this.renderPagination(totalPages);
 
         // 显示当前页码信息
-        document.getElementById('pageInfo').textContent = 
+        document.getElementById('pageInfo').textContent =
             `第 ${this.currentPage} 页 / 共 ${totalPages} 页（共 ${this.games.length} 条记录）`;
     },
 
@@ -212,7 +212,7 @@ const History = {
         if (totalPages <= 1) return '';
 
         let buttons = [];
-        
+
         // 上一页按钮
         buttons.push(`
             <button class="btn btn-outline-primary ${this.currentPage === 1 ? 'disabled' : ''}"
@@ -225,7 +225,7 @@ const History = {
         // 页码按钮
         let startPage = Math.max(1, this.currentPage - 2);
         let endPage = Math.min(totalPages, startPage + 4);
-        
+
         // 调整startPage确保显示5个按钮
         if (endPage - startPage < 4) {
             startPage = Math.max(1, endPage - 4);

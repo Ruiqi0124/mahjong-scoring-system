@@ -18,14 +18,14 @@ const GameForm = {
     async updatePlayerSelects() {
         try {
             const players = await api.getPlayers();
-            const selects = [1, 2, 3, 4].map(i => document.getElementById(`player${i}`));
-            
+            const selects = [...Array(4).keys()].map(i => document.getElementById(`player${i}`));
+
             // 保存当前选择的值
             const currentValues = selects.map(select => select.value);
-            
+
             // 更新选项
             selects.forEach((select, index) => {
-                select.innerHTML = '<option value="">选择玩家</option>' + 
+                select.innerHTML = '<option value="">选择玩家</option>' +
                     players.map(player => {
                         // 如果player是对象，使用其name属性
                         const playerName = typeof player === 'object' ? player.name : player;
@@ -41,27 +41,26 @@ const GameForm = {
     // 更新PT显示
     updatePT() {
         const scores = [];
-        for (let i = 1; i <= 4; i++) {
-            const score = parseInt(document.getElementById(`score${i}`).value) || 0;
-            scores.push({ score, index: i - 1 }); // 保存原始索引
+        for (let index = 0; index < 4; index++) {
+            const score = parseInt(document.getElementById(`score${index}`).value);
+            if (score) {
+                scores.push({ score, index })
+            }
         }
-        
-        // 按分数降序排序，保留原始索引
-        scores.sort((a, b) => b.score - a.score);
-        
+
         // 计算并显示PT
-        const playersWithPT = ptUtils.calculateGamePTs(scores.map(s => ({ score: s.score })));
-        
+        const scoresWithPt = ptUtils.calculateGamePtsFromScoresWithIndex(scores);
+
         // 使用原始索引更新PT显示
-        for (let i = 1; i <= 4; i++) {
+        for (let i = 0; i < 4; i++) {
             const ptElement = document.getElementById(`pt${i}`);
             const score = parseInt(document.getElementById(`score${i}`).value);
-            
+
             if (!isNaN(score)) { // 只要有输入分数就显示PT
                 // 找到对应的计算结果
-                const scoreInfo = scores.find(s => s.score === score);
+                const scoreInfo = scoresWithPt.find(s => s.score === score);
                 if (scoreInfo) {
-                    const ptValue = playersWithPT[scores.indexOf(scoreInfo)].pt;
+                    const ptValue = scoreInfo.pt;
                     ptElement.textContent = ptValue.toFixed(1);
                 }
             } else {
@@ -76,37 +75,37 @@ const GameForm = {
             const playerNames = [];
             const scores = [];
             let totalScore = 0;
-            
+
             // 收集玩家数据
-            for (let i = 1; i <= 4; i++) {
+            for (let i = 0; i < 4; i++) {
                 const name = document.getElementById(`player${i}`).value;
                 const score = parseInt(document.getElementById(`score${i}`).value);
-                
+
                 if (!name || isNaN(score)) {
                     throw new Error('请填写完整的对局信息');
                 }
-                
+
                 playerNames.push(name);
                 scores.push(score);
                 totalScore += score;
             }
-            
+
             // 验证总分
             if (totalScore !== 120000) {
                 throw new Error('得点总和必须为120,000');
             }
-            
+
             // 检查重复玩家
             const uniquePlayers = new Set(playerNames);
             if (uniquePlayers.size !== 4) {
                 const duplicateModal = new bootstrap.Modal(document.getElementById('duplicatePlayerModal'));
-                document.getElementById('duplicatePlayers').textContent = 
+                document.getElementById('duplicatePlayers').textContent =
                     this.findDuplicatePlayers(playerNames).join('、');
                 duplicateModal.show();
                 this.pendingGameData = { players: playerNames, scores };
                 return;
             }
-            
+
             await this.processSaveData(playerNames, scores);
         } catch (error) {
             this.showError(error.message);
@@ -118,7 +117,7 @@ const GameForm = {
         try {
             // 保存对局
             await this.saveGameData(playerNames, scores);
-            
+
             // 重置表单
             this.resetForm();
             // 更新历史记录
@@ -132,14 +131,14 @@ const GameForm = {
     findDuplicatePlayers(players) {
         const duplicates = new Set();
         const seen = new Set();
-        
+
         players.forEach(player => {
             if (seen.has(player)) {
                 duplicates.add(player);
             }
             seen.add(player);
         });
-        
+
         return Array.from(duplicates);
     },
 
@@ -149,7 +148,7 @@ const GameForm = {
 
         try {
             const { players, scores } = this.pendingGameData;
-            
+
             // 保存对局
             await api.addGame(players, scores);
 
@@ -161,7 +160,7 @@ const GameForm = {
 
             // 隐藏对话框
             this.duplicateModal.hide();
-            
+
             // 显示成功消息
             alert('记录保存成功！');
         } catch (error) {

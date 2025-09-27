@@ -342,13 +342,13 @@ const Rankings = {
             const processedGames = games.map(game => {
                 // 按分数排序玩家
                 const sortedPlayers = [...game.players].sort((a, b) => b.score - a.score);
-                // 检查是否有同分情况
-                const sameScoreWithFirst = sortedPlayers[1] && sortedPlayers[0].score === sortedPlayers[1].score;
+                const playerScores = sortedPlayers.map(player => player.score);
+                const pts = ptUtils.calculateGamePtsFromScores(playerScores);
 
                 // 计算每个玩家的PT
                 const playersWithPT = sortedPlayers.map((player, index) => ({
                     ...player,
-                    pt: player.pt || ptUtils.calculatePT(player.score, index + 1, sameScoreWithFirst)
+                    pt: pts[index].pt
                 }));
 
                 return {

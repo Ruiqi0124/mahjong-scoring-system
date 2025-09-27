@@ -63,7 +63,6 @@ class TeamMatchManager {
             const response = await fetch(`/api/team-matches?season=${this.season}`);
             if (!response.ok) throw new Error('加载比赛记录失败');
             const matches = await response.json();
-            console.log({ matches });
             this.updateMatchRecords(matches);
         } catch (error) {
             console.error('加载比赛记录错误:', error);
