@@ -170,7 +170,7 @@ app.post('/api/players', async (req, res) => {
 
         if (!name || typeof name !== 'string' || name.trim().length === 0) {
             console.log('Invalid player name received');
-            return res.status(400).json({ error: '玩家名称不能为空' });
+            return res.status(400).json({ message: '玩家名称不能为空' });
         }
 
         const trimmedName = name.trim();
@@ -180,7 +180,7 @@ app.post('/api/players', async (req, res) => {
         const existingPlayer = await Player.findOne({ name: trimmedName });
         if (existingPlayer) {
             console.log('Player already exists:', trimmedName);
-            return res.status(400).json({ error: '该玩家已存在' });
+            return res.status(400).json({ message: '该玩家已存在' });
         }
 
         console.log('Creating new player:', trimmedName);
@@ -195,6 +195,53 @@ app.post('/api/players', async (req, res) => {
         } else {
             res.status(500).json({ error: err.message });
         }
+    }
+});
+
+// 删除玩家
+app.delete('/api/players/:name', async (req, res) => {
+    console.log('Received DELETE request for /api/players/:name', req.params);
+    try {
+        await connectDB();
+        const name = req.params.name;
+        const { adminPassword } = req.body;
+
+        // 验证管理员密码
+        if (!auth(adminPassword)) {
+            return res.status(403).json({ message: '管理员密码错误' });
+        }
+
+        // 检查玩家是否存在
+        const existingPlayer = await Player.findOne({ name });
+        if (!existingPlayer) {
+            return res.status(404).json({ error: '未找到该玩家' });
+        }
+
+        // 检查该玩家没有任何对局记录、团队赛记录
+        const gameWithPlayer = await Game.findOne({ "players.name": name });
+        if (gameWithPlayer) {
+            return res.status(400).json({ message: '该玩家存在于比赛记录中，无法删除' });
+        }
+        for (let season = 0; season < TOTAL_SEASON_NUM; season++) {
+            const Team = getTeam(season);
+            const teamWithPlayer = await Team.findOne({ members: name });
+            if (teamWithPlayer) {
+                return res.status(400).json({ message: `该玩家属于第 ${season + 1} 赛季的团队 ${teamWithPlayer.name}，无法删除` });
+            }
+            const TeamMatch = getTeamMatch(season);
+            const teamMatchWithPlayer = await TeamMatch.findOne({ "players.name": name });
+            if (teamMatchWithPlayer) {
+                return res.status(400).json({ message: `该玩家存在于第 ${season + 1} 赛季的团队赛记录中，无法删除` });
+            }
+        }
+
+        // 删除玩家
+        await Player.deleteOne({ name });
+        console.log('Player deleted successfully:', name);
+        res.json({ message: '玩家已删除', name });
+    } catch (err) {
+        console.error('删除玩家错误:', err);
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -221,13 +268,13 @@ app.post('/api/games', async (req, res) => {
 
         if (!players || !Array.isArray(players) || players.length !== 4) {
             console.log('Invalid game data received');
-            return res.status(400).json({ error: '数据格式不正确' });
+            return res.status(400).json({ message: '数据格式不正确' });
         }
 
         // 验证每个玩家的数据
         for (const player of players) {
             if (!player.name || typeof player.score !== 'number') {
-                return res.status(400).json({ error: '玩家数据不完整' });
+                return res.status(400).json({ message: '玩家数据不完整' });
             }
         }
 
@@ -315,7 +362,7 @@ app.patch('/api/games/:id', async (req, res) => {
         const { timestamp } = req.body;
 
         if (!timestamp) {
-            return res.status(400).json({ error: '时间戳不能为空' });
+            return res.status(400).json({ message: '时间戳不能为空' });
         }
 
         const game = await Game.findById(id);
@@ -488,9 +535,14 @@ app.post('/api/teams', async (req, res) => {
 app.delete('/api/teams/:name', async (req, res) => {
     try {
         await connectDB();
-        const { season = 0 } = req.body;
+        const { adminPassword, season = 0 } = req.body;
         const Team = getTeam(season);
         const teamName = req.params.name;
+
+        // 验证管理员密码
+        if (!auth(adminPassword)) {
+            return res.status(403).json({ message: '管理员密码错误' });
+        }
 
         // 查找团队
         const team = await Team.findOne({ name: teamName });

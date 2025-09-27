@@ -1,5 +1,3 @@
-const API_BASE_URL = window.location.origin + '/api';
-
 const api = {
     // 获取所有玩家
     async getPlayers() {

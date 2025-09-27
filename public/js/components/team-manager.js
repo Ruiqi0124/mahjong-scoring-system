@@ -87,7 +87,7 @@ class TeamManager {
                 document.getElementById('editTeamName').value = teamName;
                 document.getElementById('originalTeamName').value = teamName;
                 document.getElementById('editTeamColor').value = teamColor;
-                TeamMatchManager.editTeamModal.show();
+                teamMatchManager.editTeamModal.show();
             });
         });
 
@@ -151,26 +151,27 @@ class TeamManager {
 
     async deleteTeam(teamName) {
         try {
-            if (!confirm(`确定要删除团队 "${teamName}" 吗？`)) {
-                return;
+            const password = await auth.verifyAdmin();
+            if (!password) {
+                alert('管理员密码错误');
             }
+            else if (confirm(`确定要删除团队 "${teamName}" 吗？`)) {
+                const response = await fetch(`/api/teams/${encodeURIComponent(teamName)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ adminPassword: password, season: this.season })
+                });
 
-            const response = await fetch(`/api/teams/${encodeURIComponent(teamName)}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ season: this.season })
-            });
+                if (!response.ok) {
+                    const result = await response.json();
+                    throw new Error(result.message || '删除团队失败');
+                }
 
-            if (!response.ok) {
-                const result = await response.json();
-                throw new Error(result.message || '删除团队失败');
+                await this.loadTeams();
+                alert('删除团队成功！');
             }
-
-            await this.loadTeams();
-            alert('删除团队成功！');
-
         } catch (error) {
             console.error('删除团队错误:', error);
             alert(error.message || '删除团队失败');

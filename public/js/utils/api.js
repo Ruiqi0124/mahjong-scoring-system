@@ -1,5 +1,3 @@
-const API_BASE_URL = window.location.origin;
-
 // API工具
 window.api = {
     // 获取所有玩家

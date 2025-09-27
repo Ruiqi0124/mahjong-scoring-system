@@ -18,12 +18,6 @@ const Rankings = {
                 return; // 如果不在排名页面，直接返回
             }
 
-            // 初始化删除确认弹窗
-            const deleteConfirmModal = document.getElementById('deleteConfirmModal');
-            if (deleteConfirmModal) {
-                this.deleteModal = new bootstrap.Modal(deleteConfirmModal);
-            }
-
             // 初始化历史对局气泡框
             this.initHistoryPopover();
 
@@ -209,7 +203,6 @@ const Rankings = {
 
                 const popoverHeight = this.historyPopover.offsetHeight;
                 const spaceBelow = window.innerHeight - rect.bottom;
-                const spaceRight = window.innerWidth - rect.left;
 
                 // 决定显示在上方还是下方
                 let top;
@@ -303,37 +296,31 @@ const Rankings = {
 
     // 显示删除确认弹窗
     async showDeleteConfirm(name) {
+        console.log(name);
         try {
             // 验证管理员权限
-            const isAdmin = await auth.verifyAdmin();
-            if (!isAdmin) {
-                alert('密码错误，无权执行此操作！');
-                return;
+            const password = await auth.verifyAdmin();
+            if (!password) {
+                alert('管理员密码错误');
             }
-
-            this.playerToDelete = name;
-            document.getElementById('playerToDelete').textContent = name;
-            this.deleteModal.show();
+            else if (confirm(`确定要删除玩家 ${name} 吗？`)) {
+                const response = await fetch(`/api/players/${encodeURIComponent(name)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ adminPassword: password })
+                });
+                if (!response.ok) {
+                    const result = await response.json();
+                    throw new Error(result.message || '删除玩家失败');
+                }
+                await this.updateRankings();
+                alert('删除玩家成功！');
+            }
         } catch (error) {
-            console.error('验证失败:', error);
-            alert('验证失败: ' + error.message);
-        }
-    },
-
-    // 确认删除玩家
-    async confirmDelete() {
-        if (!this.playerToDelete) return;
-
-        try {
-            await api.deletePlayer(this.playerToDelete);
-            this.deleteModal.hide();
-            await this.updateRankings();
-            alert('删除成功！');
-        } catch (error) {
-            console.error('删除玩家失败:', error);
-            alert(error.message || '删除玩家失败');
-        } finally {
-            this.playerToDelete = null;
+            console.error('删除失败:', error);
+            alert('删除失败: ' + error.message);
         }
     },
 
