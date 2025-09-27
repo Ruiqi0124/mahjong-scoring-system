@@ -824,7 +824,7 @@ app.patch('/api/team-matches/:id/time', async (req, res) => {
 });
 
 const TOTAL_GAMES = [
-    { "default": 16 }, { "default": 50 }
+    { "default": 16 }, { "default": 51 }
 ]
 
 // 获取团队赛排名数据
