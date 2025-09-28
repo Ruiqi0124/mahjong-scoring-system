@@ -49,7 +49,6 @@ window.api = {
         }
     },
 
-
     // 验证玩家数据
     validatePlayers(players) {
         if (!Array.isArray(players)) {
@@ -90,8 +89,8 @@ window.api = {
     // 添加新比赛记录
     async addGame(players, scores) {
         // 验证数据
-        validatePlayers(players);
-        const parsedScores = validateScores(scores);
+        this.validatePlayers(players);
+        const parsedScores = this.validateScores(scores);
 
         try {
             const response = await fetch('/api/games', {
@@ -186,12 +185,11 @@ window.api = {
 
 // PT计算工具
 const ptUtils = {
-    calculateGamePtsFromScoresWithIndex(scoresWithIndex) {
-        const basePTs = [45, 5, -15, -35];
+    calculateGamePtsFromScoresWithIndex(scoresWithIndex, basePts = [45, 5, -15, 35]) {
         const indicesOfScore = (targetScore) => scoresWithIndex.map(({ score, index }) => score === targetScore ? index : null).filter(index => index !== null);
         return scoresWithIndex.map(({ score }) => {
             const umaIndices = indicesOfScore(score);
-            const umaTotal = umaIndices.reduce((sum, index) => sum + basePTs[index], 0);
+            const umaTotal = umaIndices.reduce((sum, index) => sum + basePts[index], 0);
             const uma = umaTotal / umaIndices.length;
             const pt = (score - 30000) / 1000 + uma;
             return {

@@ -293,7 +293,7 @@ class TeamMatchManager {
 
             // 验证数据
             if (players.some(p => !p.name || !p.team)) {
-                alert('请选择所有玩家');
+                alert('所选的部分玩家并无所属队伍');
                 return;
             }
 

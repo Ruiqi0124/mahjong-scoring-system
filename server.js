@@ -118,6 +118,21 @@ function auth(password) {
     return true;
 }
 
+function calculateGamePtsFromScores(scores, basePts = [45, 5, -15, 35]) {
+    scores = scores.sort((a, b) => b - a);
+    const scoresWithIndex = scores.map((score, index) => ({ score, index }));
+    const indicesOfScore = (targetScore) => scoresWithIndex.map(({ score, index }) => score === targetScore ? index : null).filter(index => index !== null);
+    return scoresWithIndex.map(({ score }) => {
+        const umaIndices = indicesOfScore(score);
+        const umaTotal = umaIndices.reduce((sum, index) => sum + basePts[index], 0);
+        const uma = umaTotal / umaIndices.length;
+        const pt = (score - 30000) / 1000 + uma;
+        return {
+            score, pt
+        };
+    });
+}
+
 // API路由
 // 验证管理员密码
 app.get('/api/auth', async (req, res) => {
@@ -284,42 +299,13 @@ app.post('/api/games', async (req, res) => {
             }
         }
 
-        // 计算PT
-        const basePoints = [45, 5, -15, -35];
         const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-
-        // 计算同分情况
-        const scoreGroups = new Map();
-        sortedPlayers.forEach((player, index) => {
-            if (!scoreGroups.has(player.score)) {
-                scoreGroups.set(player.score, []);
-            }
-            scoreGroups.get(player.score).push(index);
-        });
-
-        // 按分数从高到低排序
-        const sortedScores = [...scoreGroups.keys()].sort((a, b) => b - a);
-
-        // 计算每个位置的PT
-        const positionPts = new Array(4).fill(0);
-        let currentPosition = 0;
-
-        sortedScores.forEach(score => {
-            const positions = scoreGroups.get(score);
-            const totalPt = positions.reduce((sum, pos) => sum + basePoints[pos], 0);
-            const avgPt = totalPt / positions.length;
-            positions.forEach(pos => {
-                positionPts[pos] = avgPt;
-            });
-            currentPosition += positions.length;
-        });
+        const pts = calculateGamePtsFromScores(sortedPlayers.map(p => p.score));
 
         // 计算最终PT
-        sortedPlayers.forEach((player, index) => {
-            const basePt = (player.score - 30000) / 1000;
-            const positionPt = positionPts[index];
+        sortedPlayers.forEach(player => {
             const chombo = player.chombo ? -20 : 0;
-            player.pt = basePt + positionPt + chombo;
+            player.pt = pts.find(pt => pt.score === player.score).pt + chombo;
         });
 
         const game = new Game({
@@ -663,43 +649,13 @@ app.post('/api/team-matches', async (req, res) => {
                 return res.status(400).json({ message: `玩家 ${player.name} 不属于队伍 ${player.team}` });
             }
         }
-
-        // 计算PT
-        const basePoints = [45, 5, -15, -35];
         const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-
-        // 计算同分情况
-        const scoreGroups = new Map();
-        sortedPlayers.forEach((player, index) => {
-            if (!scoreGroups.has(player.score)) {
-                scoreGroups.set(player.score, []);
-            }
-            scoreGroups.get(player.score).push(index);
-        });
-
-        // 按分数从高到低排序
-        const sortedScores = [...scoreGroups.keys()].sort((a, b) => b - a);
-
-        // 计算每个位置的PT
-        const positionPts = new Array(4).fill(0);
-        let currentPosition = 0;
-
-        sortedScores.forEach(score => {
-            const positions = scoreGroups.get(score);
-            const totalPt = positions.reduce((sum, pos) => sum + basePoints[pos], 0);
-            const avgPt = totalPt / positions.length;
-            positions.forEach(pos => {
-                positionPts[pos] = avgPt;
-            });
-            currentPosition += positions.length;
-        });
+        const pts = calculateGamePtsFromScores(sortedPlayers.map(p => p.score));
 
         // 计算最终PT
-        sortedPlayers.forEach((player, index) => {
-            const basePt = (player.score - 30000) / 1000;
-            const positionPt = positionPts[index];
+        sortedPlayers.forEach(player => {
             const chombo = player.chombo ? -20 : 0;
-            player.pt = basePt + positionPt + chombo;
+            player.pt = pts.find(pt => pt.score === player.score).pt + chombo;
         });
 
         // 创建比赛记录
