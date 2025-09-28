@@ -206,9 +206,9 @@ const GameForm = {
 
     // 重置表单
     resetForm() {
-        [1, 2, 3, 4].forEach(i => {
+        for (let i = 0; i < 4; i++) {
             document.getElementById(`player${i}`).value = '';
             document.getElementById(`score${i}`).value = '';
-        });
+        };
     }
 }; 

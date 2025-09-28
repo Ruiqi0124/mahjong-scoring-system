@@ -15,9 +15,7 @@ const History = {
             this.deleteModal = new bootstrap.Modal(document.getElementById('deleteGameModal'));
             this.editTimeModal = new bootstrap.Modal(document.getElementById('editTimeModal'));
             await this.updateHistory(true);
-            this.loadingAllGames = this.updateHistory().then(games => {
-                this.games = games;
-            }).catch(err => console.error('加载全部历史记录失败', err));
+            this.loadingAllGames = this.updateHistory();
         } catch (error) {
             console.error('初始化失败:', error);
             alert('初始化失败: ' + error.message);
@@ -116,6 +114,7 @@ const History = {
             let games = await api.getGames(forFirstPage ? this.pageSize : null);
             if (!forFirstPage) {
                 this.games = games;
+                console.log('更新了所有游戏', games.length);
             }
 
             // 确保每个游戏记录都有PT值
@@ -285,15 +284,10 @@ const History = {
     // 跳转到指定页
     goToPage(page) {
         this.currentPage = page;
-
-        if (page === 1) {
+        (async () => {
+            await this.loadingAllGames;
             this.renderCurrentPage(this.games);
-        } else {
-            (async () => {
-                await this.loadingAllGames;
-                this.renderCurrentPage(this.games);
-            })();
-        }
+        })();
     }
 
 }; 
