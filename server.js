@@ -118,19 +118,19 @@ function auth(password) {
     return true;
 }
 
-function calculateGamePtsFromScores(scores, basePts = [45, 5, -15, 35]) {
+function calculateGamePtsFromScores(scores, basePts = [45, 5, -15, -35]) {
     scores = scores.sort((a, b) => b - a);
     const scoresWithIndex = scores.map((score, index) => ({ score, index }));
     const indicesOfScore = (targetScore) => scoresWithIndex.map(({ score, index }) => score === targetScore ? index : null).filter(index => index !== null);
-    return scoresWithIndex.map(({ score }) => {
+    const result = {};
+    scoresWithIndex.forEach(({ score }) => {
         const umaIndices = indicesOfScore(score);
         const umaTotal = umaIndices.reduce((sum, index) => sum + basePts[index], 0);
         const uma = umaTotal / umaIndices.length;
         const pt = (score - 30000) / 1000 + uma;
-        return {
-            score, pt
-        };
+        result[score] = pt;
     });
+    return result;
 }
 
 // API路由
@@ -300,12 +300,12 @@ app.post('/api/games', async (req, res) => {
         }
 
         const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-        const pts = calculateGamePtsFromScores(sortedPlayers.map(p => p.score));
+        const ptOfScore = calculateGamePtsFromScores(sortedPlayers.map(p => p.score));
 
         // 计算最终PT
         sortedPlayers.forEach(player => {
             const chombo = player.chombo ? -20 : 0;
-            player.pt = pts.find(pt => pt.score === player.score).pt + chombo;
+            player.pt = ptOfScore[player.score] + chombo;
         });
 
         const game = new Game({
@@ -650,12 +650,12 @@ app.post('/api/team-matches', async (req, res) => {
             }
         }
         const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-        const pts = calculateGamePtsFromScores(sortedPlayers.map(p => p.score));
+        const ptOfScore = calculateGamePtsFromScores(sortedPlayers.map(p => p.score));
 
         // 计算最终PT
         sortedPlayers.forEach(player => {
             const chombo = player.chombo ? -20 : 0;
-            player.pt = pts.find(pt => pt.score === player.score).pt + chombo;
+            player.pt = ptOfScore[player.score] + chombo;
         });
 
         // 创建比赛记录

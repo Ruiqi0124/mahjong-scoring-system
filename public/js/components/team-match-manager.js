@@ -132,7 +132,7 @@ class TeamMatchManager {
 
             // 添加得点输入事件监听器
             document.querySelectorAll('input[name="score"]').forEach(input => {
-                input.addEventListener('input', () => this.updatePT());
+                input.addEventListener('change', () => this.updatePT());
             });
         } catch (error) {
             console.error('加载玩家列表错误:', error);
@@ -142,14 +142,13 @@ class TeamMatchManager {
 
     updatePT() {
         const scores = Array.from(document.querySelectorAll('input[name="score"]')).map(input => parseInt(input.value));
-
         const scoresWithIndex = [];
         scores.forEach((score, index) => {
             if (score) {
                 scoresWithIndex.push({ score, index });
             }
         });
-        const pts = ptUtils.calculateGamePtsFromScoresWithIndex(scoresWithIndex);
+        const ptOfScore = ptUtils.calculateGamePtsFromScoresWithIndex(scoresWithIndex);
 
         const ptCells = document.querySelectorAll('.pt-value');
         const chomboChecks = document.querySelectorAll('input[name="chombo"]');
@@ -158,7 +157,7 @@ class TeamMatchManager {
         scores.forEach((score, index) => {
             if (score) {
                 const chombo = chomboChecks[index].checked ? -20 : 0;
-                const totalPt = pts[index].pt + chombo;
+                const totalPt = ptOfScore[score] + chombo;
                 ptCells[index].textContent = totalPt.toFixed(1);
                 ptCells[index].className = `pt-value ${totalPt >= 0 ? 'text-success' : 'text-danger'}`;
             } else {

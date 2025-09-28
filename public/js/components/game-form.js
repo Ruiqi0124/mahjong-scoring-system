@@ -40,33 +40,26 @@ const GameForm = {
 
     // 更新PT显示
     updatePT() {
-        const scores = [];
-        for (let index = 0; index < 4; index++) {
-            const score = parseInt(document.getElementById(`score${index}`).value);
+        const scores = [...Array(4)].map((_, index) => ({ score: parseInt(document.getElementById(`score${index}`).value), index }));
+        const scoresWithIndex = [];
+        scores.forEach((score, index) => {
             if (score) {
-                scores.push({ score, index })
+                scoresWithIndex.push({ score, index });
             }
-        }
+        });
+        const ptOfScore = ptUtils.calculateGamePtsFromScoresWithIndex(scores);
 
-        // 计算并显示PT
-        const scoresWithPt = ptUtils.calculateGamePtsFromScoresWithIndex(scores);
-
-        // 使用原始索引更新PT显示
-        for (let i = 0; i < 4; i++) {
-            const ptElement = document.getElementById(`pt${i}`);
-            const score = parseInt(document.getElementById(`score${i}`).value);
-
-            if (!isNaN(score)) { // 只要有输入分数就显示PT
-                // 找到对应的计算结果
-                const scoreInfo = scoresWithPt.find(s => s.score === score);
-                if (scoreInfo) {
-                    const ptValue = scoreInfo.pt;
-                    ptElement.textContent = ptValue.toFixed(1);
-                }
+        // 更新显示
+        scores.forEach(({ score, index }) => {
+            const ptElement = document.getElementById(`pt${index}`);
+            if (score) {
+                const totalPt = ptOfScore[score];
+                ptElement.textContent = totalPt.toFixed(1);
+                ptElement.className = `pt-value ${totalPt >= 0 ? 'text-success' : 'text-danger'}`;
             } else {
-                ptElement.textContent = '-';
+                ptElement.textContent = "";
             }
-        }
+        });
     },
 
     // 保存对局数据
