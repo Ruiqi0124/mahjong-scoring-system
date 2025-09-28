@@ -103,20 +103,9 @@ const Player = {
 
         relativePt = {};
         playerGames.forEach(game => {
-            // 按分数排序玩家
-            const sortedPlayers = [...game.players].sort((a, b) => b.score - a.score);
-            const playerScores = sortedPlayers.map(player => player.score);
-            const pts = ptUtils.calculateGamePtsFromScores(playerScores);
-
-            // 计算每个玩家的PT
-            const playersWithPT = sortedPlayers.map((player, index) => ({
-                ...player,
-                pt: pts[index].pt
-            }));
-
             // 获取玩家在本场比赛的信息
-            const playerInfo = playersWithPT.find(p => p.name === playerName);
-            const rank = playersWithPT.findIndex(p => p.name === playerName);
+            const playerInfo = game.players.find(p => p.name === playerName);
+            const rank = game.players.findIndex(p => p.name === playerName);
 
             // 更新统计数据
             stats.games++;
@@ -130,11 +119,11 @@ const Player = {
                 rank: rank + 1,
                 score: playerInfo.score,
                 pt: playerInfo.pt,
-                players: playersWithPT  // 保存带PT的玩家数据
+                players: game.players  // 保存带PT的玩家数据
             });
 
             // 计算相对PT
-            for (const opponent of playersWithPT) {
+            for (const opponent of game.players) {
                 if (opponent.name !== playerName && opponent.name !== '其他玩家') {
                     if (!relativePt[opponent.name]) {
                         relativePt[opponent.name] = {

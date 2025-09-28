@@ -115,25 +115,6 @@ const History = {
             console.log(`[${new Date().toISOString()}] 更新了所有游戏`, games.length);
             if (!forFirstPage) this.games = games;
 
-            // 确保每个游戏记录都有PT值
-            games = games.map(game => {
-                // 按分数排序玩家
-                const sortedPlayers = [...game.players].sort((a, b) => b.score - a.score);
-                const playerScores = sortedPlayers.map(player => player.score);
-                const pts = ptUtils.calculateGamePtsFromScores(playerScores);
-
-                // 计算每个玩家的PT
-                const playersWithPT = sortedPlayers.map((player, index) => ({
-                    ...player,
-                    pt: pts[index].pt
-                }));
-
-                return {
-                    ...game,
-                    players: playersWithPT
-                };
-            });
-
             // 按时间降序排序
             games.sort((a, b) => new Date(b.time) - new Date(a.time));
 

@@ -338,25 +338,6 @@ const Rankings = {
                 api.getPlayers()
             ]);
 
-            // 处理游戏数据，确保每个玩家都有PT值
-            const processedGames = games.map(game => {
-                // 按分数排序玩家
-                const sortedPlayers = [...game.players].sort((a, b) => b.score - a.score);
-                const playerScores = sortedPlayers.map(player => player.score);
-                const pts = ptUtils.calculateGamePtsFromScores(playerScores);
-
-                // 计算每个玩家的PT
-                const playersWithPT = sortedPlayers.map((player, index) => ({
-                    ...player,
-                    pt: pts[index].pt
-                }));
-
-                return {
-                    ...game,
-                    players: playersWithPT
-                };
-            });
-
             // 计算每个玩家的统计数据
             const stats = {};
             players.forEach(player => {
@@ -374,7 +355,7 @@ const Rankings = {
             });
 
             // 统计数据
-            processedGames.forEach(game => {
+            games.forEach(game => {
                 game.players.forEach((player, rank) => {
                     if (stats[player.name]) {
                         stats[player.name].games++;
