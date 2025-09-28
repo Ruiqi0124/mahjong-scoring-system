@@ -112,10 +112,8 @@ const History = {
     async updateHistory(forFirstPage = false) {
         try {
             let games = await api.getGames(forFirstPage ? this.pageSize : null);
-            if (!forFirstPage) {
-                this.games = games;
-                console.log('更新了所有游戏', games.length);
-            }
+            console.log(`[${new Date().toISOString()}] 更新了所有游戏`, games.length);
+            if (!forFirstPage) this.games = games;
 
             // 确保每个游戏记录都有PT值
             games = games.map(game => {

@@ -251,10 +251,10 @@ app.get('/api/games', async (req, res) => {
     console.log('Received GET request for /api/games');
     try {
         await connectDB();
-        const lastN = parseInt(req.params.lastN, 10);
+        const last = parseInt(req.query.last, 10);
         let query = Game.find().sort({ time: -1 });
-        if (lastN && lastN > 0) {
-            query = query.limit(lastN);
+        if (last && last > 0) {
+            query = query.limit(last);
         }
         const games = await query;
         console.log('Successfully retrieved games:', games.length);
