@@ -10,10 +10,10 @@ async function init() {
             api.getPlayers(),
             api.getGames()
         ]);
-        
+
         playersList = players;
         gameHistory = games;
-        
+
         // 更新显示
         displayHistory();
         updatePlayerSelects();
@@ -38,7 +38,7 @@ function updatePlayerSelects() {
     selects.forEach((select, index) => {
         const currentValue = selectedValues[index];
         select.innerHTML = '<option value="">选择玩家</option>';
-        
+
         // 添加所有玩家选项
         playersList.forEach(player => {
             const option = document.createElement('option');
@@ -56,7 +56,7 @@ function updatePlayerSelects() {
 async function addNewPlayer() {
     const newPlayerInput = document.getElementById('newPlayerName');
     const playerName = newPlayerInput.value.trim();
-    
+
     if (!playerName) {
         alert('请输入玩家名称！');
         return;
@@ -81,10 +81,10 @@ async function saveData() {
     let isValid = true;
 
     // 收集并验证玩家名称
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 0; i < 4; i++) {
         const playerName = document.getElementById(`player${i}`).value;
         const score = document.getElementById(`score${i}`).value;
-        
+
         if (!playerName || !score) {
             alert('请填写所有玩家名称和分数！');
             isValid = false;
@@ -97,7 +97,7 @@ async function saveData() {
             isValid = false;
             break;
         }
-        
+
         players.push(playerName);
         scores.push(parseInt(score));
     }
@@ -122,19 +122,17 @@ async function saveData() {
     try {
         // 保存到服务器
         const game = await api.addGame(players, scores);
-        
+
         // 添加到本地历史记录
         gameHistory.unshift(game);
-        
+
         // 更新显示
         displayHistory();
         updateRankings();
-        
+
         // 清空输入框
         clearInputs();
     } catch (error) {
         alert('保存失败：' + error.message);
     }
 }
-
-// ... 其他函数保持不变 ... 

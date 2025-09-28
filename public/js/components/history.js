@@ -7,13 +7,17 @@ const History = {
     gameToEdit: null,
     currentPage: 1,
     pageSize: 10,
+    loadingAllGames: null,
 
     // 初始化
     async init() {
         try {
             this.deleteModal = new bootstrap.Modal(document.getElementById('deleteGameModal'));
             this.editTimeModal = new bootstrap.Modal(document.getElementById('editTimeModal'));
-            await this.updateHistory();
+            await this.updateHistory(true);
+            this.loadingAllGames = this.updateHistory().then(games => {
+                this.games = games;
+            }).catch(err => console.error('加载全部历史记录失败', err));
         } catch (error) {
             console.error('初始化失败:', error);
             alert('初始化失败: ' + error.message);
@@ -107,12 +111,15 @@ const History = {
     },
 
     // 更新历史记录
-    async updateHistory() {
+    async updateHistory(forFirstPage = false) {
         try {
-            this.games = await api.getGames();
+            let games = await api.getGames(forFirstPage ? this.pageSize : null);
+            if (!forFirstPage) {
+                this.games = games;
+            }
 
             // 确保每个游戏记录都有PT值
-            this.games = this.games.map(game => {
+            games = games.map(game => {
                 // 按分数排序玩家
                 const sortedPlayers = [...game.players].sort((a, b) => b.score - a.score);
                 const playerScores = sortedPlayers.map(player => player.score);
@@ -121,7 +128,7 @@ const History = {
                 // 计算每个玩家的PT
                 const playersWithPT = sortedPlayers.map((player, index) => ({
                     ...player,
-                    pt:  pts[index].pt
+                    pt: pts[index].pt
                 }));
 
                 return {
@@ -131,9 +138,9 @@ const History = {
             });
 
             // 按时间降序排序
-            this.games.sort((a, b) => new Date(b.time) - new Date(a.time));
+            games.sort((a, b) => new Date(b.time) - new Date(a.time));
 
-            this.renderCurrentPage();
+            this.renderCurrentPage(games);
         } catch (error) {
             console.error('更新历史记录失败:', error);
             alert('更新历史记录失败: ' + error.message);
@@ -141,12 +148,12 @@ const History = {
     },
 
     // 渲染当前页面
-    renderCurrentPage() {
+    renderCurrentPage(games) {
         const tbody = document.getElementById('historyBody');
         const paginationDiv = document.getElementById('historyPagination');
 
         // 计算总页数
-        const totalPages = Math.ceil(this.games.length / this.pageSize);
+        const totalPages = Math.ceil(games.length / this.pageSize);
 
         // 确保当前页面在有效范围内
         if (this.currentPage < 1) this.currentPage = 1;
@@ -154,8 +161,8 @@ const History = {
 
         // 计算当前页的数据范围
         const startIndex = (this.currentPage - 1) * this.pageSize;
-        const endIndex = Math.min(startIndex + this.pageSize, this.games.length);
-        const currentPageGames = this.games.slice(startIndex, endIndex);
+        const endIndex = Math.min(startIndex + this.pageSize, games.length);
+        const currentPageGames = games.slice(startIndex, endIndex);
 
         // 渲染表格内容
         tbody.innerHTML = currentPageGames.map(game => {
@@ -204,7 +211,7 @@ const History = {
 
         // 显示当前页码信息
         document.getElementById('pageInfo').textContent =
-            `第 ${this.currentPage} 页 / 共 ${totalPages} 页（共 ${this.games.length} 条记录）`;
+            `第 ${this.currentPage} 页 / 共 ${totalPages} 页（共 ${games.length} 条记录）`;
     },
 
     // 渲染分页控件
@@ -278,6 +285,15 @@ const History = {
     // 跳转到指定页
     goToPage(page) {
         this.currentPage = page;
-        this.renderCurrentPage();
+
+        if (page === 1) {
+            this.renderCurrentPage(this.games);
+        } else {
+            (async () => {
+                await this.loadingAllGames;
+                this.renderCurrentPage(this.games);
+            })();
+        }
     }
+
 }; 

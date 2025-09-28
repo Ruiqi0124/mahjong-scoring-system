@@ -64,7 +64,7 @@ function saveData() {
     let isValid = true;
 
     // 收集并验证玩家名称
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 0; i < 4; i++) {
         const playerName = document.getElementById(`player${i}`).value;
         const score = document.getElementById(`score${i}`).value;
         
@@ -145,7 +145,7 @@ function displayHistory() {
 
 function clearInputs() {
     // 清空所有输入框
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 0; i < 4; i++) {
         document.getElementById(`player${i}`).value = '';
         document.getElementById(`score${i}`).value = '';
     }

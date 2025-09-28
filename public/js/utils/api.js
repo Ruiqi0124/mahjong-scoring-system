@@ -35,9 +35,9 @@ window.api = {
     },
 
     // 获取所有比赛记录
-    async getGames() {
+    async getGames(getLastNGames = null) {
         try {
-            const response = await fetch('/api/games');
+            const response = await fetch(`/api/games${getLastNGames ? `?lastN=${getLastNGames}` : ''}`);
             if (!response.ok) {
                 throw new Error('获取比赛记录失败');
             }

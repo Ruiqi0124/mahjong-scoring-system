@@ -50,6 +50,7 @@ const gameSchema = new mongoose.Schema({
         pt: Number
     }]
 });
+gameSchema.index({ time: -1 });
 
 const scheduleSchema = new mongoose.Schema({
     playerName: { type: String, required: true },
@@ -245,12 +246,17 @@ app.delete('/api/players/:name', async (req, res) => {
     }
 });
 
-// 获取所有比赛记录
+// 获取比赛记录
 app.get('/api/games', async (req, res) => {
     console.log('Received GET request for /api/games');
     try {
         await connectDB();
-        const games = await Game.find().sort({ time: -1 });
+        const lastN = parseInt(req.params.lastN, 10);
+        let query = Game.find().sort({ time: -1 });
+        if (lastN && lastN > 0) {
+            query = query.limit(lastN);
+        }
+        const games = await query;
         console.log('Successfully retrieved games:', games.length);
         res.json(games);
     } catch (err) {
