@@ -119,6 +119,8 @@ function auth(password) {
 }
 
 function calculateGamePtsFromScores(scores, basePts = [45, 5, -15, -35]) {
+    if (basePts.reduce((acc, pt) => acc + pt, 0) !== 0)
+        throw new Error("马点总和不为0", basePts);
     scores = scores.sort((a, b) => b - a);
     const scoresWithIndex = scores.map((score, index) => ({ score, index }));
     const indicesOfScore = (targetScore) => scoresWithIndex.map(({ score, index }) => score === targetScore ? index : null).filter(index => index !== null);

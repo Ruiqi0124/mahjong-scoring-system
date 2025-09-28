@@ -1,6 +1,8 @@
 // PT计算工具
 const ptUtils = {
     calculateGamePtsFromScoresWithIndex(scoresWithIndex, basePts = [45, 5, -15, -35]) {
+        if (basePts.reduce((acc, pt) => acc + pt, 0) !== 0)
+            throw new Error("马点总和不为0", basePts);
         const indicesOfScore = (targetScore) => scoresWithIndex.map(({ score, index }) => score === targetScore ? index : null).filter(index => index !== null);
         const result = {};
         scoresWithIndex.forEach(({ score }) => {
