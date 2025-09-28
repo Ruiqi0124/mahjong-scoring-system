@@ -182,25 +182,3 @@ window.api = {
         return await response.json();
     }
 };
-
-// PT计算工具
-const ptUtils = {
-    calculateGamePtsFromScoresWithIndex(scoresWithIndex, basePts = [45, 5, -15, 35]) {
-        const indicesOfScore = (targetScore) => scoresWithIndex.map(({ score, index }) => score === targetScore ? index : null).filter(index => index !== null);
-        return scoresWithIndex.map(({ score }) => {
-            const umaIndices = indicesOfScore(score);
-            const umaTotal = umaIndices.reduce((sum, index) => sum + basePts[index], 0);
-            const uma = umaTotal / umaIndices.length;
-            const pt = (score - 30000) / 1000 + uma;
-            return {
-                score, pt
-            };
-        });
-    },
-
-    calculateGamePtsFromScores(scores) {
-        scores = scores.sort((a, b) => b - a);
-        const scoresWithIndex = scores.map((score, index) => ({ score, index }));
-        return this.calculateGamePtsFromScoresWithIndex(scoresWithIndex);
-    },
-}; 

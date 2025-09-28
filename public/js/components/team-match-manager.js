@@ -141,49 +141,30 @@ class TeamMatchManager {
     }
 
     updatePT() {
-        const scores = Array.from(document.querySelectorAll('input[name="score"]'))
-            .map(input => parseInt(input.value) || 0);
+        const scores = Array.from(document.querySelectorAll('input[name="score"]')).map(input => parseInt(input.value));
 
-        if (scores.some(isNaN)) return;
+        const scoresWithIndex = [];
+        scores.forEach((score, index) => {
+            if (score) {
+                scoresWithIndex.push({ score, index });
+            }
+        });
+        const pts = ptUtils.calculateGamePtsFromScoresWithIndex(scoresWithIndex);
+        console.log({ scoresWithIndex, pts });
 
-        const basePoints = [45, 5, -15, -35];
         const ptCells = document.querySelectorAll('.pt-value');
         const chomboChecks = document.querySelectorAll('input[name="chombo"]');
 
-        // 计算同分情况
-        const scoreGroups = new Map();
-        scores.forEach((score, index) => {
-            if (!scoreGroups.has(score)) {
-                scoreGroups.set(score, []);
-            }
-            scoreGroups.get(score).push(index);
-        });
-
-        // 按分数从高到低排序
-        const sortedScores = [...scoreGroups.keys()].sort((a, b) => b - a);
-
-        // 计算每个位置的PT
-        const positionPts = new Array(4).fill(0);
-        let currentPosition = 0;
-
-        sortedScores.forEach(score => {
-            const positions = scoreGroups.get(score);
-            const totalPt = positions.reduce((sum, pos) => sum + basePoints[pos], 0);
-            const avgPt = totalPt / positions.length;
-            positions.forEach(pos => {
-                positionPts[pos] = avgPt;
-            });
-            currentPosition += positions.length;
-        });
-
         // 更新显示
         scores.forEach((score, index) => {
-            const basePt = (score - 30000) / 1000;
-            const positionPt = positionPts[index];
-            const chombo = chomboChecks[index].checked ? -20 : 0;
-            const totalPt = basePt + positionPt + chombo;
-            ptCells[index].textContent = totalPt.toFixed(1);
-            ptCells[index].className = `pt-value ${totalPt >= 0 ? 'text-success' : 'text-danger'}`;
+            if (score) {
+                const chombo = chomboChecks[index].checked ? -20 : 0;
+                const totalPt = pts[index].pt + chombo;
+                ptCells[index].textContent = totalPt.toFixed(1);
+                ptCells[index].className = `pt-value ${totalPt >= 0 ? 'text-success' : 'text-danger'}`;
+            } else {
+                ptCells[index].textContent = "";
+            }
         });
     }
 
