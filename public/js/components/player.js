@@ -45,10 +45,8 @@ const Player = {
             });
 
             // 获取数据
-            const [games, players] = await Promise.all([
-                api.getGames(),
-                api.getPlayers()
-            ]);
+            const games = await api.getGames();
+            console.log(`[${new Date().toISOString()}] 更新了所有游戏`, games.length);
 
             // 处理玩家数据
             this.stats = this.calculatePlayerStats(games, playerName);

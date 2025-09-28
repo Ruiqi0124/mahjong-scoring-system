@@ -38,7 +38,6 @@ window.api = {
     async getGames(getLastNGames = null) {
         try {
             const str = `/api/games${getLastNGames ? `?last=${getLastNGames}` : ''}`;
-            console.log({ getLastNGames, str });
             const response = await fetch(str);
             if (!response.ok) {
                 throw new Error('获取比赛记录失败');
