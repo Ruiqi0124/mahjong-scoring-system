@@ -150,7 +150,6 @@ class TeamMatchManager {
             }
         });
         const pts = ptUtils.calculateGamePtsFromScoresWithIndex(scoresWithIndex);
-        console.log({ scoresWithIndex, pts });
 
         const ptCells = document.querySelectorAll('.pt-value');
         const chomboChecks = document.querySelectorAll('input[name="chombo"]');
