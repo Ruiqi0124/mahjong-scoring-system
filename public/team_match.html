@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>巢 League S2</title>
+    <title>巢 League S1</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/styles.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -31,13 +31,13 @@
                         <a class="nav-link" href="/rankings.html">排名</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/team_match.html?s=1">巢 League S1</a>
+                        <a class="nav-link" href="/team_match.html?s=1" id="nav-1zh">巢 League S1</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/team_match.html?s=2&l=zh">巢 League S2</a>
+                        <a class="nav-link" href="/team_match.html?s=2&l=zh" id="nav-2zh">巢 League S2</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/team_match.html?s=2&l=en">Nest League S2</a>
+                        <a class="nav-link" href="/team_match.html?s=2&l=en" id="nav-2en">Nest League S2</a>
                     </li>
                 </ul>
             </div>
@@ -50,8 +50,9 @@
             <div class="col">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">团队赛记录</h5>
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#recordMatchModal">
+                        <h5 class="mb-0" id="team-match-records">团队赛记录</h5>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#recordMatchModal"
+                            id="record-a-game">
                             记录比赛
                         </button>
                     </div>
@@ -60,12 +61,12 @@
                             <table class="table table-hover">
                                 <thead class="table-primary">
                                     <tr>
-                                        <th>时间</th>
-                                        <th>一位</th>
-                                        <th>二位</th>
-                                        <th>三位</th>
-                                        <th>四位</th>
-                                        <th>操作</th>
+                                        <th id="tmr-time">时间</th>
+                                        <th id="tmr-1st">一位</th>
+                                        <th id="tmr-2nd">二位</th>
+                                        <th id="tmr-3rd">三位</th>
+                                        <th id="tmr-4th">四位</th>
+                                        <th id="tmr-modify">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="matchRecords">
@@ -83,7 +84,7 @@
             <div class="col">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">巢 League S2 排名</h5>
+                        <h5 class="mb-0" id="team-match-ranking"></h5>
                     </div>
                     <div class="card-body">
                         <!-- 团队排名 -->
@@ -339,11 +340,56 @@
         </div>
     </div>
 
+    <script>
+        const season = parseInt(new URLSearchParams(window.location.search).get("s"), 10) || 1;
+        const lang = new URLSearchParams(window.location.search).get("l") || "zh";
+        const Text = {
+            values: {
+                "title": ["巢 League S1", "巢 League S2", "Nest League S2"],
+                "team-match-records": ["团队赛记录", "团队赛记录", "Games"],
+                "record-a-game": ["记录比赛", "记录比赛", "Record a game"],
+                "tmr-time": ["时间", "时间", "Time"],
+                "tmr-1st": ["一位", "一位", "1st"],
+                "tmr-2nd": ["二位", "二位", "2nd"],
+                "tmr-3rd": ["三位", "三位", "3rd"],
+                "tmr-4th": ["四位", "四位", "4th"],
+                "tmr-modify": ["操作", "操作", "Modify"],
+                "team-match-ranking": ["巢 League S1 排名", "巢 League S2 排名", "Nest League S2 Ranking"]
+            },
+            init() {
+                if (season === 1) {
+                    this.index = 0;
+                } else if (season === 2 && lang === "zh") {
+                    this.index = 1;
+                } else if (season === 2 && lang === "en") {
+                    this.index = 2;
+                }
+            },
+            get(key) { return this.values[key][this.index] },
+        };
+
+        Text.init();
+
+        document.getElementById(`nav-${season}${lang}`).classList.add("active");
+        document.title = Text.get("title");
+        Object.keys(Text.values).forEach(name => {
+            if (name !== "title") {
+                try {
+                    document.getElementById(name).innerText = Text.get(name);
+                }
+                catch (error) {
+                    console.error(`Setting text failed for ${name}`);
+                }
+            }
+        });
+
+
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/components/team-manager.js" data-season="1" data-lang="zh"></script>
+    <script src="js/components/team-manager.js" data-season="0" data-lang="zh"></script>
     <script src="js/utils/auth.js"></script>
     <script src="js/utils/pt.js"></script>
-    <script src="js/components/team-match-manager.js" data-season="1" data-lang="zh"></script>
+    <script src="js/components/team-match-manager.js" data-season="0" data-lang="en"></script>
 </body>
 
 </html>
