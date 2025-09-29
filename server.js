@@ -795,7 +795,7 @@ const TOTAL_GAMES = [
 app.get('/api/team-rankings', async (req, res) => {
     try {
         await connectDB();
-        const season = req.query.season || 0
+        const season = req.query.season || 0;
         const Team = getTeam(season);
         const TeamMatch = getTeamMatch(season);
 

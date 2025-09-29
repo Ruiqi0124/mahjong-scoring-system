@@ -1,8 +1,7 @@
 class TeamManager {
     constructor() {
-        const thisScript = document.currentScript;
-        this.season = parseInt(thisScript.getAttribute('data-season'), 10);
-        this.lang = thisScript.getAttribute('data-lang');
+        this.season = season;
+        this.lang = lang;
         this.teams = [];
         this.players = [];
         this.createTeamModal = new bootstrap.Modal(document.getElementById('createTeamModal'));

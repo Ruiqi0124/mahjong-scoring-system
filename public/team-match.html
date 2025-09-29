@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>巢 League S2</title>
+    <title>巢 League S1</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/styles.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -31,13 +31,13 @@
                         <a class="nav-link" href="/rankings.html">排名</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/team_match.html?s=1">巢 League S1</a>
+                        <a class="nav-link" href="/team-match.html?s=0" id="nav-0zh">巢 League S1</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/team_match.html?s=2&l=zh">巢 League S2</a>
+                        <a class="nav-link" href="/team-match.html?s=1&l=zh" id="nav-1zh">巢 League S2</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/team_match.html?s=2&l=en">Nest League S2</a>
+                        <a class="nav-link" href="/team-match.html?s=1&l=en" id="nav-1en">Nest League S2</a>
                     </li>
                 </ul>
             </div>
@@ -50,22 +50,21 @@
             <div class="col">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">团队赛记录</h5>
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#recordMatchModal">
-                            记录比赛
-                        </button>
+                        <h5 class="mb-0 text-team-match-records"></h5>
+                        <button class="btn btn-success text-record-a-game" data-bs-toggle="modal"
+                            data-bs-target="#recordMatchModal"></button>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead class="table-primary">
                                     <tr>
-                                        <th>时间</th>
-                                        <th>一位</th>
-                                        <th>二位</th>
-                                        <th>三位</th>
-                                        <th>四位</th>
-                                        <th>操作</th>
+                                        <th class="text-time"></th>
+                                        <th class="text-1st"></th>
+                                        <th class="text-2nd"></th>
+                                        <th class="text-3rd"></th>
+                                        <th class="text-4th"></th>
+                                        <th class="text-modify"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="matchRecords">
@@ -83,20 +82,20 @@
             <div class="col">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">巢 League S2 排名</h5>
+                        <h5 class="mb-0 text-ranking-title"></h5>
                     </div>
                     <div class="card-body">
                         <!-- 团队排名 -->
                         <div class="table-responsive mb-4">
-                            <h5 class="mb-3">团队排名</h5>
+                            <h5 class="mb-3 text-team-ranking"></h5>
                             <table class="table table-hover">
                                 <thead class="table-primary">
                                     <tr>
-                                        <th>团队名称</th>
-                                        <th>比赛进度</th>
-                                        <th>胜率</th>
-                                        <th>总PT</th>
-                                        <th>平均PT</th>
+                                        <th class="text-team-name"></th>
+                                        <th class="text-progress"></th>
+                                        <th class="text-win-rate"></th>
+                                        <th class="text-total-pt"></th>
+                                        <th class="text-avg-pt"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="teamRankings">
@@ -107,15 +106,15 @@
 
                         <!-- 个人排名 -->
                         <div class="table-responsive">
-                            <h5 class="mb-3">个人排名</h5>
+                            <h5 class="mb-3 text-player-ranking"></h5>
                             <table class="table table-hover">
                                 <thead class="table-primary">
                                     <tr>
-                                        <th>玩家</th>
-                                        <th>所属队伍</th>
-                                        <th>场数</th>
-                                        <th>总PT</th>
-                                        <th>平均PT</th>
+                                        <th class="text-player"></th>
+                                        <th class="text-team"></th>
+                                        <th class="text-games"></th>
+                                        <th class="text-total-pt"></th>
+                                        <th class="text-avg-pt"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="playerRankings">
@@ -133,10 +132,9 @@
             <div class="col">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">团队管理</h5>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTeamModal">
-                            创建团队
-                        </button>
+                        <h5 class="mb-0 text-team-management"></h5>
+                        <button class="btn btn-primary text-add-a-team" data-bs-toggle="modal"
+                            data-bs-target="#createTeamModal"></button>
                     </div>
                     <div class="card-body">
                         <div id="teamsList">
@@ -153,30 +151,31 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">创建新团队</h5>
+                    <h5 class="modal-title text-add-team"></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="createTeamForm">
                         <div class="mb-3">
-                            <label for="teamName" class="form-label">团队名称</label>
+                            <label for="teamName" class="form-label text-team-name"></label>
                             <input type="text" class="form-control" id="teamName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="teamColor" class="form-label">团队颜色</label>
+                            <label for="teamColor" class="form-label text-team-color"></label>
                             <input type="color" class="form-control form-control-color" id="teamColor" value="#000000"
                                 required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">选择成员</label>
+                            <label class="form-label text-members-label"></label>
                             <div id="memberSelection" class="border rounded p-3"
                                 style="max-height: 200px; overflow-y: auto;">
                                 <!-- 成员选择列表将通过JavaScript动态加载 -->
                             </div>
                         </div>
                         <div class="text-end">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                            <button type="submit" class="btn btn-primary">创建</button>
+                            <button type="button" class="btn btn-secondary text-cancel"
+                                data-bs-dismiss="modal"></button>
+                            <button type="submit" class="btn btn-primary text-submit"></button>
                         </div>
                     </form>
                 </div>
@@ -189,7 +188,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">记录团队赛</h5>
+                    <h5 class="modal-title text-record-match-title"></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -198,23 +197,24 @@
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>顺位</th>
-                                        <th>玩家</th>
-                                        <th>得点</th>
+                                        <th class="text-placement"></th>
+                                        <th class="text-player"></th>
+                                        <th class="text-score"></th>
                                         <th>PT</th>
                                         <th>Chombo</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>一位</td>
+                                        <td class="text-1st"></td>
                                         <td>
                                             <select class="form-select" name="player" required>
-                                                <option value="">选择玩家</option>
+                                                <option value="" class="text-choose-player"></option>
                                             </select>
                                             <div class="mt-1">
-                                                <input type="text" class="form-control form-control-sm" name="team"
-                                                    readonly placeholder="所属队伍">
+                                                <input type="text"
+                                                    class="form-control form-control-sm text-team-placeholder"
+                                                    name="team" readonly>
                                             </div>
                                         </td>
                                         <td>
@@ -228,14 +228,15 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>二位</td>
+                                        <td class="text-2nd"></td>
                                         <td>
                                             <select class="form-select" name="player" required>
-                                                <option value="">选择玩家</option>
+                                                <option value="" class="text-choose-player"></option>
                                             </select>
                                             <div class="mt-1">
-                                                <input type="text" class="form-control form-control-sm" name="team"
-                                                    readonly placeholder="所属队伍">
+                                                <input type="text"
+                                                    class="form-control form-control-sm text-team-placeholder"
+                                                    name="team" readonly>
                                             </div>
                                         </td>
                                         <td>
@@ -249,14 +250,15 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>三位</td>
+                                        <td class="text-3rd"></td>
                                         <td>
                                             <select class="form-select" name="player" required>
-                                                <option value="">选择玩家</option>
+                                                <option value="" class="text-choose-player"></option>
                                             </select>
                                             <div class="mt-1">
-                                                <input type="text" class="form-control form-control-sm" name="team"
-                                                    readonly placeholder="所属队伍">
+                                                <input type="text"
+                                                    class="form-control form-control-sm text-team-placeholder"
+                                                    name="team" readonly>
                                             </div>
                                         </td>
                                         <td>
@@ -270,14 +272,15 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>四位</td>
+                                        <td class="text-4th"></td>
                                         <td>
                                             <select class="form-select" name="player" required>
-                                                <option value="">选择玩家</option>
+                                                <option value="" class="text-choose-player"></option>
                                             </select>
                                             <div class="mt-1">
-                                                <input type="text" class="form-control form-control-sm" name="team"
-                                                    readonly placeholder="所属队伍">
+                                                <input type="text"
+                                                    class="form-control form-control-sm text-team-placeholder"
+                                                    name="team" readonly>
                                             </div>
                                         </td>
                                         <td>
@@ -294,11 +297,12 @@
                             </table>
                         </div>
                         <div class="text-muted mt-2">
-                            <small>注意：得点总和应为 120,000</small>
+                            <small class="text-note"></small>
                         </div>
                         <div class="text-end mt-3">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                            <button type="submit" class="btn btn-primary">记录</button>
+                            <button type="button" class="btn btn-secondary text-cancel"
+                                data-bs-dismiss="modal"></button>
+                            <button type="submit" class="btn btn-primary text-submit"></button>
                         </div>
                     </form>
                 </div>
@@ -311,39 +315,104 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">编辑团队</h5>
+                    <h5 class="modal-title text-edit-team-title"></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="editTeamForm">
                         <div class="mb-3">
-                            <label for="adminPassword" class="form-label">管理员密码</label>
+                            <label for="adminPassword" class="form-label text-password-label"></label>
                             <input type="password" class="form-control" id="adminPassword" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editTeamName" class="form-label">团队名称</label>
+                            <label for="editTeamName" class="form-label text-team-name"></label>
                             <input type="text" class="form-control" id="editTeamName" required>
                             <input type="hidden" id="originalTeamName">
                         </div>
                         <div class="mb-3">
-                            <label for="editTeamColor" class="form-label">团队颜色</label>
+                            <label for="editTeamColor" class="form-label text-team-color"></label>
                             <input type="color" class="form-control form-control-color" id="editTeamColor" required>
                         </div>
                         <div class="text-end">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                            <button type="submit" class="btn btn-primary">保存</button>
+                            <button type="button" class="btn btn-secondary text-cancel"
+                                data-bs-dismiss="modal"></button>
+                            <button type="submit" class="btn btn-primary text-submit"></button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-
+    <script>
+        const season = parseInt(new URLSearchParams(window.location.search).get("s"), 10) || 0;
+        const lang = new URLSearchParams(window.location.search).get("l") || "zh";
+        const Text = {
+            byClass: {
+                "text-time": ["时间", "时间", "Time"],
+                "text-1st": ["一位", "一位", "1st"],
+                "text-2nd": ["二位", "二位", "2nd"],
+                "text-3rd": ["三位", "三位", "3rd"],
+                "text-4th": ["四位", "四位", "4th"],
+                "text-choose-player": ["选择玩家", "选择玩家", "Choose player"],
+                "text-team-name": ["团队名称", "团队名称", "Name"],
+                "text-color-label": ["团队颜色", "团队颜色", "Color"],
+                "text-cancel": ["取消", "取消", "Cancel"],
+                "text-total-pt": ["总PT", "总PT", "Total Pt"],
+                "text-avg-pt": ["平均PT", "平均PT", "Average Pt"],
+                "text-team-match-records": ["团队赛记录", "团队赛记录", "Games"],
+                "text-record-a-game": ["记录比赛", "记录比赛", "Record a game"],
+                "text-modify": ["操作", "操作", "Modify"],
+                "text-ranking-title": ["巢 League S1 排名", "巢 League S2 排名", "Nest League S2 Ranking"],
+                "text-team-ranking": ["团队排名", "团队排名", "By Team"],
+                "text-progress": ["比赛进度", "比赛进度", "Progress"],
+                "text-win-rate": ["胜率", "胜率", "Rentai Rate"],
+                "text-player-ranking": ["个人排名", "个人排名", "By Individual"],
+                "text-player": ["玩家", "玩家", "Name"],
+                "text-team": ["所属队伍", "所属队伍", "Team"],
+                "text-games": ["场数", "场数", "Games Played"],
+                "text-team-management": ["团队管理", "团队管理", "Team Management"],
+                "text-add-a-team": ["创建团队", "创建团队", "Add a team"],
+                "text-members-label": ["选择成员", "选择成员", "Choose members"],
+                "text-submit": ["创建", "创建", "OK"],
+                "text-record-match-title": ["记录团队赛", "记录团队赛", "Record a game"],
+                "text-placement": ["顺位", "顺位", "Placement"],
+                "text-score": ["得点", "得点", "Score"],
+                "text-note": ["注意：得点总和应为 120,000", "注意：得点总和应为 120,000", "Note: Total score should be 120,000"],
+                "text-edit-team-title": ["编辑团队", "编辑团队", "Modify a team"],
+                "text-password-label": ["管理员密码", "管理员密码", "Admin password"]
+            },
+            special: {
+                "title": ["巢 League S1", "巢 League S2", "Nest League S2"],
+                "text-team-placeholder": ["所属队伍", "所属队伍", "Team"],
+            },
+            init() {
+                if (season === 0) {
+                    this.index = 0;
+                } else if (season === 1 && lang === "zh") {
+                    this.index = 1;
+                } else if (season === 1 && lang === "en") {
+                    this.index = 2;
+                }
+            },
+        };
+        Text.init();
+        document.getElementById(`nav-${season}${lang}`).classList.add("active");
+        document.title = Text.special["title"][Text.index];
+        [...document.getElementsByClassName("text-team-placeholder")].forEach(e => { e.placeholder = Text.special["text-team-placeholder"][Text.index]; });
+        Object.keys(Text.byClass).forEach(className => {
+            try {
+                [...document.getElementsByClassName(className)].forEach(e => { e.innerText = Text.byClass[className][Text.index] });
+            }
+            catch (error) {
+                console.error(`Setting text failed for ${className}`);
+            }
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/components/team-manager.js" data-season="1" data-lang="zh"></script>
+    <script src="js/components/team-manager.js"></script>
     <script src="js/utils/auth.js"></script>
     <script src="js/utils/pt.js"></script>
-    <script src="js/components/team-match-manager.js" data-season="1" data-lang="zh"></script>
+    <script src="js/components/team-match-manager.js"></script>
 </body>
 
 </html>

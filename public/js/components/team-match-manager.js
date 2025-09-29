@@ -1,9 +1,8 @@
 // 记录比赛功能
 class TeamMatchManager {
     constructor() {
-        const thisScript = document.currentScript;
-        this.season = parseInt(thisScript.getAttribute('data-season'), 10);
-        this.lang = thisScript.getAttribute('data-lang');
+        this.season = season;
+        this.lang = lang;
         this.recordMatchModal = new bootstrap.Modal(document.getElementById('recordMatchModal'));
         this.editTeamModal = new bootstrap.Modal(document.getElementById('editTeamModal'));
         this.init();
