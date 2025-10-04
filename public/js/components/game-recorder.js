@@ -71,6 +71,7 @@ const GameRecorder = {
     resumeModal: null,
     detailsModal: null,
     currentGame: null,
+    season: null,
 
     showError(elementId, message) {
         const errorDiv = document.getElementById(elementId);
@@ -80,6 +81,8 @@ const GameRecorder = {
 
     async init() {
         try {
+            const urlParams = new URLSearchParams(window.location.search);
+            this.season = parseInt(urlParams.get('s'), 10) || 1;
             this.resumeModal = new bootstrap.Modal(document.getElementById('resumeGameModal'));
             this.detailsModal = new bootstrap.Modal(document.getElementById('gameDetailsModal'));
 
@@ -107,7 +110,12 @@ const GameRecorder = {
 
     async loadPlayers() {
         try {
-            const players = await api.getPlayers();
+            const allPlayers = await api.getPlayers();
+            const teams = await api.getTeams(this.season);
+            const teamPlayerNames = new Set();
+            teams.forEach(team => { team.members.forEach(member => teamPlayerNames.add(member)); });
+            const players = allPlayers.filter(player => teamPlayerNames.has(player.name));
+
             const selects = [...Array(4).keys()].map(i => document.getElementById(`setupPlayer${i}`));
 
             selects.forEach(select => {

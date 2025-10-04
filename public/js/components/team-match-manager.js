@@ -23,7 +23,7 @@ class TeamMatchManager {
             this.updatePlayerRankings(playerRankings);
         } catch (error) {
             console.error('加载排名错误:', error);
-            alert('加载排名数据失败');
+            alert('加载排名数据失败', error);
         }
     }
 
@@ -65,7 +65,7 @@ class TeamMatchManager {
             this.updateMatchRecords(matches);
         } catch (error) {
             console.error('加载比赛记录错误:', error);
-            alert('加载比赛记录失败');
+            alert('加载比赛记录失败', error);
         }
     }
 
@@ -135,7 +135,7 @@ class TeamMatchManager {
             });
         } catch (error) {
             console.error('加载玩家列表错误:', error);
-            alert('加载玩家列表失败');
+            alert('加载玩家列表失败', error);
         }
     }
 

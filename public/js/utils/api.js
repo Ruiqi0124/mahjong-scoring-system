@@ -180,5 +180,20 @@ window.api = {
         });
         if (!response.ok) throw new Error(await response.text());
         return await response.json();
+    },
+
+    // 获取团队列表
+    async getTeams(season = null) {
+        try {
+            const url = season !== null ? `/api/teams?season=${season}` : '/api/teams';
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('获取团队列表失败');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('获取团队列表失败:', error);
+            return [];
+        }
     }
 };

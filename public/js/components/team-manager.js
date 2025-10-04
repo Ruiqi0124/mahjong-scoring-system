@@ -22,7 +22,7 @@ class TeamManager {
             this.updatePlayerSelection();
         } catch (error) {
             console.error('加载玩家列表错误:', error);
-            alert('加载玩家列表失败');
+            alert('加载玩家列表失败', error);
         }
     }
 
@@ -34,7 +34,7 @@ class TeamManager {
             this.updateTeamsList(teams);
         } catch (error) {
             console.error('加载团队列表错误:', error);
-            alert('加载团队列表失败');
+            alert('加载团队列表失败', error);
         }
     }
 
