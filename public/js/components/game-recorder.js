@@ -497,7 +497,7 @@ const GameRecorder = {
                     .join(' ');
                 return `
                     <div class="round-details mb-2 p-2 border rounded">
-                        #${index + 1}: ${resultText}
+                        #${index + 1} ${resultText}
                         <div class="mt-1">${statesHtml}</div>
                     </div>
                 `;
