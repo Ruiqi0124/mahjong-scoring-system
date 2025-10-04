@@ -449,9 +449,9 @@ const GameRecorder = {
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <strong>Players:</strong> ${game.players.join(', ')}<br>
-                                <small class="text-muted">Rounds: ${game.rounds.length} | ${date}</small>
+                                <small class="text-muted">${date}</small>
                             </div>
-                            <div class="btn-group gap-1">
+                            <div class="btn-group gap-2">
                                 <button class="btn btn-sm btn-primary" onclick="GameRecorder.showGameDetails('${game._id}')">
                                     View Details
                                 </button>
