@@ -344,13 +344,12 @@ const GameRecorder = {
         return 'draw';
     },
 
-    formatStateDisplay(state, playerIndex, round) {
+    formatStateDisplay(state, playerIndex, round, players = null) {
         const stateName = state === 'riichi' ? 'riichi' : state === 'open' ? 'open' : 'closed';
-        const playerName = this.currentGame.players[playerIndex];
+        const playerName = (players || this.currentGame.players)[playerIndex];
         let display = `${playerName}: ${stateName}`;
 
         if (round.resultType === 'draw' && round.tenpai) {
-            // Don't show tenpai/noten for riichi players since riichi implies tenpai
             if (state !== 'riichi') {
                 display += ` (${round.tenpai[playerIndex] ? 'tenpai' : 'noten'})`;
             }
@@ -466,7 +465,7 @@ const GameRecorder = {
         } catch (error) {
             console.error('Failed to load games history:', error);
             document.getElementById('gamesHistory').innerHTML =
-                '<p class="text-danger text-center">Failed to load games</p>';
+                `<p class="text-danger text-center">Failed to load games: ${error}</p>`;
         }
     },
 
@@ -487,18 +486,18 @@ const GameRecorder = {
                 const statesHtml = round.playerStates
                     .map((state, i) => {
                         const stateLower = (state || '').toLowerCase();
-                        let bgClass = 'bg-secondary'; // default closed
+                        let bgClass = 'bg-secondary';
                         if (stateLower === 'riichi') {
                             bgClass = 'bg-danger';
                         } else if (stateLower === 'open') {
                             bgClass = 'bg-primary';
                         }
-                        return `<span class="badge ${bgClass}">${this.formatStateDisplay(state, i, round)}</span>`;
+                        return `<span class="badge ${bgClass}">${this.formatStateDisplay(state, i, round, game.players)}</span>`;
                     })
                     .join(' ');
                 return `
                     <div class="round-details mb-2 p-2 border rounded">
-                        <strong>Round ${index + 1}:</strong> ${resultText}
+                        #${index + 1}: ${resultText}
                         <div class="mt-1">${statesHtml}</div>
                     </div>
                 `;
