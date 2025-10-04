@@ -248,7 +248,7 @@ const GameRecorder = {
 
         const container = document.getElementById('playerStatesContainer');
         container.innerHTML = '';
-        container.className = '';
+        container.className = 'd-flex flex-wrap gap-2';
         this.currentGame.players.forEach((player, index) => {
             const div = document.createElement('div');
             div.className = 'player-state-item';
