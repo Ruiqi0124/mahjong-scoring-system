@@ -94,7 +94,7 @@ const GameRecorder = {
                 const summary = document.getElementById('resumeGameSummary');
                 summary.innerHTML = `
                     <strong>Players:</strong> ${savedGame.players.join(', ')}<br>
-                    <strong>Rounds recorded:</strong> ${savedGame.rounds.length}
+                    <strong>Current round: </strong>&num;${savedGame.rounds.length - 1}
                 `;
                 this.resumeModal.show();
             }
