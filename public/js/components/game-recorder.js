@@ -448,12 +448,12 @@ const GameRecorder = {
                     <div class="game-item mb-2 p-3 border rounded bg-light">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <strong>Players:</strong> ${game.players.join(', ')}<br>
+                                ${game.players.join(', ')}<br>
                                 <small class="text-muted">${date}</small>
                             </div>
                             <div class="btn-group gap-2">
                                 <button class="btn btn-sm btn-primary" onclick="GameRecorder.showGameDetails('${game._id}')">
-                                    View Details
+                                    Details
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger" onclick="GameRecorder.deleteGame('${game._id}')">
                                     <i class="fas fa-trash"></i>
