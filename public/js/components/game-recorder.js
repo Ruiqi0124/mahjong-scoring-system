@@ -491,7 +491,7 @@ const GameRecorder = {
                         if (stateLower === 'riichi') {
                             bgClass = 'bg-danger';
                         } else if (stateLower === 'open') {
-                            bgClass = 'bg-info';
+                            bgClass = 'bg-primary';
                         }
                         return `<span class="badge ${bgClass}">${this.formatStateDisplay(state, i, round)}</span>`;
                     })
