@@ -216,6 +216,28 @@ const GameRecorder = {
         document.getElementById('currentPlayers').textContent = this.currentGame.players.join(', ');
         document.getElementById('roundNumber').textContent = this.currentGame.rounds.length;
         this.updateRoundHistory();
+        this.setupDealInSync();
+    },
+
+    setupDealInSync() {
+        const fromSelect = document.getElementById('dealInFromSelect');
+        const toSelect = document.getElementById('dealInToSelect');
+
+        fromSelect.addEventListener('change', () => {
+            const fromValue = fromSelect.value;
+            const toValue = toSelect.value;
+            if (fromValue && fromValue === toValue) {
+                toSelect.value = '';
+            }
+        });
+
+        toSelect.addEventListener('change', () => {
+            const fromValue = fromSelect.value;
+            const toValue = toSelect.value;
+            if (toValue && fromValue === toValue) {
+                fromSelect.value = '';
+            }
+        });
     },
 
     setupPlayerStateButtons() {
@@ -226,7 +248,7 @@ const GameRecorder = {
 
         const container = document.getElementById('playerStatesContainer');
         container.innerHTML = '';
-        container.className = 'd-flex flex-wrap gap-2';
+        container.className = '';
         this.currentGame.players.forEach((player, index) => {
             const div = document.createElement('div');
             div.className = 'player-state-item';
@@ -324,7 +346,8 @@ const GameRecorder = {
 
     formatStateDisplay(state, playerIndex, round) {
         const stateName = state === 'riichi' ? 'riichi' : state === 'open' ? 'open' : 'closed';
-        let display = `${playerIndex + 1}: ${stateName}`;
+        const playerName = this.currentGame.players[playerIndex];
+        let display = `${playerName}: ${stateName}`;
 
         if (round.resultType === 'draw' && round.tenpai) {
             // Don't show tenpai/noten for riichi players since riichi implies tenpai
