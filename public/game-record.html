@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record a Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="/">巢</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">记分</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/rankings.html">排名</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/team-match.html?s=0">巢 League S1</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/team-match.html?s=1&l=zh">巢 League S2</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/team-match.html?s=1&l=en">Nest League S2</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/game-record.html">Record Game</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-2">
+        <div class="game-recorder-wrapper">
+            <!-- Player Setup Screen -->
+            <div id="setupScreen" class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">Record a New Game</h2>
+                    <p class="text-muted mb-3">Select 4 players to begin:</p>
+
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Player 1</label>
+                            <select id="setupPlayer0" class="form-select">
+                                <option value="">Select Player</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Player 2</label>
+                            <select id="setupPlayer1" class="form-select">
+                                <option value="">Select Player</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Player 3</label>
+                            <select id="setupPlayer2" class="form-select">
+                                <option value="">Select Player</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Player 4</label>
+                            <select id="setupPlayer3" class="form-select">
+                                <option value="">Select Player</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button class="btn btn-primary btn-lg" onclick="GameRecorder.startGame()">
+                            <i class="fas fa-play"></i> Start Game
+                        </button>
+                    </div>
+                    <div id="setupError" class="alert alert-danger mt-3" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Game Recording Screen -->
+            <div id="gameScreen" style="display: none;">
+                <!-- Game Info -->
+                <div class="card shadow-sm mb-1">
+                    <div class="card-body p-2">
+                        <p class="mb-1 small"><strong>Players:</strong> <span id="currentPlayers"></span></p>
+                        <p class="mb-0 small"><strong>Rounds Recorded:</strong> <span id="roundNumber">0</span></p>
+                    </div>
+                </div>
+
+                <!-- Round Entry -->
+                <div class="card shadow-sm mb-2">
+                    <div class="card-body">
+                        <!-- Result -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Result</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="resultType" id="resultDealIn"
+                                    value="deal-in">
+                                <label class="btn btn-outline-primary" for="resultDealIn">Deal-in</label>
+
+                                <input type="radio" class="btn-check" name="resultType" id="resultTsumo" value="tsumo">
+                                <label class="btn btn-outline-primary" for="resultTsumo">Tsumo</label>
+
+                                <input type="radio" class="btn-check" name="resultType" id="resultDraw" value="draw">
+                                <label class="btn btn-outline-primary" for="resultDraw">Draw</label>
+                            </div>
+                        </div>
+
+                        <!-- Player/Tenpai Selection Container (fixed height) -->
+                        <div id="resultDetailsSection" class="result-details-container mb-3">
+                            <!-- Placeholder (shown when no result selected) -->
+                            <div id="noResultPlaceholder" class="text-muted text-center">
+                                Please select a result first
+                            </div>
+
+                            <!-- Tsumo Player Selection (shown for tsumo) -->
+                            <div id="tsumoSection" style="display: none;">
+                                <label class="form-label fw-bold">Tsumo Player</label>
+                                <select id="tsumoSelect" class="form-select">
+                                    <option value="">Select player</option>
+                                </select>
+                            </div>
+
+                            <!-- Deal-in Selections (shown for deal-in) -->
+                            <div id="dealInSection" style="display: none;">
+                                <label class="form-label fw-bold mb-2">Deal-in</label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <label class="form-label small mb-1">From</label>
+                                        <select id="dealInFromSelect" class="form-select form-select-sm">
+                                            <option value="">Select player</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small mb-1">To</label>
+                                        <select id="dealInToSelect" class="form-select form-select-sm">
+                                            <option value="">Select player</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tenpai Selection (shown for draw) -->
+                            <div id="tenpaiSection" style="display: none;">
+                                <label class="form-label fw-bold">Tenpai</label>
+                                <div id="tenpaiContainer">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hand States -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Hand States</label>
+                            <div id="playerStatesContainer">
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success" onclick="GameRecorder.saveRound()">
+                                <i class="fas fa-check"></i> Save Round
+                            </button>
+                        </div>
+                        <div id="roundError" class="alert alert-danger mt-3" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <!-- Game History -->
+                <div class="card shadow-sm mb-2">
+                    <div class="card-body">
+                        <h5 class="mb-3">Game History</h5>
+                        <div id="roundHistory" class="round-history">
+                            <p class="text-muted text-center">No rounds recorded yet</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Actions -->
+                <div class="card shadow-sm mb-2">
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-8">
+                                <button class="btn btn-primary w-100" onclick="GameRecorder.finishGame()">
+                                    <i class="fas fa-save"></i> Finish Game & Save
+                                </button>
+                            </div>
+                            <div class="col-4">
+                                <button class="btn btn-outline-danger w-100"
+                                    onclick="if(confirm('Are you sure you want to discard this game? All progress will be lost.')){GameStorage.clear();location.reload();}">
+                                    <i class="fas fa-trash"></i> Discard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Past Games History -->
+            <div id="historySection" class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">Past Games</h2>
+                    <div id="gamesHistory">
+                        <p class="text-muted text-center">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Details Modal -->
+    <div class="modal fade" id="gameDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Game Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="gameDetailsBody">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Game Modal -->
+    <div class="modal fade" id="resumeGameModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Resume Game?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>You have an unfinished game in progress:</p>
+                    <div id="resumeGameSummary" class="mb-3"></div>
+                    <p>Would you like to resume or discard it?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger"
+                        onclick="GameStorage.clear();GameRecorder.resumeModal.hide();">Discard</button>
+                    <button type="button" class="btn btn-primary" onclick="GameRecorder.resumeGame()">Resume</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/utils/api.js"></script>
+    <script src="js/utils/auth.js"></script>
+    <script src="js/components/game-recorder.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await GameRecorder.init();
+        });
+    </script>
+</body>
+
+</html>

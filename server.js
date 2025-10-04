@@ -87,10 +87,24 @@ const teamMatchSchema = new mongoose.Schema({
     }]
 });
 
+// 详细游戏记录Schema (Game Process Record)
+const gameDetailSchema = new mongoose.Schema({
+    submittedTime: { type: Date, default: Date.now },
+    players: [{ type: String, required: true }],
+    rounds: [{
+        resultType: { type: String, enum: ['deal-in', 'tsumo', 'draw'], required: true },
+        playerStates: [{ type: String, enum: ['riichi', 'closed', 'open'], required: true }],
+        winner: { type: String }, // tsumo player or deal-in to
+        loser: { type: String }, // deal-in from
+        tenpai: [{ type: Boolean }] // for draw only
+    }]
+});
+
 // 确保模型只被创建一次
 let Player = mongoose.models.Player || mongoose.model('Player', playerSchema);
 let Game = mongoose.models.Game || mongoose.model('Game', gameSchema);
 let Schedule = mongoose.models.Schedule || mongoose.model('Schedule', scheduleSchema);
+let GameDetail = mongoose.models.GameDetail || mongoose.model('GameDetail', gameDetailSchema);
 
 let TOTAL_SEASON_NUM = 2
 let teams = []
@@ -884,6 +898,81 @@ app.delete('/api/teams/clear-all', async (req, res) => {
     } catch (err) {
         console.error('清理团队数据错误:', err);
         res.status(500).json({ message: '清理团队数据失败：' + err.message });
+    }
+});
+
+// Save a complete detailed game
+app.post('/api/game-detail', async (req, res) => {
+    console.log('Received POST request for /api/game-detail:', req.body);
+    try {
+        await connectDB();
+        const { players, rounds } = req.body;
+
+        // Validation
+        if (!players || players.length !== 4) {
+            return res.status(400).json({ error: 'Must have exactly 4 players' });
+        }
+        if (!rounds || !Array.isArray(rounds)) {
+            return res.status(400).json({ error: 'Rounds must be an array' });
+        }
+
+        const detailedGame = new GameDetail({
+            players,
+            rounds
+        });
+
+        await detailedGame.save();
+        console.log('Detailed game saved successfully');
+        res.json(detailedGame);
+    } catch (err) {
+        console.error('Error saving detailed game:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Get all detailed games
+app.get('/api/game-detail', async (req, res) => {
+    console.log('Received GET request for /api/game-detail');
+    try {
+        await connectDB();
+        const games = await GameDetail.find().sort({ submittedTime: -1 });
+        console.log('Successfully retrieved detailed games:', games.length);
+        res.json(games);
+    } catch (err) {
+        console.error('Error fetching detailed games:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Get a specific detailed game by ID
+app.get('/api/game-detail/:id', async (req, res) => {
+    console.log('Received GET request for /api/game-detail/:id');
+    try {
+        await connectDB();
+        const game = await GameDetail.findById(req.params.id);
+        if (!game) {
+            return res.status(404).json({ error: 'Game not found' });
+        }
+        res.json(game);
+    } catch (err) {
+        console.error('Error fetching detailed game:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Delete a detailed game by ID
+app.delete('/api/game-detail/:id', async (req, res) => {
+    console.log('Received DELETE request for /api/game-detail/:id');
+    try {
+        await connectDB();
+        const game = await GameDetail.findByIdAndDelete(req.params.id);
+        if (!game) {
+            return res.status(404).json({ error: 'Game not found' });
+        }
+        res.json({ message: 'Game deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting detailed game:', err);
+        res.status(500).json({ error: err.message });
     }
 });
 
