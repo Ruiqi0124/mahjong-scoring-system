@@ -39,7 +39,8 @@ const connectDB = async () => {
 
 // 定义模型
 const playerSchema = new mongoose.Schema({
-    name: { type: String, required: true, unique: true }
+    name: { type: String, required: true, unique: true },
+    engName: { type: String, required: true }
 });
 
 const gameSchema = new mongoose.Schema({
@@ -63,6 +64,7 @@ const scheduleSchema = new mongoose.Schema({
 // 团队模型
 const teamSchema = new mongoose.Schema({
     name: { type: String, required: true, unique: true },
+    engName: { type: String, required: true },
     members: [{ type: String, required: true }],
     games: { type: Number, default: 0 },
     wins: { type: Number, default: 0 },
@@ -198,7 +200,7 @@ app.post('/api/players', async (req, res) => {
     console.log('Received POST request for /api/players:', req.body);
     try {
         await connectDB();
-        const { name } = req.body;
+        const { name, engName } = req.body;
 
         if (!name || typeof name !== 'string' || name.trim().length === 0) {
             console.log('Invalid player name received');
@@ -216,7 +218,7 @@ app.post('/api/players', async (req, res) => {
         }
 
         console.log('Creating new player:', trimmedName);
-        const player = new Player({ name: trimmedName });
+        const player = new Player({ name: trimmedName, engName: engName.trim() });
         await player.save();
         console.log('Player created successfully:', player);
         res.status(201).json({ name: player.name });

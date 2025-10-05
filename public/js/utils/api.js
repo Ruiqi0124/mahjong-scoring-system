@@ -15,14 +15,14 @@ window.api = {
     },
 
     // 添加新玩家
-    async addPlayer(name) {
+    async addPlayer(name, engName) {
         try {
             const response = await fetch('/api/players', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name })
+                body: JSON.stringify({ name, engName })
             });
             if (!response.ok) {
                 throw new Error('添加玩家失败');

@@ -48,7 +48,7 @@ class TeamMatchManager {
 
         tbody.innerHTML = rankings.map(player => `
                     <tr style="background-color: ${player.teamColor}20">
-                        <td>${player.name}</td>
+                        <td>${this.lang === "zh" ? player.name : player.engName}</td>
                         <td class="team-color" style="color: ${player.teamColor}">${player.team}</td>
                         <td>${player.games}</td>
                         <td class="${player.totalPT >= 0 ? 'text-success' : 'text-danger'}">${player.totalPT.toFixed(1)}</td>

@@ -283,8 +283,19 @@ const Rankings = {
             return;
         }
 
+        const engInput = document.getElementById('newPlayerEngName');
+        let engName = engInput.value.trim();
+        const isAlphaNumeric = (str) => /^[a-zA-Z0-9]+$/.test(str);
+        if (!engName) {
+            engName = name;
+        }
+        if (!isAlphaNumeric(engName)) {
+            alert('请输入玩家英文名称！');
+            return;
+        }
+
         try {
-            await api.addPlayer(name);
+            await api.addPlayer(name, engName);
             input.value = '';
             await this.updateRankings();
             alert('添加成功！');
