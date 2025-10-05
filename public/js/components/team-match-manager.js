@@ -35,7 +35,6 @@ class TeamMatchManager {
                     <tr style="background-color: ${team.color}20">
                         <td class="team-color" style="color: ${team.color}">${this.lang === "zh" ? team.name : team.engName}</td>
                         <td>${team.progress}</td>
-                        <td>${team.winRate}%</td>
                         <td class="${team.totalPT >= 0 ? 'text-success' : 'text-danger'}">${team.totalPT.toFixed(1)}</td>
                         <td class="${team.avgPT >= 0 ? 'text-success' : 'text-danger'}">${team.avgPT.toFixed(1)}</td>
                     </tr>
