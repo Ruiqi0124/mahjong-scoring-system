@@ -137,6 +137,19 @@ function auth(password) {
     return true;
 }
 
+function calculatePlacementFromScores(scores) {
+    scores = scores.sort((a, b) => b - a);
+    const scoresWithIndex = scores.map((score, index) => ({ score, index }));
+    const indicesOfScore = (targetScore) => scoresWithIndex.map(({ score, index }) => score === targetScore ? index : null).filter(index => index !== null);
+    const result = {};
+    scoresWithIndex.forEach(({ score }) => {
+        const umaIndices = indicesOfScore(score);
+        const placementTotal = umaIndices.reduce((sum, index) => sum + (index + 1), 0);
+        result[score] = { placement: placementTotal / umaIndices.length, umaIndices };
+    });
+    return result;
+}
+
 function calculateGamePtsFromScores(scores, basePts = [45, 5, -15, -35]) {
     if (basePts.reduce((acc, pt) => acc + pt, 0) !== 0)
         throw new Error("马点总和不为0", basePts);
@@ -841,7 +854,9 @@ app.get('/api/team-rankings', async (req, res) => {
                 winRate: team.winRate,
                 totalPT: team.totalPT,
                 avgPT: team.avgPT,
-                color: team.color
+                color: team.color,
+                totalPlacement: 0,
+                placementStats: [0, 0, 0, 0]
             };
         }).sort((a, b) => b.totalPT - a.totalPT);
 
@@ -860,19 +875,28 @@ app.get('/api/team-rankings', async (req, res) => {
                     games: 0,
                     wins: 0,
                     totalPT: 0,
-                    avgPT: 0
+                    avgPT: 0,
+                    totalPlacement: 0
                 });
             });
         });
 
         // 统计比赛数据
         matches.forEach(match => {
+            const scores = match.players.map(p => p.score);
+            const placementLookup = calculatePlacementFromScores(scores);
             match.players.forEach(player => {
+                const { placement, umaIndices } = placementLookup[player.score];
+                const team = teamRankings.find(t => t.name === player.team);
+                team.totalPlacement += placement;
+                for (const umaIndex of umaIndices)
+                    team.placementStats[umaIndex] += 1.0 / (umaIndices.length); // e.g. if 2nd and 3rd are same score, count as 0.5 each
                 const stats = playerStats.get(player.name);
                 if (stats) {
                     stats.games++;
                     stats.totalPT += player.pt;
                     stats.avgPT = stats.totalPT / stats.games;
+                    stats.totalPlacement += placement;
 
                     // 判断是否为一位
                     const isWinner = player.score === Math.max(...match.players.map(p => p.score));

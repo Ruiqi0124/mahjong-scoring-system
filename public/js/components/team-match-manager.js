@@ -30,13 +30,15 @@ class TeamMatchManager {
     updateTeamRankings(rankings) {
         const tbody = document.getElementById('teamRankings');
         if (!tbody) return;
+        console.log({ rankings });
 
         tbody.innerHTML = rankings.map(team => `
                     <tr style="background-color: ${team.color}20">
                         <td class="team-color" style="color: ${team.color}">${this.lang === "zh" ? team.name : team.engName}</td>
                         <td>${team.progress}</td>
                         <td class="${team.totalPT >= 0 ? 'text-success' : 'text-danger'}">${team.totalPT.toFixed(1)}</td>
-                        <td class="${team.avgPT >= 0 ? 'text-success' : 'text-danger'}">${team.avgPT.toFixed(1)}</td>
+                        <td>${team.games === 0 ? "" : (team.totalPlacement / team.games).toFixed(2)}</td>
+                        <td>${team.placementStats.map(count => Number.isInteger(count) ? count : count.toFixed(1)).join("-")}</td>
                     </tr>
                 `).join('');
     }
@@ -51,7 +53,7 @@ class TeamMatchManager {
                         <td class="team-color" style="color: ${player.teamColor}">${this.lang === "zh" ? player.team : player.teamEngName}</td>
                         <td>${player.games}</td>
                         <td class="${player.totalPT >= 0 ? 'text-success' : 'text-danger'}">${player.totalPT.toFixed(1)}</td>
-                        <td class="${player.avgPT >= 0 ? 'text-success' : 'text-danger'}">${player.avgPT.toFixed(1)}</td>
+                         <td>${player.games === 0 ? "" : (player.totalPlacement / player.games).toFixed(2)}</td>
                     </tr>
                 `).join('');
     }
