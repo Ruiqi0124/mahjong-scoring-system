@@ -475,12 +475,15 @@ app.get('/api/teams', async (req, res) => {
 app.post('/api/teams', async (req, res) => {
     try {
         await connectDB();
-        const { name, members, color, season = 0 } = req.body;
+        const { name, engName, members, color, season = 0 } = req.body;
         const Team = getTeam(season);
 
         // 验证团队名称
         if (!name || typeof name !== 'string' || name.trim().length === 0) {
             return res.status(400).json({ message: '团队名称不能为空' });
+        }
+        if (!engName || typeof engName !== 'string' || engName.trim().length === 0) {
+            return res.status(400).json({ message: '团队英文名称不能为空' });
         }
 
         const trimmedName = name.trim();
@@ -523,6 +526,7 @@ app.post('/api/teams', async (req, res) => {
         // 创建新团队
         const team = new Team({
             name: trimmedName,
+            engName: engName.trim(),
             members,
             games: 0,
             wins: 0,
@@ -825,6 +829,7 @@ app.get('/api/team-rankings', async (req, res) => {
             const total_game = TOTAL_GAMES[season][team.name] ?? TOTAL_GAMES[season]["default"];
             return {
                 name: team.name,
+                engName: team.engName,
                 games: team.games,
                 progress: `${team.games}/${total_game}`,
                 winRate: team.winRate,
@@ -842,8 +847,9 @@ app.get('/api/team-rankings', async (req, res) => {
             team.members.forEach(playerName => {
                 playerStats.set(playerName, {
                     name: playerName,
-                    engName: players.find(p => p.name === playerName),
+                    engName: players.find(p => p.name === playerName).engName,
                     team: team.name,
+                    teamEngName: team.engName,
                     teamColor: team.color,
                     games: 0,
                     wins: 0,

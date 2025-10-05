@@ -285,7 +285,7 @@ const Rankings = {
 
         const engInput = document.getElementById('newPlayerEngName');
         let engName = engInput.value.trim();
-        const isAlphaNumeric = (str) => /^[a-zA-Z0-9]+$/.test(str);
+        const isAlphaNumeric = (str) => /^[a-zA-Z0-9 ]+$/.test(str);
         if (!engName) {
             engName = name;
         }

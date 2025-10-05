@@ -60,7 +60,7 @@ class TeamManager {
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0 team-color" style="color: ${team.color}">${team.name}</h5>
+                        <h5 class="card-title mb-0 team-color" style="color: ${team.color}">${this.lang === "zh" ? team.name : team.engName}</h5>
                         <div class="btn-group">
                             <button class="btn btn-outline-primary btn-sm edit-team" data-team-name="${team.name}" data-team-color="${team.color}">
                                 <i class="fas fa-edit"></i> ${this.lang === 'zh' ? '编辑' : 'Modify'}
@@ -109,12 +109,20 @@ class TeamManager {
     async createTeam() {
         try {
             const name = document.getElementById('teamName').value.trim();
+            let engName = document.getElementById('teamEngName').value.trim();
             const color = document.getElementById('teamColor').value;
             const memberCheckboxes = document.querySelectorAll('#memberSelection input[type="checkbox"]:checked');
             const members = Array.from(memberCheckboxes).map(cb => cb.value);
 
             if (!name) {
                 alert('请输入团队名称');
+                return;
+            }
+            if (!engName)
+                engName = name;
+            const isAlphaNumeric = (str) => /^[a-zA-Z0-9 ]+$/.test(str);
+            if (!isAlphaNumeric(engName)) {
+                alert('请输入英文团队名称');
                 return;
             }
 
@@ -128,7 +136,7 @@ class TeamManager {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name, members, color, season: this.season })
+                body: JSON.stringify({ name, engName, members, color, season: this.season })
             });
 
             const result = await response.json();
