@@ -297,6 +297,7 @@ const Rankings = {
         try {
             await api.addPlayer(name, engName);
             input.value = '';
+            engInput.value = '';
             await this.updateRankings();
             alert('添加成功！');
         } catch (error) {
