@@ -72,7 +72,7 @@ class TeamManager {
                     </div>
                     <div class="mt-2">
                         <strong>${this.lang === 'zh' ? '成员' : 'Members'}：</strong>
-                        ${team.members.map(member => `<span class="badge bg-secondary me-1">${member}</span>`).join('')}
+                        ${(this.lang === "zh" ? team.members : team.membersEng).map(member => `<span class="badge bg-secondary me-1">${member}</span>`).join('')}
                     </div>
                 </div>
             </div>

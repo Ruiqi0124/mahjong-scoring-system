@@ -66,6 +66,7 @@ const teamSchema = new mongoose.Schema({
     name: { type: String, required: true, unique: true },
     engName: { type: String, required: true },
     members: [{ type: String, required: true }],
+    membersEng: [{ type: String, default: "" }],
     games: { type: Number, default: 0 },
     wins: { type: Number, default: 0 },
     winRate: { type: Number, default: 0 },
