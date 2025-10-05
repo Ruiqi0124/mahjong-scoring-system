@@ -818,6 +818,7 @@ app.get('/api/team-rankings', async (req, res) => {
         // 获取所有团队和比赛数据
         const teams = await Team.find();
         const matches = await TeamMatch.find();
+        const players = await Player.find();
 
         // 计算团队排名
         const teamRankings = teams.map(team => {
@@ -841,6 +842,7 @@ app.get('/api/team-rankings', async (req, res) => {
             team.members.forEach(playerName => {
                 playerStats.set(playerName, {
                     name: playerName,
+                    engName: players.find(p => p.name === playerName),
                     team: team.name,
                     teamColor: team.color,
                     games: 0,
