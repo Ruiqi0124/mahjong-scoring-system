@@ -82,7 +82,9 @@ const teamMatchSchema = new mongoose.Schema({
     season: { type: Number, default: 0 },
     players: [{
         name: { type: String, required: true },
+        engName: { type: String, default: "" },
         team: { type: String, required: true },
+        teamEngName: { type: String, default: "" },
         score: { type: Number, required: true },
         pt: { type: Number, required: true },
         chombo: { type: Boolean, default: false }
@@ -645,6 +647,8 @@ app.post('/api/team-matches', async (req, res) => {
         const { time, players, season = 0 } = req.body;
         const Team = getTeam(season);
         const TeamMatch = getTeamMatch(season);
+        const playersInDb = await Player.find();
+        const teamsInDb = await Team.find();
 
         // 验证数据
         if (!time || !players || !Array.isArray(players) || players.length !== 4) {
@@ -666,8 +670,7 @@ app.post('/api/team-matches', async (req, res) => {
 
         // 验证每个玩家是否属于其声称的队伍
         for (const player of players) {
-            const team = await Team.findOne({ name: player.team, members: player.name });
-            if (!team) {
+            if (!teamsInDb.find(t => t.name === player.team && t.members.includes(player.name))) {
                 return res.status(400).json({ message: `玩家 ${player.name} 不属于队伍 ${player.team}` });
             }
         }
@@ -685,7 +688,9 @@ app.post('/api/team-matches', async (req, res) => {
             time: new Date(time),
             players: sortedPlayers.map(p => ({
                 name: p.name,
+                engName: playersInDb.find(player => player.name === p.name).engName,
                 team: p.team,
+                teamEngName: teamsInDb.find(t => t.name === p.team).engName,
                 score: p.score,
                 pt: p.pt,
                 chombo: p.chombo
@@ -697,7 +702,7 @@ app.post('/api/team-matches', async (req, res) => {
         // 更新团队统计
         const participatingTeams = [...new Set(players.map(p => p.team))];
         for (const teamName of participatingTeams) {
-            const team = await Team.findOne({ name: teamName });
+            const team = teamsInDb.find(t => t.name === teamName);
             if (team) {
                 team.games = (team.games || 0) + 1;
                 team.totalPT = (team.totalPT || 0) + sortedPlayers

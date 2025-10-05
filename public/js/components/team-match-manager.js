@@ -45,7 +45,6 @@ class TeamMatchManager {
     updatePlayerRankings(rankings) {
         const tbody = document.getElementById('playerRankings');
         if (!tbody) return;
-        console.log({ rankings });
 
         tbody.innerHTML = rankings.map(player => `
                     <tr style="background-color: ${player.teamColor}20">
@@ -76,14 +75,13 @@ class TeamMatchManager {
 
         tbody.innerHTML = matches.map(match => {
             const sortedPlayers = [...match.players].sort((a, b) => b.score - a.score);
-
             return `
                         <tr>
                             <td>${new Date(match.time).toLocaleString()}</td>
                             ${sortedPlayers.map(player => `
                                 <td>
-                                    <div class="fw-bold">${player.name}</div>
-                                    <div class="text-muted small">${player.team}</div>
+                                    <div class="fw-bold">${this.lang === "zh" ? player.name : player.engName}</div>
+                                    <div class="text-muted small">${this.lang === "zh" ? player.team : player.teamEngName}</div>
                                     <div>
                                         <span>${player.score.toLocaleString()}</span>
                                         <span class="${player.pt >= 0 ? 'text-success' : 'text-danger'} ms-2">${player.pt > 0 ? '+' : ''}${player.pt.toFixed(1)}pt</span>
