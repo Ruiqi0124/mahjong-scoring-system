@@ -829,7 +829,7 @@ app.get('/api/team-rankings', async (req, res) => {
                 avgPT: team.avgPT,
                 color: team.color
             };
-        }).sort((a, b) => b.avgPT - a.avgPT);
+        }).sort((a, b) => b.totalPT - a.totalPT);
 
         // 计算个人排名
         const playerStats = new Map();
@@ -873,7 +873,7 @@ app.get('/api/team-rankings', async (req, res) => {
                 ...stats,
                 winRate: stats.games > 0 ? ((stats.wins / stats.games) * 100).toFixed(1) : '0.0'
             }))
-            .sort((a, b) => b.avgPT - a.avgPT);
+            .sort((a, b) => b.totalPT - a.totalPT);
 
         res.json({
             teamRankings,
