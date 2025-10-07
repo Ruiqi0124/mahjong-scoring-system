@@ -4,3 +4,4 @@ package-lock.json
 db_dumps/*
 local/*
 .cursorrules
+.claude

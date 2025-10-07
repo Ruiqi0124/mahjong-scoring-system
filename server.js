@@ -92,7 +92,7 @@ const teamMatchSchema = new mongoose.Schema({
     }]
 });
 
-// 详细游戏记录Schema (Game Process Record)
+// 详细游戏记录Schema
 const gameDetailSchema = new mongoose.Schema({
     submittedTime: { type: Date, default: Date.now },
     players: [{ type: String, required: true }],
