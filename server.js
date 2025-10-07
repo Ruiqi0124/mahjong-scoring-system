@@ -923,7 +923,7 @@ app.get('/api/team-rankings', async (req, res) => {
         if (season === 1) {
             gameDetails.forEach(({ players, rounds }) => {
                 players.forEach(player => {
-                    playerStats.get(player).stats.games++;
+                    playerStats.get(player).stats.games += rounds.length;
                 });
                 rounds.forEach(({ resultType, playerStates, winner, loser, tenpai }) => {
                     for (let i = 0; i < 4; i++) {
