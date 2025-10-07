@@ -72,7 +72,7 @@ class TeamMatchManager {
 
     updateMatchRecords(matches) {
         this.updateAllMatchRecordsInternal(matches.slice(0, 4), 'recentMatchRecords');
-        this.updateAllMatchRecordsInternal(matches.slice(4), 'allMatchRecords');
+        this.updateAllMatchRecordsInternal(matches, 'allMatchRecords');
     }
 
     updateAllMatchRecordsInternal(matches, elemId) {
