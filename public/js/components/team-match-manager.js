@@ -78,11 +78,11 @@ class TeamMatchManager {
                         <td>${player.games}</td>
                         <td class="${player.totalPT >= 0 ? 'text-success' : 'text-danger'}">${player.totalPT.toFixed(1)}</td>
                         ${this.season === 1 ? `<td>${this.safeDivide(player.totalPlacement, player.games)}</td>
-                        <td>${this.safeDividePct(stats.win, stats.games)}</td>
-                        <td>${this.safeDividePct(stats.dealIn, stats.games)}</td>
+                        <td>${this.safeDividePct(stats.win, stats.rounds)}</td>
+                        <td>${this.safeDividePct(stats.dealIn, stats.rounds)}</td>
                         <td>${this.safeDividePct(stats.tsumo, stats.win)}</td>
-                        <td>${this.safeDividePct(stats.call, stats.games)}</td>
-                        <td>${this.safeDividePct(stats.riichi, stats.games)}</td>
+                        <td>${this.safeDividePct(stats.call, stats.rounds)}</td>
+                        <td>${this.safeDividePct(stats.riichi, stats.rounds)}</td>
                         <td>${this.safeDividePct(stats.riichiSuccess, stats.riichi)}</td>
                         <td>${this.safeDividePct(stats.dama, stats.win)}</td>
                         <td>${this.safeDividePct(stats.drawTenpai, stats.draw)}</td>` : ""}

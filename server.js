@@ -879,7 +879,7 @@ app.get('/api/team-rankings', async (req, res) => {
                     avgPT: 0,
                     totalPlacement: 0,
                     stats: {
-                        games: 0,
+                        rounds: 0,
                         win: 0,
                         dealIn: 0,
                         tsumo: 0,
@@ -923,7 +923,7 @@ app.get('/api/team-rankings', async (req, res) => {
         if (season === 1) {
             gameDetails.forEach(({ players, rounds }) => {
                 players.forEach(player => {
-                    playerStats.get(player).stats.games += rounds.length;
+                    playerStats.get(player).stats.rounds += rounds.length;
                 });
                 rounds.forEach(({ resultType, playerStates, winner, loser, tenpai }) => {
                     for (let i = 0; i < 4; i++) {
