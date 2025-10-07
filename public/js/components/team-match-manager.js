@@ -71,10 +71,11 @@ class TeamMatchManager {
 
         tbody.innerHTML = rankings.map(player => {
             const teamColorFaint = this.getColorOverWhite(player.teamColor, '20');
+            const noWrap = this.lang === "zh" ? "white-space: nowrap;" : ""
             const stats = player.stats;
             return `<tr style="background-color: ${teamColorFaint}">
                         <td style="background-color: ${teamColorFaint}">${this.lang === "zh" ? player.name : player.engName}</td>
-                        <td class="team-color" style="color: ${player.teamColor}">${this.lang === "zh" ? player.team : player.teamEngName}</td>
+                        <td class="team-color" style="color: ${player.teamColor};${noWrap}">${this.lang === "zh" ? player.team : player.teamEngName}</td>
                         <td>${player.games}</td>
                         <td class="${player.totalPT >= 0 ? 'text-success' : 'text-danger'}">${player.totalPT.toFixed(1)}</td>
                         ${this.season === 1 ? `<td>${this.safeDivide(player.totalPlacement, player.games)}</td>
