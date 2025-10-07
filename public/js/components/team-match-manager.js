@@ -30,7 +30,6 @@ class TeamMatchManager {
     updateTeamRankings(rankings) {
         const tbody = document.getElementById('teamRankings');
         if (!tbody) return;
-        console.log({ rankings });
 
         tbody.innerHTML = rankings.map(team => `
                     <tr style="background-color: ${team.color}20">
@@ -64,6 +63,7 @@ class TeamMatchManager {
             if (!response.ok) throw new Error('加载比赛记录失败');
             const matches = await response.json();
             this.updateMatchRecords(matches);
+
         } catch (error) {
             console.error('加载比赛记录错误:', error);
             alert('加载比赛记录失败', error);
@@ -71,7 +71,12 @@ class TeamMatchManager {
     }
 
     updateMatchRecords(matches) {
-        const tbody = document.getElementById('matchRecords');
+        this.updateAllMatchRecordsInternal(matches.slice(0, 4), 'recentMatchRecords');
+        this.updateAllMatchRecordsInternal(matches.slice(4), 'allMatchRecords');
+    }
+
+    updateAllMatchRecordsInternal(matches, elemId) {
+        const tbody = document.getElementById(elemId);
         if (!tbody) return;
 
         tbody.innerHTML = matches.map(match => {

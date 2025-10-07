@@ -48,12 +48,41 @@
     </nav>
 
     <div class="container mt-4">
-        <!-- 团队赛记录部分 -->
+        <!-- 团队排名 -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0 text-team-ranking-title"></h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th class="text-team-name"></th>
+                                        <th class="text-games"></th>
+                                        <th class="text-total-pt"></th>
+                                        <th class="text-avg-placement"></th>
+                                        <th class="text-placements"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teamRankings">
+                                    <!-- 团队排名将通过JavaScript动态填充 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 近期比赛部分 -->
         <div class="row mb-4">
             <div class="col">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 text-team-match-records"></h5>
+                        <h5 class="mb-0 text-recent-team-matches"></h5>
                         <button class="btn btn-success text-record-a-game" data-bs-toggle="modal"
                             data-bs-target="#recordMatchModal"></button>
                     </div>
@@ -70,7 +99,7 @@
                                         <th class="text-modify"></th>
                                     </tr>
                                 </thead>
-                                <tbody id="matchRecords">
+                                <tbody id="recentMatchRecords">
                                     <!-- 比赛记录将通过JavaScript动态填充 -->
                                 </tbody>
                             </table>
@@ -80,36 +109,15 @@
             </div>
         </div>
 
-        <!-- 排名部分 -->
+        <!-- 个人排名 -->
         <div class="row mb-4">
             <div class="col">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0 text-ranking-title"></h5>
+                        <h5 class="mb-0 text-player-ranking-title"></h5>
                     </div>
                     <div class="card-body">
-                        <!-- 团队排名 -->
-                        <div class="table-responsive mb-4">
-                            <h5 class="mb-3 text-team-ranking"></h5>
-                            <table class="table table-hover">
-                                <thead class="table-primary">
-                                    <tr>
-                                        <th class="text-team-name"></th>
-                                        <th class="text-games"></th>
-                                        <th class="text-total-pt"></th>
-                                        <th class="text-avg-placement"></th>
-                                        <th class="text-placements"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="teamRankings">
-                                    <!-- 团队排名将通过JavaScript动态填充 -->
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- 个人排名 -->
                         <div class="table-responsive">
-                            <h5 class="mb-3 text-player-ranking"></h5>
                             <table class="table table-hover">
                                 <thead class="table-primary">
                                     <tr>
@@ -122,6 +130,38 @@
                                 </thead>
                                 <tbody id="playerRankings">
                                     <!-- 个人排名将通过JavaScript动态填充 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 全部比赛部分 -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-all-team-matches"></h5>
+                        <button class="btn btn-success text-record-a-game" data-bs-toggle="modal"
+                            data-bs-target="#recordMatchModal"></button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th class="text-time"></th>
+                                        <th class="text-1st"></th>
+                                        <th class="text-2nd"></th>
+                                        <th class="text-3rd"></th>
+                                        <th class="text-4th"></th>
+                                        <th class="text-modify"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="allMatchRecords">
+                                    <!-- 比赛记录将通过JavaScript动态填充 -->
                                 </tbody>
                             </table>
                         </div>
@@ -368,12 +408,12 @@
                 "text-total-pt": ["总PT", "总PT", "PT"],
                 "text-avg-placement": ["均顺", "均顺", "Avg Rank"],
                 "text-placements": ["顺位", "顺位", "Ranks"],
-                "text-team-match-records": ["团队赛记录", "团队赛记录", "Games"],
+                "text-recent-team-matches": ["近期比赛", "近期比赛", "Recent Games"],
+                "text-all-team-matches": ["往期比赛", "往期比赛", "Past Games"],
                 "text-record-a-game": ["记录比赛", "记录比赛", "Record a game"],
                 "text-modify": ["操作", "操作", "Modify"],
-                "text-ranking-title": ["巢 League S1 排名", "巢 League S2 排名", "Nest League S2 Ranking"],
-                "text-team-ranking": ["团队排名", "团队排名", "By Team"],
-                "text-player-ranking": ["个人排名", "个人排名", "By Player"],
+                "text-team-ranking-title": ["团队排名", "团队排名", "Team Ranking"],
+                "text-player-ranking-title": ["个人排名", "个人排名", "Player Ranking"],
                 "text-player": ["玩家", "玩家", "Name"],
                 "text-team": ["所属队伍", "所属队伍", "Team"],
                 "text-games": ["场数", "场数", "Played"],

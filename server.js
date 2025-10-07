@@ -1053,9 +1053,9 @@ async function loadData() {
 }
 
 // 初始化时加载数据
-loadData().catch(error => {
-    console.error('初始化数据失败:', error);
-});
+// loadData().catch(error => {
+//     console.error('初始化数据失败:', error);
+// });
 
 // 将通配符路由移到这里，所有API路由之后
 app.get('*', (req, res) => {
