@@ -5,6 +5,11 @@ class TeamMatchManager {
         this.lang = lang;
         this.recordMatchModal = new bootstrap.Modal(document.getElementById('recordMatchModal'));
         this.editTeamModal = new bootstrap.Modal(document.getElementById('editTeamModal'));
+        this.currentPlayerRankingsSort = {
+            field: 'totalPT',
+            direction: 'desc'
+        };
+        this.playerRankings = null;
         this.init();
     }
 
@@ -15,6 +20,25 @@ class TeamMatchManager {
         document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
             new bootstrap.Tooltip(el);
         });
+
+        // 添加排序按钮和表头点击事件监听
+        document.querySelectorAll('#playerRankingsTable .sortable').forEach(th => {
+            const sortField = th.dataset.sort;
+            // 为表头添加点击事件
+            th.addEventListener('click', (e) => {
+                // 如果点击的是按钮，不处理（让按钮自己的事件处理）
+                if (e.target.closest('.sort-btn')) return;
+                this.handlePlayerRankingsSort(sortField);
+            });
+            // 为排序按钮添加点击事件
+            const btn = th.querySelector('.sort-btn');
+            if (btn) {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // 阻止事件冒泡到表头
+                    this.handlePlayerRankingsSort(sortField);
+                });
+            }
+        });
     }
 
     async loadRankings() {
@@ -22,11 +46,12 @@ class TeamMatchManager {
             const response = await fetch(`/api/team-rankings?season=${this.season}`);
             if (!response.ok) throw new Error('加载排名数据失败');
             const { teamRankings, playerRankings } = await response.json();
+            this.playerRankings = playerRankings;
             this.updateTeamRankings(teamRankings);
             this.updatePlayerRankings(playerRankings);
         } catch (error) {
             console.error('加载排名错误:', error);
-            alert('加载排名数据失败', error);
+            alert(`加载排名数据失败${error}`);
         }
     }
 
@@ -40,7 +65,12 @@ class TeamMatchManager {
         return '#' + [res(r), res(g), res(b)].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
     }
 
-    safeDivide(a, b, dp = 2) {
+    safeDivide(a, b) {
+        if (b === 0) return -1;
+        else return a / b;
+    }
+
+    safeDivideText(a, b, dp = 2) {
         if (b === 0) return "";
         else return (a / b).toFixed(dp);
     }
@@ -59,7 +89,7 @@ class TeamMatchManager {
                         <td class="team-color" style="color: ${team.color}">${this.lang === "zh" ? team.name : team.engName}</td>
                         <td>${team.progress}</td>
                         <td class="${team.totalPT >= 0 ? 'text-success' : 'text-danger'}">${team.totalPT.toFixed(1)}</td>
-                        <td>${this.safeDivide(team.totalPlacement, team.games)}</td>
+                        <td>${this.safeDivideText(team.totalPlacement, team.games)}</td>
                         <td>${team.placementStats.map(count => Number.isInteger(count) ? count : count.toFixed(1)).join("-")}</td>
                     </tr>
                 `).join('');
@@ -69,7 +99,7 @@ class TeamMatchManager {
         const tbody = document.getElementById('playerRankings');
         if (!tbody) return;
 
-        tbody.innerHTML = rankings.map(player => {
+        tbody.innerHTML = this.sortPlayerRankings(rankings).map(player => {
             const teamColorFaint = this.getColorOverWhite(player.teamColor, '20');
             const noWrap = this.lang === "zh" ? "white-space: nowrap;" : ""
             const stats = player.stats;
@@ -78,7 +108,7 @@ class TeamMatchManager {
                         <td class="team-color" style="color: ${player.teamColor};${noWrap}">${this.lang === "zh" ? player.team : player.teamEngName}</td>
                         <td>${player.games}</td>
                         <td class="${player.totalPT >= 0 ? 'text-success' : 'text-danger'}">${player.totalPT.toFixed(1)}</td>
-                        ${this.season === 1 ? `<td>${this.safeDivide(player.totalPlacement, player.games)}</td>
+                        ${this.season === 1 ? `<td>${this.safeDivideText(player.totalPlacement, player.games)}</td>
                         <td>${this.safeDividePct(stats.win, stats.rounds)}</td>
                         <td>${this.safeDividePct(stats.dealIn, stats.rounds)}</td>
                         <td>${this.safeDividePct(stats.tsumo, stats.win)}</td>
@@ -89,6 +119,97 @@ class TeamMatchManager {
                         <td>${this.safeDividePct(stats.drawTenpai, stats.draw)}</td>` : ""}
                     </tr>
                 `}).join('');
+        this.updatePlayerRankingsSortIcons();
+    }
+
+    updatePlayerRankingsSortIcons() {
+        document.querySelectorAll('#playerRankingsTable .sort-btn i').forEach(icon => {
+            const button = icon.closest('.sort-btn');
+            if (button.dataset.sort === this.currentPlayerRankingsSort.field) {
+                icon.className = `fas fa-sort-${this.currentPlayerRankingsSort.direction === 'asc' ? 'up' : 'down'}`;
+            } else {
+                icon.className = 'fas fa-sort';
+            }
+        });
+    }
+
+    handlePlayerRankingsSort(field) {
+        if (this.currentPlayerRankingsSort.field === field) {
+            this.currentPlayerRankingsSort.direction = this.currentPlayerRankingsSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.currentPlayerRankingsSort.field = field
+            this.currentPlayerRankingsSort.direction = field === 'avgPlacement' ? 'asc' : 'desc';
+        }
+        this.updatePlayerRankingsSortIcons();
+        this.updatePlayerRankings(this.playerRankings);
+    }
+
+    sortPlayerRankings(rankings) {
+        const sorted = rankings.sort((a, b) => {
+            let aValue, bValue;
+            console.log((this.currentPlayerRankingsSort.field));
+            switch (this.currentPlayerRankingsSort.field) {
+                case 'games':
+                    aValue = a.games;
+                    bValue = b.games;
+                    break;
+                case 'totalPT':
+                    aValue = a.totalPT;
+                    bValue = b.totalPT;
+                    break;
+                case 'avgPlacement':
+                    aValue = this.safeDivide(a.totalPlacement, a.games);
+                    bValue = this.safeDivide(b.totalPlacement, b.games);
+                    break;
+                case 'winRate':
+                    aValue = this.safeDivide(a.stats.win, a.stats.rounds);
+                    bValue = this.safeDivide(b.stats.win, b.stats.rounds);
+                    break;
+                case 'dealInRate':
+                    aValue = this.safeDivide(a.stats.dealIn, a.stats.rounds);
+                    bValue = this.safeDivide(b.stats.dealIn, b.stats.rounds);
+                    break;
+                case 'tsumoRate':
+                    aValue = this.safeDivide(a.stats.tsumo, a.stats.win);
+                    bValue = this.safeDivide(b.stats.tsumo, b.stats.win);
+                    break;
+                case 'callRate':
+                    aValue = this.safeDivide(a.stats.call, a.stats.rounds);
+                    bValue = this.safeDivide(b.stats.call, b.stats.rounds);
+                    break;
+                case 'riichiRate':
+                    aValue = this.safeDivide(a.stats.riichi, a.stats.rounds);
+                    bValue = this.safeDivide(b.stats.riichi, b.stats.rounds);
+                    break;
+                case 'riichiWinRate':
+                    aValue = this.safeDivide(a.stats.riichiSuccess, a.stats.riichi);
+                    bValue = this.safeDivide(b.stats.riichiSuccess, b.stats.riichi);
+                    break;
+                case 'damaRate':
+                    aValue = this.safeDivide(a.stats.dama, a.stats.win);
+                    bValue = this.safeDivide(b.stats.dama, b.stats.win);
+                    break;
+                case 'drawTenpaiRate':
+                    aValue = this.safeDivide(a.stats.drawTenpai, a.stats.draw);
+                    bValue = this.safeDivide(b.stats.drawTenpai, b.stats.draw);
+                    break;
+                default:
+                    aValue = a.totalPT;
+                    bValue = b.totalPT;
+            }
+
+            // 无比赛记录的玩家排在后面
+            if (a.games === 0 && b.games === 0) {
+                return a.name.localeCompare(b.name);
+            }
+            if (a.games === 0) return 1;
+            if (b.games === 0) return -1;
+
+            // 根据排序方向返回比较结果
+            const compareResult = aValue - bValue;
+            return this.currentPlayerRankingsSort.direction === 'asc' ? compareResult : -compareResult;
+        });
+        return sorted;
     }
 
     async loadMatches() {
@@ -174,7 +295,7 @@ class TeamMatchManager {
             });
         } catch (error) {
             console.error('加载玩家列表错误:', error);
-            alert('加载玩家列表失败', error);
+            alert(`加载玩家列表失败${error}`);
         }
     }
 

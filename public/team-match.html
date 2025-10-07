@@ -110,7 +110,7 @@
         </div>
 
         <!-- 个人排名 -->
-        <div class="row mb-4">
+        <div class="row mb-4" id="playerRankingsTable">
             <div class="col">
                 <div class="card">
                     <div class="card-header">
@@ -123,25 +123,55 @@
                                     <tr>
                                         <th class="text-player"></th>
                                         <th class="text-team"></th>
-                                        <th class="text-games"></th>
-                                        <th class="text-total-pt"></th>
-                                        <th class="text-avg-placement"></th>
-                                        <th class="text-win-rate text-win-rate-tooltip" data-bs-toggle="tooltip"
-                                            data-bs-placement="top"></th>
-                                        <th class="text-deal-in-rate text-deal-in-rate-tooltip" data-bs-toggle="tooltip"
-                                            data-bs-placement="top"></th>
-                                        <th class="text-tsumo-rate text-tsumo-rate-tooltip" data-bs-toggle="tooltip"
-                                            data-bs-placement="top"></th>
-                                        <th class="text-call-rate text-call-rate-tooltip" data-bs-toggle="tooltip"
-                                            data-bs-placement="top"></th>
-                                        <th class="text-riichi-rate text-riichi-rate-tooltip" data-bs-toggle="tooltip"
-                                            data-bs-placement="top"></th>
-                                        <th class="text-riichi-win-rate text-riichi-win-rate-tooltip"
-                                            data-bs-toggle="tooltip" data-bs-placement="top"></th>
-                                        <th class="text-dama-rate text-dama-rate-tooltip" data-bs-toggle="tooltip"
-                                            data-bs-placement="top"></th>
-                                        <th class="text-draw-tenpai-rate text-draw-tenpai-rate-tooltip"
-                                            data-bs-toggle="tooltip" data-bs-placement="top"></th>
+                                        <th class="sortable" data-sort="games"><span
+                                                class="text-games">Games</span><button class="btn btn-sm sort-btn"
+                                                data-sort="games"><i class="fas fa-sort"></i></button></th>
+                                        <th class="sortable" data-sort="totalPT"><span class="text-total-pt">Total
+                                                PT</span><button class="btn btn-sm sort-btn" data-sort="totalPT"><i
+                                                    class="fas fa-sort"></i></button></th>
+                                        <th class="sortable" data-sort="avgPlacement"><span
+                                                class="text-avg-placement">Avg Placement</span><button
+                                                class="btn btn-sm sort-btn" data-sort="avgPlacement"><i
+                                                    class="fas fa-sort"></i></button></th>
+                                        <th class="text-win-rate-tooltip sortable" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" data-sort="winRate"><span class="text-win-rate">Win
+                                                Rate</span><button class="btn btn-sm sort-btn" data-sort="winRate"><i
+                                                    class="fas fa-sort"></i></button></th>
+                                        <th class="text-deal-in-rate-tooltip sortable" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" data-sort="dealInRate"><span
+                                                class="text-deal-in-rate">Deal In Rate</span><button
+                                                class="btn btn-sm sort-btn" data-sort="dealInRate"><i
+                                                    class="fas fa-sort"></i></button></th>
+                                        <th class="text-tsumo-rate-tooltip sortable" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" data-sort="tsumoRate"><span
+                                                class="text-tsumo-rate">Tsumo Rate</span><button
+                                                class="btn btn-sm sort-btn" data-sort="tsumoRate"><i
+                                                    class="fas fa-sort"></i></button></th>
+                                        <th class="text-call-rate-tooltip sortable" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" data-sort="callRate"><span
+                                                class="text-call-rate">Call Rate</span><button
+                                                class="btn btn-sm sort-btn" data-sort="callRate"><i
+                                                    class="fas fa-sort"></i></button></th>
+                                        <th class="text-riichi-rate-tooltip sortable" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" data-sort="riichiRate"><span
+                                                class="text-riichi-rate">Riichi Rate</span><button
+                                                class="btn btn-sm sort-btn" data-sort="riichiRate"><i
+                                                    class="fas fa-sort"></i></button></th>
+                                        <th class="text-riichi-win-rate-tooltip sortable" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" data-sort="riichiWinRate"><span
+                                                class="text-riichi-win-rate">Riichi Win Rate</span><button
+                                                class="btn btn-sm sort-btn" data-sort="riichiWinRate"><i
+                                                    class="fas fa-sort"></i></button></th>
+                                        <th class="text-dama-rate-tooltip sortable" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" data-sort="damaRate"><span
+                                                class="text-dama-rate">Dama Rate</span><button
+                                                class="btn btn-sm sort-btn" data-sort="damaRate"><i
+                                                    class="fas fa-sort"></i></button></th>
+                                        <th class="text-draw-tenpai-rate-tooltip sortable" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" data-sort="drawTenpaiRate"><span
+                                                class="text-draw-tenpai-rate">Draw Tenpai Rate</span><button
+                                                class="btn btn-sm sort-btn" data-sort="drawTenpaiRate"><i
+                                                    class="fas fa-sort"></i></button></th>
                                     </tr>
                                 </thead>
                                 <tbody id="playerRankings">
