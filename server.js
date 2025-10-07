@@ -113,17 +113,17 @@ let GameDetail = mongoose.models.GameDetail || mongoose.model('GameDetail', game
 
 let TOTAL_SEASON_NUM = 2
 let teams = []
-let team_matches = []
+let teamMatches = []
 for (let season = 0; season < TOTAL_SEASON_NUM; season++) {
     const name = season === 0 ? "" : `-S${season}`;
     teams[season] = mongoose.models[`Team${name}`] || mongoose.model(`Team${name}`, teamSchema);
-    team_matches[season] = mongoose.models[`TeamMatch${name}`] || mongoose.model(`TeamMatch${name}`, teamMatchSchema);
+    teamMatches[season] = mongoose.models[`TeamMatch${name}`] || mongoose.model(`TeamMatch${name}`, teamMatchSchema);
 }
 function getTeam(season) {
     return teams[Math.min(Math.max(season, 0), TOTAL_SEASON_NUM - 1)];
 }
 function getTeamMatch(season) {
-    return team_matches[Math.min(Math.max(season, 0), TOTAL_SEASON_NUM - 1)];
+    return teamMatches[Math.min(Math.max(season, 0), TOTAL_SEASON_NUM - 1)];
 }
 
 function auth(password) {
@@ -834,7 +834,7 @@ const TOTAL_GAMES = [
 app.get('/api/team-rankings', async (req, res) => {
     try {
         await connectDB();
-        const season = req.query.season || 0;
+        const season = parseInt(req.query.season, 10) || 0;
         const Team = getTeam(season);
         const TeamMatch = getTeamMatch(season);
 
@@ -842,6 +842,7 @@ app.get('/api/team-rankings', async (req, res) => {
         const teams = await Team.find();
         const matches = await TeamMatch.find();
         const players = await Player.find();
+        const gameDetails = await GameDetail.find();
 
         // 计算团队排名
         const teamRankings = teams.map(team => {
@@ -876,10 +877,23 @@ app.get('/api/team-rankings', async (req, res) => {
                     wins: 0,
                     totalPT: 0,
                     avgPT: 0,
-                    totalPlacement: 0
+                    totalPlacement: 0,
+                    stats: {
+                        games: 0,
+                        win: 0,
+                        dealIn: 0,
+                        tsumo: 0,
+                        call: 0,
+                        riichi: 0,
+                        riichiSuccess: 0,
+                        dama: 0,
+                        draw: 0,
+                        drawTenpai: 0,
+                    },
                 });
             });
         });
+
 
         // 统计比赛数据
         matches.forEach(match => {
@@ -906,6 +920,44 @@ app.get('/api/team-rankings', async (req, res) => {
                 }
             });
         });
+        if (season === 1) {
+            gameDetails.forEach(({ players, rounds }) => {
+                players.forEach(player => {
+                    playerStats.get(player).stats.games++;
+                });
+                rounds.forEach(({ resultType, playerStates, winner, loser, tenpai }) => {
+                    for (let i = 0; i < 4; i++) {
+                        const player = players[i];
+                        const playerState = playerStates[i];
+                        if (playerState === "riichi") {
+                            playerStats.get(player).stats.riichi++;
+                            if (player === winner)
+                                playerStats.get(player).stats.riichiSuccess++;
+                        } else if (playerState === "open") {
+                            playerStats.get(player).stats.call++;
+                        } else if (playerState === "closed") {
+                            if (player === winner)
+                                playerStats.get(player).stats.dama++;
+                        }
+                    }
+                    if (resultType === "deal-in") {
+                        playerStats.get(winner).stats.win++;
+                        playerStats.get(loser).stats.dealIn++;
+                    } else if (resultType === "tsumo") {
+                        playerStats.get(winner).stats.win++;
+                        playerStats.get(winner).stats.tsumo++;
+                    } else if (resultType === "draw") {
+                        for (let i = 0; i < 4; i++) {
+                            const player = players[i];
+                            const isTenpai = tenpai[i];
+                            playerStats.get(player).stats.draw++;
+                            if (isTenpai)
+                                playerStats.get(player).stats.drawTenpai++;
+                        }
+                    }
+                });
+            });
+        }
 
         // 转换为数组并排序
         const playerRankings = Array.from(playerStats.values())

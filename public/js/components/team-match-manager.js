@@ -12,6 +12,9 @@ class TeamMatchManager {
         await this.loadRankings();
         await this.loadMatches();
         this.setupEventListeners();
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+            new bootstrap.Tooltip(el);
+        });
     }
 
     async loadRankings() {
@@ -27,6 +30,26 @@ class TeamMatchManager {
         }
     }
 
+    getColorOverWhite(colorHex, alphaHex) {
+        colorHex = colorHex.slice(1); // get rid of "#"
+        const r = parseInt(colorHex.slice(0, 2), 16),
+            g = parseInt(colorHex.slice(2, 4), 16),
+            b = parseInt(colorHex.slice(4, 6), 16);
+        const a = parseInt(alphaHex, 16) / 255;
+        const res = c => Math.round(a * c + (1 - a) * 255);
+        return '#' + [res(r), res(g), res(b)].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+    }
+
+    safeDivide(a, b, dp = 2) {
+        if (b === 0) return "";
+        else return (a / b).toFixed(dp);
+    }
+
+    safeDividePct(a, b, dp = 1) {
+        if (b === 0) return "";
+        else return `${(a / b * 100).toFixed(dp)}%`
+    }
+
     updateTeamRankings(rankings) {
         const tbody = document.getElementById('teamRankings');
         if (!tbody) return;
@@ -36,7 +59,7 @@ class TeamMatchManager {
                         <td class="team-color" style="color: ${team.color}">${this.lang === "zh" ? team.name : team.engName}</td>
                         <td>${team.progress}</td>
                         <td class="${team.totalPT >= 0 ? 'text-success' : 'text-danger'}">${team.totalPT.toFixed(1)}</td>
-                        <td>${team.games === 0 ? "" : (team.totalPlacement / team.games).toFixed(2)}</td>
+                        <td>${this.safeDivide(team.totalPlacement, team.games)}</td>
                         <td>${team.placementStats.map(count => Number.isInteger(count) ? count : count.toFixed(1)).join("-")}</td>
                     </tr>
                 `).join('');
@@ -46,15 +69,25 @@ class TeamMatchManager {
         const tbody = document.getElementById('playerRankings');
         if (!tbody) return;
 
-        tbody.innerHTML = rankings.map(player => `
-                    <tr style="background-color: ${player.teamColor}20">
-                        <td>${this.lang === "zh" ? player.name : player.engName}</td>
+        tbody.innerHTML = rankings.map(player => {
+            const teamColorFaint = this.getColorOverWhite(player.teamColor, '20');
+            const stats = player.stats;
+            return `<tr style="background-color: ${teamColorFaint}">
+                        <td style="background-color: ${teamColorFaint}">${this.lang === "zh" ? player.name : player.engName}</td>
                         <td class="team-color" style="color: ${player.teamColor}">${this.lang === "zh" ? player.team : player.teamEngName}</td>
                         <td>${player.games}</td>
                         <td class="${player.totalPT >= 0 ? 'text-success' : 'text-danger'}">${player.totalPT.toFixed(1)}</td>
-                         <td>${player.games === 0 ? "" : (player.totalPlacement / player.games).toFixed(2)}</td>
+                        ${this.season === 1 ? `<td>${this.safeDivide(player.totalPlacement, player.games)}</td>
+                        <td>${this.safeDividePct(stats.win, stats.games)}</td>
+                        <td>${this.safeDividePct(stats.dealIn, stats.games)}</td>
+                        <td>${this.safeDividePct(stats.tsumo, stats.win)}</td>
+                        <td>${this.safeDividePct(stats.call, stats.games)}</td>
+                        <td>${this.safeDividePct(stats.riichi, stats.games)}</td>
+                        <td>${this.safeDividePct(stats.riichiSuccess, stats.riichi)}</td>
+                        <td>${this.safeDividePct(stats.dama, stats.win)}</td>
+                        <td>${this.safeDividePct(stats.drawTenpai, stats.draw)}</td>` : ""}
                     </tr>
-                `).join('');
+                `}).join('');
     }
 
     async loadMatches() {
@@ -66,7 +99,7 @@ class TeamMatchManager {
 
         } catch (error) {
             console.error('加载比赛记录错误:', error);
-            alert('加载比赛记录失败', error);
+            alert(`加载比赛记录失败: ${error}`);
         }
     }
 

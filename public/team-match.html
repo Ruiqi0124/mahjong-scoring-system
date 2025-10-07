@@ -126,6 +126,22 @@
                                         <th class="text-games"></th>
                                         <th class="text-total-pt"></th>
                                         <th class="text-avg-placement"></th>
+                                        <th class="text-win-rate text-win-rate-tooltip" data-bs-toggle="tooltip"
+                                            data-bs-placement="top"></th>
+                                        <th class="text-deal-in-rate text-deal-in-rate-tooltip" data-bs-toggle="tooltip"
+                                            data-bs-placement="top"></th>
+                                        <th class="text-tsumo-rate text-tsumo-rate-tooltip" data-bs-toggle="tooltip"
+                                            data-bs-placement="top"></th>
+                                        <th class="text-call-rate text-call-rate-tooltip" data-bs-toggle="tooltip"
+                                            data-bs-placement="top"></th>
+                                        <th class="text-riichi-rate text-riichi-rate-tooltip" data-bs-toggle="tooltip"
+                                            data-bs-placement="top"></th>
+                                        <th class="text-riichi-win-rate text-riichi-win-rate-tooltip"
+                                            data-bs-toggle="tooltip" data-bs-placement="top"></th>
+                                        <th class="text-dama-rate text-dama-rate-tooltip" data-bs-toggle="tooltip"
+                                            data-bs-placement="top"></th>
+                                        <th class="text-draw-tenpai-rate text-draw-tenpai-rate-tooltip"
+                                            data-bs-toggle="tooltip" data-bs-placement="top"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="playerRankings">
@@ -405,6 +421,14 @@
                 "text-cancel": ["取消", "取消", "Cancel"],
                 "text-total-pt": ["总PT", "总PT", "PT"],
                 "text-avg-placement": ["均顺", "均顺", "Avg Rank"],
+                "text-win-rate": ["和率", "和率", "Win Rate"],
+                "text-deal-in-rate": ["铳率", "铳率", "Deal-in Rate"],
+                "text-tsumo-rate": ["自摸率", "自摸率", "Tsumo Rate"],
+                "text-call-rate": ["副露率", "副露率", "Call Rate"],
+                "text-riichi-rate": ["立直率", "立直率", "Riichi Rate"],
+                "text-riichi-win-rate": ["立直成功", "立直成功", "Riichi Win"],
+                "text-dama-rate": ["默听率", "默听率", "Dama Rate"],
+                "text-draw-tenpai-rate": ["流听率", "流听率", "Draw Tenpai"],
                 "text-placements": ["顺位", "顺位", "Ranks"],
                 "text-recent-team-matches": ["近期比赛", "近期比赛", "Recent Games"],
                 "text-all-team-matches": ["全部比赛", "全部比赛", "All Games"],
@@ -426,7 +450,17 @@
                 "text-edit-team-title": ["编辑团队", "编辑团队", "Modify a team"],
                 "text-password-label": ["管理员密码", "管理员密码", "Admin password"]
             },
-            special: {
+            toolTips: {
+                "text-win-rate-tooltip": ["和了局数 / 总局数", "和了局数 / 总局数", "Win rounds / Total rounds"],
+                "text-deal-in-rate-tooltip": ["放铳局数 / 总局数", "放铳局数 / 总局数", "Deal-in rounds / Total rounds"],
+                "text-tsumo-rate-tooltip": ["自摸局数 / 和了局数", "自摸局数 / 和了局数", "Tsumo rounds / Win rounds"],
+                "text-call-rate-tooltip": ["副露局数 / 总局数", "副露局数 / 总局数", "Call rounds / Total rounds"],
+                "text-riichi-rate-tooltip": ["立直局数 / 总局数", "立直局数 / 总局数", "Riichi rounds / Total rounds"],
+                "text-riichi-win-rate-tooltip": ["立直和了局数 / 立直局数", "立直和了局数 / 立直局数", "Win after riichi rounds / Riichi rounds"],
+                "text-dama-rate-tooltip": ["默听和了局数 / 和了局数", "默听和了局数 / 和了局数", "Dama win rounds / Total rounds"],
+                "text-draw-tenpai-rate-tooltip": ["流局听牌局数 / 流局数", "流局听牌局数 / 流局数", "Tenpai at draw rounds / Draw rounds"],
+            },
+            other: {
                 "title": ["巢 League S1", "巢 League S2", "Nest League S2"],
                 "text-team-placeholder": ["所属队伍", "所属队伍", "Team"],
             },
@@ -442,14 +476,25 @@
         };
         Text.init();
         document.getElementById(`nav-${season}${lang}`).classList.add("active");
-        document.title = Text.special["title"][Text.index];
-        [...document.getElementsByClassName("text-team-placeholder")].forEach(e => { e.placeholder = Text.special["text-team-placeholder"][Text.index]; });
+        document.title = Text.other["title"][Text.index];
+        [...document.getElementsByClassName("text-team-placeholder")].forEach(e => { e.placeholder = Text.other["text-team-placeholder"][Text.index]; });
         Object.keys(Text.byClass).forEach(className => {
             try {
                 [...document.getElementsByClassName(className)].forEach(e => { e.innerText = Text.byClass[className][Text.index] });
             }
             catch (error) {
                 console.error(`Setting text failed for ${className}`);
+            }
+        });
+        Object.keys(Text.toolTips).forEach(className => {
+            try {
+                [...document.getElementsByClassName(className)].forEach(e => {
+                    if (season === 1) e.title = Text.toolTips[className][Text.index];
+                    else e.style.display = "none";
+                });
+            }
+            catch (error) {
+                console.error(`Setting tooltip failed for ${className}`);
             }
         });
     </script>
