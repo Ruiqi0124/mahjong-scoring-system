@@ -9,6 +9,8 @@ const Rankings = {
     historyPopover: null,
     currentHistoryPlayer: null,
     showMinGamesOnly: false,
+    games: null,
+    players: null,
 
     // 初始化
     async init() {
@@ -48,11 +50,22 @@ const Rankings = {
                 }
             });
 
-            await this.updateRankings();
+            const { games, players } = await this.getGamesAndPlayers();
+            this.updateRankings(games, players);
         } catch (error) {
             console.error('初始化失败:', error);
             alert('初始化失败: ' + error.message);
         }
+    },
+
+    async getGamesAndPlayers() {
+        const [games, players] = await Promise.all([
+            api.getGames(),
+            api.getPlayers()
+        ]);
+        this.games = games;
+        this.players = players;
+        return { games, players };
     },
 
     // 初始化历史对局气泡框
@@ -258,7 +271,7 @@ const Rankings = {
 
         // 更新排序图标
         this.updateSortIcons();
-        await this.updateRankings();
+        this.updateRankings(this.games, this.players);
     },
 
     // 更新排序图标
@@ -298,7 +311,8 @@ const Rankings = {
             await api.addPlayer(name, engName);
             input.value = '';
             engInput.value = '';
-            await this.updateRankings();
+            const { games, players } = await this.getGamesAndPlayers();
+            await this.updateRankings(games, players);
             alert('添加成功！');
         } catch (error) {
             console.error('添加玩家失败:', error);
@@ -327,7 +341,8 @@ const Rankings = {
                     const result = await response.json();
                     throw new Error(result.message || '删除玩家失败');
                 }
-                await this.updateRankings();
+                const { games, players } = await this.getGamesAndPlayers();
+                await this.updateRankings(games, players);
                 alert('删除玩家成功！');
             }
         } catch (error) {
@@ -339,16 +354,12 @@ const Rankings = {
     // 切换最小场数过滤器
     toggleMinGamesFilter() {
         this.showMinGamesOnly = document.getElementById('filterMinGames').checked;
-        this.updateRankings();
+        this.updateRankings(this.games, this.players);
     },
 
     // 更新排名
-    async updateRankings() {
+    async updateRankings(games, players) {
         try {
-            const [games, players] = await Promise.all([
-                api.getGames(),
-                api.getPlayers()
-            ]);
 
             // 计算每个玩家的统计数据
             const stats = {};
