@@ -417,7 +417,7 @@ h2 {
 }
 
 /* 处理悬停效果 */
-.table-hover>tbody>tr:hover>td:first-child {
+.table-hover>tbody:not(.tr-hover-first-child-exempt)>tr:hover>td:first-child {
     background-color: #ebebeb !important;
 }
 
