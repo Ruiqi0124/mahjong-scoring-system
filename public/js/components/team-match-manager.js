@@ -108,8 +108,8 @@ class TeamMatchManager {
                         <td class="team-color" style="color: ${player.teamColor};${noWrap}">${this.lang === "zh" ? player.team : player.teamEngName}</td>
                         <td>${player.games}</td>
                         <td class="${player.totalPT >= 0 ? 'text-success' : 'text-danger'}">${player.totalPT.toFixed(1)}</td>
-                        ${this.season === 1 ? `<td>${this.safeDivideText(player.totalPlacement, player.games)}</td>
-                        <td>${this.safeDividePct(stats.win, stats.rounds)}</td>
+                        <td>${this.safeDivideText(player.totalPlacement, player.games)}</td>
+                        ${this.season === 1 ? `<td>${this.safeDividePct(stats.win, stats.rounds)}</td>
                         <td>${this.safeDividePct(stats.dealIn, stats.rounds)}</td>
                         <td>${this.safeDividePct(stats.tsumo, stats.win)}</td>
                         <td>${this.safeDividePct(stats.call, stats.rounds)}</td>
@@ -147,7 +147,6 @@ class TeamMatchManager {
     sortPlayerRankings(rankings) {
         const sorted = rankings.sort((a, b) => {
             let aValue, bValue;
-            console.log((this.currentPlayerRankingsSort.field));
             switch (this.currentPlayerRankingsSort.field) {
                 case 'games':
                     aValue = a.games;
