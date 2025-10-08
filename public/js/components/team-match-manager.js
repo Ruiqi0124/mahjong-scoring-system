@@ -225,7 +225,16 @@ class TeamMatchManager {
     }
 
     updateMatchRecords(matches) {
-        this.updateAllMatchRecordsInternal(matches.slice(0, 4), 'recentMatchRecords');
+        const dateInNYCZone = (date) => {
+            return new Date(date).toLocaleDateString('en-US', {
+                timeZone: 'America/New_York',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        };
+        const firstDate = matches[0] ? dateInNYCZone(matches[0].time) : undefined;
+        this.updateAllMatchRecordsInternal(matches.filter(match => dateInNYCZone(match.time) === firstDate), 'recentMatchRecords');
         this.updateAllMatchRecordsInternal(matches, 'allMatchRecords');
     }
 
