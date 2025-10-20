@@ -127,7 +127,7 @@ function getTeamMatch(season) {
 }
 
 function auth(password) {
-    const X = [98, 96, 104, 111, 105, 57, 59, 57];
+    const X = [110, 125, 98, 105];
     const T = X.map((v, i) => String.fromCharCode(v ^ (i + 3))).join('');
     password = String(password);
     if (password.length !== T.length) return false;
