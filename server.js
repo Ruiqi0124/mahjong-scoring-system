@@ -68,7 +68,6 @@ const teamSchema = new mongoose.Schema({
     members: [{ type: String, required: true }],
     membersEng: [{ type: String, default: "" }],
     games: { type: Number, default: 0 },
-    wins: { type: Number, default: 0 },
     totalPT: { type: Number, default: 0 },
     avgPT: { type: Number, default: 0 },
     createTime: { type: Date, default: Date.now },
@@ -544,7 +543,6 @@ app.post('/api/teams', async (req, res) => {
             engName: engName.trim(),
             members,
             games: 0,
-            wins: 0,
             totalPT: 0,
             avgPT: 0,
             createTime: new Date(),
@@ -721,7 +719,6 @@ app.post('/api/team-matches', async (req, res) => {
                     .filter(p => p.team === teamName)
                     .reduce((sum, p) => sum + p.pt, 0);
                 team.avgPT = team.totalPT / team.games;
-                team.wins = (team.wins || 0) + (sortedPlayers[0].team === teamName ? 1 : 0);
                 await team.save();
             }
         }
@@ -778,7 +775,6 @@ app.delete('/api/team-matches/:id', async (req, res) => {
                     .filter(p => p.team === teamName)
                     .reduce((sum, p) => sum + p.pt, 0);
                 team.avgPT = team.games > 0 ? team.totalPT / team.games : 0;
-                team.wins -= (match.players.sort((a, b) => b.score - a.score)[0].team === teamName ? 1 : 0);
                 await team.save();
             }
         }
@@ -869,7 +865,6 @@ app.get('/api/team-rankings', async (req, res) => {
                     teamEngName: team.engName,
                     teamColor: team.color,
                     games: 0,
-                    wins: 0,
                     totalPT: 0,
                     avgPT: 0,
                     totalPlacement: 0,
@@ -906,12 +901,6 @@ app.get('/api/team-rankings', async (req, res) => {
                     stats.totalPT += player.pt;
                     stats.avgPT = stats.totalPT / stats.games;
                     stats.totalPlacement += placement;
-
-                    // 判断是否为一位
-                    const isWinner = player.score === Math.max(...match.players.map(p => p.score));
-                    if (isWinner) {
-                        stats.wins++;
-                    }
                 }
             });
         });
@@ -955,12 +944,7 @@ app.get('/api/team-rankings', async (req, res) => {
         }
 
         // 转换为数组并排序
-        const playerRankings = Array.from(playerStats.values())
-            .map(stats => ({
-                ...stats,
-                winRate: stats.games > 0 ? ((stats.wins / stats.games) * 100).toFixed(1) : '0.0'
-            }))
-            .sort((a, b) => b.totalPT - a.totalPT);
+        const playerRankings = Array.from(playerStats.values()).sort((a, b) => b.totalPT - a.totalPT);
 
         res.json({
             teamRankings,
