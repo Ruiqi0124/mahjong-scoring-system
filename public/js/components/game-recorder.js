@@ -15,6 +15,7 @@ const GameStorage = {
 const GameAPI = {
     formatDateTime(timestamp) {
         return new Date(timestamp).toLocaleString('zh-CN', {
+            timeZone: 'America/New_York',
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',

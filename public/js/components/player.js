@@ -421,6 +421,7 @@ const Player = {
         // 渲染表格内容
         tbody.innerHTML = currentPageGames.reverse().map(game => {
             const time = new Date(game.time).toLocaleString('zh-CN', {
+                timeZone: 'America/New_York',
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit',
