@@ -109,6 +109,7 @@ class TeamMatchManager {
                         <td>${player.games}</td>
                         <td class="${player.totalPT >= 0 ? 'text-success' : 'text-danger'}">${player.totalPT.toFixed(1)}</td>
                         <td>${this.safeDivideText(player.totalPlacement, player.games)}</td>
+                        <td>${player.placementStats.map(count => Number.isInteger(count) ? count : count.toFixed(1)).join("-")}</td>
                         ${this.season === 1 ? `<td>${this.safeDividePct(stats.win, stats.rounds)}</td>
                         <td>${this.safeDividePct(stats.dealIn, stats.rounds)}</td>
                         <td>${this.safeDividePct(stats.tsumo, stats.win)}</td>

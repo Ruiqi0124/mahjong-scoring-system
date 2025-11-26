@@ -868,6 +868,7 @@ app.get('/api/team-rankings', async (req, res) => {
                     totalPT: 0,
                     avgPT: 0,
                     totalPlacement: 0,
+                    placementStats: [0, 0, 0, 0],
                     stats: {
                         rounds: 0,
                         win: 0,
@@ -890,18 +891,18 @@ app.get('/api/team-rankings', async (req, res) => {
             const scores = match.players.map(p => p.score);
             const placementLookup = calculatePlacementFromScores(scores);
             match.players.forEach(player => {
+                const playerStat = playerStats.get(player.name);
                 const { placement, umaIndices } = placementLookup[player.score];
                 const team = teamRankings.find(t => t.name === player.team);
                 team.totalPlacement += placement;
-                for (const umaIndex of umaIndices)
+                for (const umaIndex of umaIndices) {
                     team.placementStats[umaIndex] += 1.0 / (umaIndices.length); // e.g. if 2nd and 3rd are same score, count as 0.5 each
-                const stats = playerStats.get(player.name);
-                if (stats) {
-                    stats.games++;
-                    stats.totalPT += player.pt;
-                    stats.avgPT = stats.totalPT / stats.games;
-                    stats.totalPlacement += placement;
+                    playerStat.placementStats[umaIndex] += 1.0 / (umaIndices.length);
                 }
+                playerStat.games++;
+                playerStat.totalPT += player.pt;
+                playerStat.avgPT = playerStat.totalPT / playerStat.games;
+                playerStat.totalPlacement += placement;
             });
         });
         if (season === 1) {
