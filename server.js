@@ -877,6 +877,7 @@ app.get('/api/team-rankings', async (req, res) => {
                         call: 0,
                         riichi: 0,
                         riichiSuccess: 0,
+                        riichiDealIn: 0,
                         dama: 0,
                         draw: 0,
                         drawTenpai: 0,
@@ -928,6 +929,8 @@ app.get('/api/team-rankings', async (req, res) => {
                     if (resultType === "deal-in") {
                         playerStats.get(winner).stats.win++;
                         playerStats.get(loser).stats.dealIn++;
+                        if (playerStates[players.indexOf(loser)] === "riichi")
+                            playerStats.get(loser).stats.riichiDealIn++;
                     } else if (resultType === "tsumo") {
                         playerStats.get(winner).stats.win++;
                         playerStats.get(winner).stats.tsumo++;
