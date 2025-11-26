@@ -101,7 +101,7 @@ class TeamMatchManager {
 
         tbody.innerHTML = this.sortPlayerRankings(rankings).map(player => {
             const teamColorFaint = this.getColorOverWhite(player.teamColor, '20');
-            const noWrap = this.lang === "zh" ? "white-space: nowrap;" : ""
+            const noWrap = "white-space: nowrap;";
             const stats = player.stats;
             return `<tr style="background-color: ${teamColorFaint}">
                         <td style="background-color: ${teamColorFaint}">${this.lang === "zh" ? player.name : player.engName}</td>
