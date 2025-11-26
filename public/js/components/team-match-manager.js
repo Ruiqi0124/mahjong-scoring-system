@@ -186,6 +186,10 @@ class TeamMatchManager {
                     aValue = this.safeDivide(a.stats.riichiSuccess, a.stats.riichi);
                     bValue = this.safeDivide(b.stats.riichiSuccess, b.stats.riichi);
                     break;
+                case 'riichiDealInRate':
+                    aValue = this.safeDivide(a.stats.riichiDealIn, a.stats.riichi);
+                    bValue = this.safeDivide(b.stats.riichiDealIn, b.stats.riichi);
+                    break;
                 case 'damaRate':
                     aValue = this.safeDivide(a.stats.dama, a.stats.win);
                     bValue = this.safeDivide(b.stats.dama, b.stats.win);
