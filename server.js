@@ -853,12 +853,12 @@ app.get('/api/team-rankings', async (req, res) => {
         }).sort((a, b) => b.totalPT - a.totalPT);
 
         // 计算个人排名
-        const playerStats = new Map();
+        const playerDatas = new Map();
 
         // 初始化玩家数据
         teams.forEach(team => {
             team.members.forEach(playerName => {
-                playerStats.set(playerName, {
+                playerDatas.set(playerName, {
                     name: playerName,
                     engName: players.find(p => p.name === playerName).engName,
                     team: team.name,
@@ -878,6 +878,8 @@ app.get('/api/team-rankings', async (req, res) => {
                         riichi: 0,
                         riichiSuccess: 0,
                         riichiDealIn: 0,
+                        riichiTsumo: 0,
+                        riichiDraw: 0,
                         dama: 0,
                         draw: 0,
                         drawTenpai: 0,
@@ -892,55 +894,59 @@ app.get('/api/team-rankings', async (req, res) => {
             const scores = match.players.map(p => p.score);
             const placementLookup = calculatePlacementFromScores(scores);
             match.players.forEach(player => {
-                const playerStat = playerStats.get(player.name);
+                const playerData = playerDatas.get(player.name);
                 const { placement, umaIndices } = placementLookup[player.score];
                 const team = teamRankings.find(t => t.name === player.team);
                 team.totalPlacement += placement;
                 for (const umaIndex of umaIndices) {
                     team.placementStats[umaIndex] += 1.0 / (umaIndices.length); // e.g. if 2nd and 3rd are same score, count as 0.5 each
-                    playerStat.placementStats[umaIndex] += 1.0 / (umaIndices.length);
+                    playerData.placementStats[umaIndex] += 1.0 / (umaIndices.length);
                 }
-                playerStat.games++;
-                playerStat.totalPT += player.pt;
-                playerStat.avgPT = playerStat.totalPT / playerStat.games;
-                playerStat.totalPlacement += placement;
+                playerData.games++;
+                playerData.totalPT += player.pt;
+                playerData.avgPT = playerData.totalPT / playerData.games;
+                playerData.totalPlacement += placement;
             });
         });
         if (season === 1) {
             gameDetails.forEach(({ players, rounds }) => {
                 players.forEach(player => {
-                    playerStats.get(player).stats.rounds += rounds.length;
+                    playerDatas.get(player).stats.rounds += rounds.length;
                 });
                 rounds.forEach(({ resultType, playerStates, winner, loser, tenpai }) => {
                     for (let i = 0; i < 4; i++) {
                         const player = players[i];
                         const playerState = playerStates[i];
                         if (playerState === "riichi") {
-                            playerStats.get(player).stats.riichi++;
+                            playerDatas.get(player).stats.riichi++;
                             if (player === winner)
-                                playerStats.get(player).stats.riichiSuccess++;
+                                playerDatas.get(player).stats.riichiSuccess++;
                         } else if (playerState === "open") {
-                            playerStats.get(player).stats.call++;
+                            playerDatas.get(player).stats.call++;
                         } else if (playerState === "closed") {
                             if (player === winner)
-                                playerStats.get(player).stats.dama++;
+                                playerDatas.get(player).stats.dama++;
                         }
                     }
                     if (resultType === "deal-in") {
-                        playerStats.get(winner).stats.win++;
-                        playerStats.get(loser).stats.dealIn++;
+                        playerDatas.get(winner).stats.win++;
+                        playerDatas.get(loser).stats.dealIn++;
                         if (playerStates[players.indexOf(loser)] === "riichi")
-                            playerStats.get(loser).stats.riichiDealIn++;
+                            playerDatas.get(loser).stats.riichiDealIn++;
                     } else if (resultType === "tsumo") {
-                        playerStats.get(winner).stats.win++;
-                        playerStats.get(winner).stats.tsumo++;
+                        playerDatas.get(winner).stats.win++;
+                        playerDatas.get(winner).stats.tsumo++;
+                        if (playerStates[players.indexOf(winner)] === "riichi")
+                            playerDatas.get(winner).stats.riichiTsumo++;
                     } else if (resultType === "draw") {
                         for (let i = 0; i < 4; i++) {
                             const player = players[i];
                             const isTenpai = tenpai[i];
-                            playerStats.get(player).stats.draw++;
+                            playerDatas.get(player).stats.draw++;
                             if (isTenpai)
-                                playerStats.get(player).stats.drawTenpai++;
+                                playerDatas.get(player).stats.drawTenpai++;
+                            if (playerStates[i] === "riichi")
+                                playerDatas.get(player).stats.riichiDraw++;
                         }
                     }
                 });
@@ -948,7 +954,7 @@ app.get('/api/team-rankings', async (req, res) => {
         }
 
         // 转换为数组并排序
-        const playerRankings = Array.from(playerStats.values()).sort((a, b) => b.totalPT - a.totalPT);
+        const playerRankings = Array.from(playerDatas.values()).sort((a, b) => b.totalPT - a.totalPT);
 
         res.json({
             teamRankings,
