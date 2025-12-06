@@ -117,7 +117,7 @@ class TeamMatchManager {
                         <td>${this.safeDividePct(stats.riichi, stats.rounds)}</td>
                         <td>${this.safeDividePct(stats.riichiSuccess, stats.riichi)}</td>
                         <td>${this.safeDividePct(stats.riichiDealIn, stats.riichi)}</td>
-                        <td>${this.safeDividePct(stats.riichiTsumo, stats.riichi)}</td>
+                        <td>${this.safeDividePct(stats.riichiTsumo, stats.riichiSuccess)}</td>
                         <td>${this.safeDividePct(stats.riichiDraw, stats.riichi)}</td>
                         <td>${this.safeDividePct(stats.dama, stats.win)}</td>
                         <td>${this.safeDividePct(stats.drawTenpai, stats.draw)}</td>` : ""}
