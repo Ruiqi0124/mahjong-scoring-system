@@ -135,19 +135,6 @@ function auth(password) {
     return true;
 }
 
-function calculatePlacementFromScores(scores) {
-    scores = scores.sort((a, b) => b - a);
-    const scoresWithIndex = scores.map((score, index) => ({ score, index }));
-    const indicesOfScore = (targetScore) => scoresWithIndex.map(({ score, index }) => score === targetScore ? index : null).filter(index => index !== null);
-    const result = {};
-    scoresWithIndex.forEach(({ score }) => {
-        const umaIndices = indicesOfScore(score);
-        const placementTotal = umaIndices.reduce((sum, index) => sum + (index + 1), 0);
-        result[score] = { placement: placementTotal / umaIndices.length, umaIndices };
-    });
-    return result;
-}
-
 function calculateGamePtsFromScores(scores, basePts = [45, 5, -15, -35]) {
     if (basePts.reduce((acc, pt) => acc + pt, 0) !== 0)
         throw new Error("马点总和不为0", basePts);
@@ -156,11 +143,18 @@ function calculateGamePtsFromScores(scores, basePts = [45, 5, -15, -35]) {
     const indicesOfScore = (targetScore) => scoresWithIndex.map(({ score, index }) => score === targetScore ? index : null).filter(index => index !== null);
     const result = {};
     scoresWithIndex.forEach(({ score }) => {
-        const umaIndices = indicesOfScore(score);
-        const umaTotal = umaIndices.reduce((sum, index) => sum + basePts[index], 0);
-        const uma = umaTotal / umaIndices.length;
-        const pt = (score - 30000) / 1000 + uma;
-        result[score] = pt;
+        const placementIndices = indicesOfScore(score); // could be just [0], or e.g. [0, 1] (in case of a tie)
+        const placement = placementIndices.reduce((sum, index) => sum + (index + 1), 0) / placementIndices.length;
+        const placementPoint = placementIndices.reduce((sum, index) => sum + basePts[index], 0) / placementIndices.length;
+        const rawPoint = (score - 30000) / 1000;
+        const finalPoint = rawPoint + placementPoint;
+        result[score] = {
+            placementIndices,
+            placement,
+            placementPoint,
+            rawPoint,
+            finalPoint
+        }
     });
     return result;
 }
@@ -332,12 +326,12 @@ app.post('/api/games', async (req, res) => {
         }
 
         const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-        const ptOfScore = calculateGamePtsFromScores(sortedPlayers.map(p => p.score));
+        const gamePts = calculateGamePtsFromScores(sortedPlayers.map(p => p.score));
 
         // 计算最终PT
         sortedPlayers.forEach(player => {
             const chombo = player.chombo ? -20 : 0;
-            player.pt = ptOfScore[player.score] + chombo;
+            player.pt = gamePts[player.score].finalPoint + chombo;
         });
 
         const game = new Game({
@@ -685,12 +679,12 @@ app.post('/api/team-matches', async (req, res) => {
             }
         }
         const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-        const ptOfScore = calculateGamePtsFromScores(sortedPlayers.map(p => p.score));
+        const gamePts = calculateGamePtsFromScores(sortedPlayers.map(p => p.score));
 
         // 计算最终PT
         sortedPlayers.forEach(player => {
             const chombo = player.chombo ? -20 : 0;
-            player.pt = ptOfScore[player.score] + chombo;
+            player.pt = gamePts[player.score].finalPoint + chombo;
         });
 
         // 创建比赛记录
@@ -869,6 +863,8 @@ app.get('/api/team-rankings', async (req, res) => {
                     avgPT: 0,
                     totalPlacement: 0,
                     placementStats: [0, 0, 0, 0],
+                    totalPlacementPoint: 0,
+                    totalRawPoint: 0,
                     stats: {
                         rounds: 0,
                         win: 0,
@@ -892,16 +888,18 @@ app.get('/api/team-rankings', async (req, res) => {
         // 统计比赛数据
         matches.forEach(match => {
             const scores = match.players.map(p => p.score);
-            const placementLookup = calculatePlacementFromScores(scores);
+            const gamePts = calculateGamePtsFromScores(scores);
             match.players.forEach(player => {
                 const playerData = playerDatas.get(player.name);
-                const { placement, umaIndices } = placementLookup[player.score];
+                const { placementIndices, placement, placementPoint, rawPoint } = gamePts[player.score];
                 const team = teamRankings.find(t => t.name === player.team);
                 team.totalPlacement += placement;
-                for (const umaIndex of umaIndices) {
-                    team.placementStats[umaIndex] += 1.0 / (umaIndices.length); // e.g. if 2nd and 3rd are same score, count as 0.5 each
-                    playerData.placementStats[umaIndex] += 1.0 / (umaIndices.length);
+                for (const placementIndex of placementIndices) {
+                    team.placementStats[placementIndex] += 1.0 / (placementIndices.length); // e.g. if 2nd and 3rd are same score, count as 0.5 each
+                    playerData.placementStats[placementIndex] += 1.0 / (placementIndices.length);
                 }
+                playerData.totalPlacementPoint += placementPoint;
+                playerData.totalRawPoint += rawPoint;
                 playerData.games++;
                 playerData.totalPT += player.pt;
                 playerData.avgPT = playerData.totalPT / playerData.games;
