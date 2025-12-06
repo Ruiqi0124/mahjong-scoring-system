@@ -91,6 +91,8 @@ class TeamMatchManager {
                         <td class="${team.totalPT >= 0 ? 'text-success' : 'text-danger'}">${team.totalPT.toFixed(1)}</td>
                         <td>${this.safeDivideText(team.totalPlacement, team.games)}</td>
                         <td>${team.placementStats.map(count => Number.isInteger(count) ? count : count.toFixed(1)).join("-")}</td>
+                        <td class="${team.totalRawPoint >= 0 ? 'text-success' : 'text-danger'}">${team.totalRawPoint.toFixed(1)}</td>
+                        <td class="${team.totalPlacementPoint >= 0 ? 'text-success' : 'text-danger'}">${team.totalPlacementPoint.toFixed(1)}</td>
                     </tr>
                 `).join('');
     }

@@ -842,7 +842,9 @@ app.get('/api/team-rankings', async (req, res) => {
                 avgPT: team.avgPT,
                 color: team.color,
                 totalPlacement: 0,
-                placementStats: [0, 0, 0, 0]
+                placementStats: [0, 0, 0, 0],
+                totalPlacementPoint: 0,
+                totalRawPoint: 0,
             };
         }).sort((a, b) => b.totalPT - a.totalPT);
 
@@ -894,6 +896,8 @@ app.get('/api/team-rankings', async (req, res) => {
                 const { placementIndices, placement, placementPoint, rawPoint } = gamePts[player.score];
                 const team = teamRankings.find(t => t.name === player.team);
                 team.totalPlacement += placement;
+                team.totalPlacementPoint += placementPoint;
+                team.totalRawPoint += rawPoint;
                 for (const placementIndex of placementIndices) {
                     team.placementStats[placementIndex] += 1.0 / (placementIndices.length); // e.g. if 2nd and 3rd are same score, count as 0.5 each
                     playerData.placementStats[placementIndex] += 1.0 / (placementIndices.length);
