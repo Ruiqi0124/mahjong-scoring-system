@@ -84,10 +84,10 @@ class TeamMatchManager {
         const tbody = document.getElementById('teamRankings');
         if (!tbody) return;
 
-        const noWrap = "white-space: nowrap;";
-
-        tbody.innerHTML = rankings.map(team => `
-                    <tr style="background-color: ${team.color}20">
+        tbody.innerHTML = rankings.map(team => {
+            const teamColorFaint = this.getColorOverWhite(player.teamColor, '20');
+            const noWrap = "white-space: nowrap;";
+            return `<tr style="background-color: ${teamColorFaint}">
                         <td class="team-color" style="color: ${team.color}">${this.lang === "zh" ? team.name : team.engName}</td>
                         <td>${team.progress}</td>
                         <td class="${team.totalPT >= 0 ? 'text-success' : 'text-danger'}">${team.totalPT.toFixed(1)}</td>
@@ -96,7 +96,8 @@ class TeamMatchManager {
                         <td class="${team.totalRawPoint >= 0 ? 'text-success' : 'text-danger'}">${team.totalRawPoint.toFixed(1)}</td>
                         <td class="${team.totalPlacementPoint >= 0 ? 'text-success' : 'text-danger'}">${team.totalPlacementPoint.toFixed(1)}</td>
                     </tr>
-                `).join('');
+                `;
+        }).join('');
     }
 
     updatePlayerRankings(rankings) {
