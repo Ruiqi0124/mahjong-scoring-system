@@ -84,13 +84,15 @@ class TeamMatchManager {
         const tbody = document.getElementById('teamRankings');
         if (!tbody) return;
 
+        const noWrap = "white-space: nowrap;";
+
         tbody.innerHTML = rankings.map(team => `
                     <tr style="background-color: ${team.color}20">
                         <td class="team-color" style="color: ${team.color}">${this.lang === "zh" ? team.name : team.engName}</td>
                         <td>${team.progress}</td>
                         <td class="${team.totalPT >= 0 ? 'text-success' : 'text-danger'}">${team.totalPT.toFixed(1)}</td>
                         <td>${this.safeDivideText(team.totalPlacement, team.games)}</td>
-                        <td>${team.placementStats.map(count => Number.isInteger(count) ? count : count.toFixed(1)).join("-")}</td>
+                        <td style="${noWrap};">${team.placementStats.map(count => Number.isInteger(count) ? count : count.toFixed(1)).join("-")}</td>
                         <td class="${team.totalRawPoint >= 0 ? 'text-success' : 'text-danger'}">${team.totalRawPoint.toFixed(1)}</td>
                         <td class="${team.totalPlacementPoint >= 0 ? 'text-success' : 'text-danger'}">${team.totalPlacementPoint.toFixed(1)}</td>
                     </tr>
