@@ -88,7 +88,7 @@ class TeamMatchManager {
             const teamColorFaint = this.getColorOverWhite(team.color, '20');
             const noWrap = "white-space: nowrap;";
             return `<tr style="background-color: ${teamColorFaint}">
-                        <td class="team-color" style="color: ${team.color}">${this.lang === "zh" ? team.name : team.engName}</td>
+                        <td class="team-color" style="background-color: ${teamColorFaint}">${this.lang === "zh" ? team.name : team.engName}</td>
                         <td>${team.progress}</td>
                         <td class="${team.totalPT >= 0 ? 'text-success' : 'text-danger'}">${team.totalPT.toFixed(1)}</td>
                         <td>${this.safeDivideText(team.totalPlacement, team.games)}</td>
