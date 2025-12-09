@@ -41,9 +41,9 @@ const ptCalc = {
     },
 
     calculateRateChange({ scores, myScore, allPlayerRates, myRate, pt, myNumGamesPlayed }) {
-        const averageRateOfTable = Math.max(1500, allPlayerRates.reduce((acc, rate) => acc + rate, 0) / 4);
         const method1 = () => {
             // https://x.com/MLRating
+            const averageRateOfTable = allPlayerRates.reduce((acc, rate) => acc + rate, 0) / 4;
             return 0.2 * (pt + (averageRateOfTable - myRate) / 40);
         };
 
@@ -52,17 +52,19 @@ const ptCalc = {
             const gamePt = this.calculateGamePtsFromScores(scores, [90, 10, -30, -70]);
             const placementPoint = gamePt[myScore].placementPoint;
             const possibilityFn = (x) => (1 / (Math.pow(10, x / 400) + 3));
+            const averageRateOfOtherThreePlayers = (allPlayerRates.reduce((acc, rate) => acc + rate, 0) - myRate) / 3;
             if (pt >= 0) {
-                const possibilityOfMinus = possibilityFn(myRate - averageRateOfTable);
+                const possibilityOfMinus = possibilityFn(myRate - averageRateOfOtherThreePlayers);
                 return placementPoint * possibilityOfMinus;
             } else {
-                const possibilityOfPlus = possibilityFn(averageRateOfTable - myRate);
+                const possibilityOfPlus = possibilityFn(averageRateOfOtherThreePlayers - myRate);
                 return placementPoint * possibilityOfPlus;
             }
         }
 
         const method3 = () => {
             // tenhou, ron ron
+            const averageRateOfTable = Math.max(1500, allPlayerRates.reduce((acc, rate) => acc + rate, 0) / 4);
             const gamePt = this.calculateGamePtsFromScores(scores, [30, 10, -10, -30]);
             const placementPoint = gamePt[myScore].placementPoint;
             const adjustment = Math.max(0.2, 1 - (myNumGamesPlayed * 0.002));
@@ -71,11 +73,13 @@ const ptCalc = {
 
         const method4 = () => {
             // mj
+            const averageRateOfTable = allPlayerRates.reduce((acc, rate) => acc + rate, 0) / 4;
             return 0.24 * (pt + (averageRateOfTable - myRate) / 40);
         };
 
         const method5 = () => {
             // maru-jan
+            const averageRateOfTable = allPlayerRates.reduce((acc, rate) => acc + rate, 0) / 4;
             const gamePt = this.calculateGamePtsFromScores(scores, [45, 5, -15, -35]);
             const placementPoint = gamePt[myScore].placementPoint;
             return 0.2 * (placementPoint + (averageRateOfTable - myRate) / 80);
