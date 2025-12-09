@@ -47,7 +47,7 @@ const GameForm = {
                 scoresWithIndex.push({ score, index });
             }
         });
-        const ptOfScore = ptUtils.calculateGamePtsFromScoresWithIndex(scores);
+        const ptOfScore = ptCalc.calculateGamePtsFromScoresWithIndex_deprecated(scores);
 
         // 更新显示
         scores.forEach(({ score, index }) => {

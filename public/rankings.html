@@ -100,6 +100,16 @@
                                         <i class="fas fa-sort"></i>
                                     </button>
                                 </th>
+                                <th class="sortable position-relative" data-sort="rate">
+                                    Rate
+                                    <button class="btn btn-sm sort-btn" data-sort="rate">
+                                        <i class="fas fa-sort"></i>
+                                    </button>
+                                    <i class="fas fa-question-circle position-absolute top-0 end-0 mt-1 me-1"
+                                        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true"
+                                        title="Rate是衡量玩家实力的一种参考。<br>计算方式（与SEGA MJ一致）：Rate变动 = (获得Pt + 补正值 / 40) * 0.24<br>补正值 = (桌内平均Rate - 自己Rate) / 40"
+                                        style="font-size: 0.75rem; cursor: pointer;"></i>
+                                </th>
                                 <th class="sortable" data-sort="averageScore">
                                     平均得点
                                     <button class="btn btn-sm sort-btn" data-sort="averageScore">
@@ -191,6 +201,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/utils/api.js"></script>
     <script src="js/utils/auth.js"></script>
+    <script src="js/utils/pt-calc.js"></script>
     <script src="js/components/rankings.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {

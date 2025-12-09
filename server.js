@@ -293,7 +293,7 @@ app.get('/api/games', async (req, res) => {
     try {
         await connectDB();
         const last = parseInt(req.query.last, 10);
-        let query = Game.find().sort({ time: -1 });
+        let query = Game.find().sort({ time: 1 });
         if (last && last > 0) {
             query = query.limit(last);
         }

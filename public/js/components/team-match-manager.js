@@ -346,7 +346,7 @@ class TeamMatchManager {
                 scoresWithIndex.push({ score, index });
             }
         });
-        const ptOfScore = ptUtils.calculateGamePtsFromScoresWithIndex(scoresWithIndex);
+        const ptOfScore = ptCalc.calculateGamePtsFromScoresWithIndex_deprecated(scoresWithIndex);
 
         const ptCells = document.querySelectorAll('.pt-value');
         const chomboChecks = document.querySelectorAll('input[name="chombo"]');

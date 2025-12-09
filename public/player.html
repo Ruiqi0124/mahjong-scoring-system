@@ -194,15 +194,25 @@
         <!-- 最近对局记录 -->
         <div class="card shadow-sm">
             <div class="card-body">
-                <h3 class="card-title mb-4">最近对局记录</h3>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="card-title mb-4">最近对局记录</h3>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="showRateDetails"
+                            onchange="Player.toggleShowRateDetails()">
+                        <label class="form-check-label" for="showRateDetails">
+                            显示对局者的Rate
+                        </label>
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <colgroup>
-                            <col style="width: 36.8%;">
-                            <col style="width: 15.8%;">
-                            <col style="width: 15.8%;">
-                            <col style="width: 15.8%;">
-                            <col style="width: 15.8%;">
+                            <col style="width: 33%;">
+                            <col style="width: 14.25%;">
+                            <col style="width: 14.25%;">
+                            <col style="width: 14.25%;">
+                            <col style="width: 14.25%;">
+                            <col style="width: 10%;">
                         </colgroup>
                         <thead>
                             <tr>
@@ -211,6 +221,12 @@
                                 <th>二位</th>
                                 <th>三位</th>
                                 <th>四位</th>
+                                <th class="position-relative">Rate
+                                    <i class="fas fa-question-circle position-absolute top-0 end-0 mt-1 me-1"
+                                        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true"
+                                        title="Rate是衡量玩家实力的一种参考。<br>计算方式（与SEGA MJ一致）：Rate变动 = (获得Pt + 补正值 / 40) * 0.24<br>补正值 = (桌内平均Rate - 自己Rate) / 40"
+                                        style="font-size: 0.75rem; cursor: pointer;"></i>
+                                </th>
                             </tr>
                         </thead>
                         <tbody id="recentGames"></tbody>
@@ -226,6 +242,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/utils/api.js"></script>
+    <script src="js/utils/pt-calc.js"></script>
     <script src="js/components/player.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {

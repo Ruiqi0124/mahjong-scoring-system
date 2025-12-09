@@ -15,6 +15,10 @@ const Rankings = {
     // 初始化
     async init() {
         try {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+                new bootstrap.Tooltip(el);
+            });
+
             // 检查是否在排名页面
             if (!document.getElementById('rankingsBody')) {
                 return; // 如果不在排名页面，直接返回
@@ -360,6 +364,7 @@ const Rankings = {
     // 更新排名
     async updateRankings(games, players) {
         try {
+            ptCalc.addRateChangeToGames(players, games);
 
             // 计算每个玩家的统计数据
             const stats = {};
@@ -373,19 +378,19 @@ const Rankings = {
                     avgPlacement: 0,
                     avgScore: 0,
                     avgPT: 0,
-                    recentGames: []
+                    recentGames: [],
+                    rate: 1500,
                 };
             });
 
             // 统计数据
             games.forEach(game => {
                 game.players.forEach((player, rank) => {
-                    if (stats[player.name]) {
-                        stats[player.name].games++;
-                        stats[player.name].totalScore += player.score;
-                        stats[player.name].totalPT += player.pt;
-                        stats[player.name].ranks[rank]++;
-                    }
+                    stats[player.name].games++;
+                    stats[player.name].totalScore += player.score;
+                    stats[player.name].totalPT += player.pt;
+                    stats[player.name].ranks[rank]++;
+                    stats[player.name].rate += player.rateChange;
                 });
             });
 
@@ -434,6 +439,7 @@ const Rankings = {
                         <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
                         <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
                         <td>${player.avgPlacement.toFixed(2)}</td>
+                        <td>${player.rate.toFixed(0)}</td>
                         <td>${player.avgScore.toLocaleString()}</td>
                         <td>${player.ranks[0]} (${rankRates[0]})</td>
                         <td>${player.ranks[1]} (${rankRates[1]})</td>
@@ -595,6 +601,10 @@ const Rankings = {
                 case 'avgPT':
                     aValue = a.avgPT;
                     bValue = b.avgPT;
+                    break;
+                case 'rate':
+                    aValue = a.rate;
+                    bValue = b.rate;
                     break;
                 default:
                     // 默认按平均顺位排序

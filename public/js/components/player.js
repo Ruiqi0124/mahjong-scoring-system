@@ -11,6 +11,10 @@ const Player = {
     // 初始化
     async init() {
         try {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+                new bootstrap.Tooltip(el);
+            });
+
             // 从URL获取玩家名称
             const params = new URLSearchParams(window.location.search);
             const playerName = params.get('name');
@@ -45,8 +49,10 @@ const Player = {
             });
 
             // 获取数据
+            const players = await api.getPlayers();
             const games = await api.getGames();
             console.log(`[${new Date().toISOString()}] 更新了所有游戏`, games.length);
+            ptCalc.addRateChangeToGames(players, games);
 
             // 处理玩家数据
             this.stats = this.calculatePlayerStats(games, playerName);
@@ -68,6 +74,7 @@ const Player = {
             this.drawRelativePtChart(this.stats.relativePt);
 
             // 更新最近对局记录
+            this.showRateDetails = document.getElementById('showRateDetails').checked;
             this.updateRecentGames(this.stats.recentGames);
 
             // 更新排序图标
@@ -433,9 +440,13 @@ const Player = {
             // 按分数排序玩家
             const sortedPlayers = [...game.players].sort((a, b) => b.score - a.score);
 
+            const rateInItalics = (rate, prefix = "") => `<a class="text-secondary text-decoration-none small fst-italic"> ${prefix}R${rate.toFixed(0)}</a>`;
+
             // 生成玩家名字的HTML，当前玩家高亮显示
             const playersHtml = sortedPlayers.map(player =>
-                `<a href="?name=${encodeURIComponent(player.name)}" class="text-decoration-none${player.name === this.stats.name ? ' fw-bold text-primary' : ''}">${player.name}</a><br>
+                `<a href="?name=${encodeURIComponent(player.name)}" class="text-decoration-none${player.name === this.stats.name ? ' fw-bold text-primary' : ''}">${player.name}</a>
+                ${this.showRateDetails ? rateInItalics(player.previousRate) : ""}
+                <br>
                 <small class="text-muted">
                     ${player.score.toLocaleString()}<br>
                     <span class="text-${player.pt >= 0 ? 'success' : 'danger'}">
@@ -444,13 +455,24 @@ const Player = {
                 </small>`
             );
 
+            const currentPlayer = sortedPlayers.find((player) => player.name === this.stats.name);
+            const rateHtml = `<div class="text-decoration-none">${currentPlayer.rate.toFixed(0)}</div>
+            <small class="text-muted">
+                <span class="text-${currentPlayer.rateChange > 0 ? 'success' : (currentPlayer.rateChange === 0 ? 'muted' : 'danger')}">
+                    ${currentPlayer.rateChange > 0 ? "+" : (currentPlayer.rateChange === 0 ? "±" : "")}${currentPlayer.rateChange}
+                </span>
+            </small>
+            `;
+
             return `
                 <tr>
-                    <td>${time}</td>
+                    <td style="background-color:white;">${time}
+                    ${this.showRateDetails ? rateInItalics(sortedPlayers.map((player) => player.previousRate).reduce((acc, r) => acc + r, 0) / 4, "桌均") : ""}</td>
                     <td>${playersHtml[0]}</td>
                     <td>${playersHtml[1]}</td>
                     <td>${playersHtml[2]}</td>
                     <td>${playersHtml[3]}</td>
+                    <td>${rateHtml}</td>
                 </tr>
             `;
         }).join('');
@@ -577,6 +599,11 @@ const Player = {
     toggleMinGamesFilter() {
         this.showMinGamesOnly = document.getElementById('filterMinGames').checked;
         this.drawRelativePtChart(this.stats.relativePt);
+    },
+
+    toggleShowRateDetails() {
+        this.showRateDetails = document.getElementById('showRateDetails').checked;
+        this.updateRecentGames(this.stats.recentGames);
     },
 
     // 更新排序图标
