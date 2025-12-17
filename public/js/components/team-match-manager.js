@@ -122,6 +122,7 @@ class TeamMatchManager {
                         <td>${this.safeDividePct(stats.tsumo, stats.win)}</td>
                         <td>${this.safeDividePct(stats.call, stats.rounds)}</td>
                         <td>${this.safeDividePct(stats.riichi, stats.rounds)}</td>
+                        <td>${this.safeDividePct(stats.call + stats.riichi, stats.rounds)}</td>
                         <td>${this.safeDividePct(stats.riichiSuccess, stats.riichi)}</td>
                         <td>${this.safeDividePct(stats.riichiDealIn, stats.riichi)}</td>
                         <td>${this.safeDividePct(stats.riichiTsumo, stats.riichiSuccess)}</td>
@@ -198,6 +199,10 @@ class TeamMatchManager {
                 case 'riichiRate':
                     aValue = this.safeDivide(a.stats.riichi, a.stats.rounds);
                     bValue = this.safeDivide(b.stats.riichi, b.stats.rounds);
+                    break;
+                case 'actRate':
+                    aValue = this.safeDivide(a.stats.call + a.stats.riichi, a.stats.rounds);
+                    bValue = this.safeDivide(b.stats.call + b.stats.riichi, b.stats.rounds);
                     break;
                 case 'riichiWinRate':
                     aValue = this.safeDivide(a.stats.riichiSuccess, a.stats.riichi);
