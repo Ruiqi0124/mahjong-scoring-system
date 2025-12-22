@@ -292,12 +292,7 @@ app.get('/api/games', async (req, res) => {
     console.log('Received GET request for /api/games');
     try {
         await connectDB();
-        const last = parseInt(req.query.last, 10);
-        let query = Game.find().sort({ time: 1 });
-        if (last && last > 0) {
-            query = query.limit(last);
-        }
-        const games = await query;
+        const games = await Game.find().sort({ time: 1 });
         console.log('Successfully retrieved games:', games.length);
         res.json(games);
     } catch (err) {

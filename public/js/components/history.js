@@ -7,15 +7,13 @@ const History = {
     gameToEdit: null,
     currentPage: 1,
     pageSize: 10,
-    loadingAllGames: null,
 
     // 初始化
     async init() {
         try {
             this.deleteModal = new bootstrap.Modal(document.getElementById('deleteGameModal'));
             this.editTimeModal = new bootstrap.Modal(document.getElementById('editTimeModal'));
-            await this.updateHistory(true);
-            this.loadingAllGames = this.updateHistory();
+            await this.updateHistory();
         } catch (error) {
             console.error('初始化失败:', error);
             alert('初始化失败: ' + error.message);
@@ -109,15 +107,13 @@ const History = {
     },
 
     // 更新历史记录
-    async updateHistory(forFirstPage = false) {
+    async updateHistory() {
         try {
-            let games = await api.getGames(forFirstPage ? this.pageSize : null);
-            console.log(`[${new Date().toISOString()}] 更新了所有游戏`, games.length);
-            if (!forFirstPage) this.games = games;
-
+            let games = await api.getGames();
             // 按时间降序排序
             games.sort((a, b) => new Date(b.time) - new Date(a.time));
-
+            console.log(`[${new Date().toISOString()}] 更新了所有游戏`, games.length);
+            this.games = games;
             this.renderCurrentPage(games);
         } catch (error) {
             console.error('更新历史记录失败:', error);
@@ -127,6 +123,7 @@ const History = {
 
     // 渲染当前页面
     renderCurrentPage(games) {
+        console.log(`[${new Date().toISOString()}] ${games.length} ${games[0]}`);
         const tbody = document.getElementById('historyBody');
         const paginationDiv = document.getElementById('historyPagination');
 
@@ -265,7 +262,6 @@ const History = {
     goToPage(page) {
         this.currentPage = page;
         (async () => {
-            await this.loadingAllGames;
             this.renderCurrentPage(this.games);
         })();
     }
