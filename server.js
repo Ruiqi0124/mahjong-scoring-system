@@ -329,7 +329,22 @@ app.post('/api/games', async (req, res) => {
         }
 
         const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-        const gamePts = calculateGamePtsFromScores(sortedPlayers.map(p => p.score));
+        const scores = sortedPlayers.map(p => p.score);
+        let gamePts = null;
+        if (rule === "A") {
+            const ukiCount = scores.filter(score => score >= 30000).length;
+            if (ukiCount === 1) {
+                gamePts = ptCalc.calculateGamePtsFromScores(scores, [12, -1, -3, -8]);
+            } else if (ukiCount === 2) {
+                gamePts = ptCalc.calculateGamePtsFromScores(scores, [8, 4, -4, -8]);
+            } else if (ukiCount === 3) {
+                gamePts = ptCalc.calculateGamePtsFromScores(scores, [8, 3, 1, -12]);
+            } else if (ukiCount === 4) {
+                gamePts = ptCalc.calculateGamePtsFromScores(scores, [0, 0, 0, 0]);
+            }
+        } else {
+            gamePts = calculateGamePtsFromScores(scores);
+        }
 
         // 计算最终PT
         sortedPlayers.forEach(player => {
