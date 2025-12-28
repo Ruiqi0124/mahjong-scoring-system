@@ -334,13 +334,13 @@ app.post('/api/games', async (req, res) => {
         if (rule === "A") {
             const ukiCount = scores.filter(score => score >= 30000).length;
             if (ukiCount === 1) {
-                gamePts = ptCalc.calculateGamePtsFromScores(scores, [12, -1, -3, -8]);
+                gamePts = calculateGamePtsFromScores(scores, [12, -1, -3, -8]);
             } else if (ukiCount === 2) {
-                gamePts = ptCalc.calculateGamePtsFromScores(scores, [8, 4, -4, -8]);
+                gamePts = calculateGamePtsFromScores(scores, [8, 4, -4, -8]);
             } else if (ukiCount === 3) {
-                gamePts = ptCalc.calculateGamePtsFromScores(scores, [8, 3, 1, -12]);
+                gamePts = calculateGamePtsFromScores(scores, [8, 3, 1, -12]);
             } else if (ukiCount === 4) {
-                gamePts = ptCalc.calculateGamePtsFromScores(scores, [0, 0, 0, 0]);
+                gamePts = calculateGamePtsFromScores(scores, [0, 0, 0, 0]);
             }
         } else {
             gamePts = calculateGamePtsFromScores(scores);
