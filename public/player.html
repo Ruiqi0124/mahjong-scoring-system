@@ -127,7 +127,15 @@
         <!-- 最近对局走势图 -->
         <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <h3 class="card-title mb-4">最近对局走势</h3>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="card-title mb-4">最近对局走势</h3>
+                    <div class="w-auto">
+                        <select id="ruleSelect" class="form-select" value="M">
+                            <option value="M">M League规</option>
+                            <option value="A">A规</option>
+                        </select>
+                    </div>
+                </div>
                 <div style="height: 300px;">
                     <canvas id="trendChart"></canvas>
                 </div>

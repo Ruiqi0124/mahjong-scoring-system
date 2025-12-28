@@ -35,9 +35,9 @@ window.api = {
     },
 
     // 获取所有比赛记录
-    async getGames() {
+    async getGames(rule = null) {
         try {
-            const response = await fetch("/api/games");
+            const response = await fetch(`/api/games${rule ? `?rule=${rule}` : ""}`);
             if (!response.ok) {
                 throw new Error('获取比赛记录失败');
             }
@@ -73,20 +73,12 @@ window.api = {
             throw new Error('所有分数必须是数字');
         }
 
-        // 转换分数为整数
         const parsedScores = scores.map(score => parseInt(score));
-
-        // 验证总分
-        const totalScore = parsedScores.reduce((sum, score) => sum + score, 0);
-        if (totalScore !== 120000) {
-            throw new Error('得点总和必须为120,000');
-        }
-
         return parsedScores;
     },
 
     // 添加新比赛记录
-    async addGame(players, scores) {
+    async addGame(players, scores, rule = "M") {
         // 验证数据
         this.validatePlayers(players);
         const parsedScores = this.validateScores(scores);
@@ -101,7 +93,8 @@ window.api = {
                     players: players.map((name, index) => ({
                         name,
                         score: parsedScores[index]
-                    }))
+                    })),
+                    rule
                 })
             });
 
@@ -195,4 +188,24 @@ window.api = {
             return [];
         }
     }
+};
+
+const shared = {
+    getRuleName(ruleAcronym) {
+        if (ruleAcronym === "A") {
+            return "A规";
+        } else {
+            return "";
+        }
+    },
+
+    safeDivide(a, b) {
+        if (b === 0) return -1;
+        else return a / b;
+    },
+
+    safeDividePct(a, b, dp = 1) {
+        if (b === 0) return "";
+        else return `${(a / b * 100).toFixed(dp)}%`
+    },
 };

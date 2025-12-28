@@ -1,13 +1,24 @@
 // 游戏表单组件
 const GameForm = {
-    duplicateModal: null,
+    ruleSelect: null,
     pendingGameData: null,
 
     // 初始化
     async init() {
         try {
-            this.duplicateModal = new bootstrap.Modal(document.getElementById('duplicatePlayerModal'));
+            this.ruleSelect = document.getElementById('ruleSelect');
+            this.outOfTableKyoutaku = document.getElementById('outOfTableKyoutaku');
             await this.updatePlayerSelects();
+            this.ruleSelect.addEventListener('change', () => {
+                if (this.ruleSelect.value === "A") {
+                    this.outOfTableKyoutaku.disabled = false;
+                    this.outOfTableKyoutaku.value = 0;
+                } else {
+                    this.outOfTableKyoutaku.disabled = true;
+                    this.outOfTableKyoutaku.value = "";
+                }
+                this.updatePT();
+            });
         } catch (error) {
             console.error('初始化失败:', error);
             this.showError('初始化失败: ' + error.message);
@@ -40,20 +51,31 @@ const GameForm = {
 
     // 更新PT显示
     updatePT() {
-        const scores = [...Array(4)].map((_, index) => ({ score: parseInt(document.getElementById(`score${index}`).value), index }));
-        const scoresWithIndex = [];
-        scores.forEach((score, index) => {
-            if (score) {
-                scoresWithIndex.push({ score, index });
+        const scores = [...Array(4)].map((_, i) => parseInt(document.getElementById(`score${i}`).value));
+        const allValid = scores.every(s => !isNaN(s));
+        let gamePts = null;
+        if (allValid) {
+            if (this.ruleSelect.value === "M") {
+                gamePts = ptCalc.calculateGamePtsFromScores(scores, [45, 5, -15, -35]);
+            } else if (this.ruleSelect.value === "A") {
+                const ukiCount = scores.filter(score => score >= 30000).length;
+                if (ukiCount === 1) {
+                    gamePts = ptCalc.calculateGamePtsFromScores(scores, [12, -1, -3, -8]);
+                } else if (ukiCount === 2) {
+                    gamePts = ptCalc.calculateGamePtsFromScores(scores, [8, 4, -4, -8]);
+                } else if (ukiCount === 3) {
+                    gamePts = ptCalc.calculateGamePtsFromScores(scores, [8, 3, 1, -12]);
+                } else if (ukiCount === 4) {
+                    gamePts = ptCalc.calculateGamePtsFromScores(scores, [0, 0, 0, 0]);
+                }
             }
-        });
-        const ptOfScore = ptCalc.calculateGamePtsFromScoresWithIndex_deprecated(scores);
+        }
 
-        // 更新显示
-        scores.forEach(({ score, index }) => {
+        scores.forEach((score, index) => {
             const ptElement = document.getElementById(`pt${index}`);
-            if (score) {
-                const totalPt = ptOfScore[score];
+
+            if (gamePts) {
+                const totalPt = gamePts[score].finalPoint;
                 ptElement.textContent = totalPt.toFixed(1);
                 ptElement.className = `pt-value ${totalPt >= 0 ? 'text-success' : 'text-danger'}`;
             } else {
@@ -83,104 +105,31 @@ const GameForm = {
                 totalScore += score;
             }
 
+            if (!this.outOfTableKyoutaku.disabled) {
+                const outOfTableKyoutaku = parseInt(this.outOfTableKyoutaku.value);
+                if (isNaN(outOfTableKyoutaku)) {
+                    throw new Error('桌外供托格式有误');
+                }
+                totalScore += outOfTableKyoutaku;
+            }
+
             // 验证总分
             if (totalScore !== 120000) {
-                throw new Error('得点总和必须为120,000');
+                throw new Error(`得点总和必须为120,000，当前为${totalScore}`);
             }
 
             // 检查重复玩家
             const uniquePlayers = new Set(playerNames);
             if (uniquePlayers.size !== 4) {
-                const duplicateModal = new bootstrap.Modal(document.getElementById('duplicatePlayerModal'));
-                document.getElementById('duplicatePlayers').textContent =
-                    this.findDuplicatePlayers(playerNames).join('、');
-                duplicateModal.show();
-                this.pendingGameData = { players: playerNames, scores };
-                return;
+                throw new Error(`含有重复玩家。若有不止一名其他玩家，请先将其登录为新玩家，或不录入此局。`)
             }
 
-            await this.processSaveData(playerNames, scores);
-        } catch (error) {
-            this.showError(error.message);
-        }
-    },
-
-    // 处理保存数据
-    async processSaveData(playerNames, scores) {
-        try {
-            // 保存对局
-            await this.saveGameData(playerNames, scores);
-
-            // 重置表单
+            await api.addGame(playerNames, scores, this.ruleSelect.value);
             this.resetForm();
-            // 更新历史记录
             await History.updateHistory();
-        } catch (error) {
-            this.showError(error.message);
-        }
-    },
-
-    // 查找重复玩家
-    findDuplicatePlayers(players) {
-        const duplicates = new Set();
-        const seen = new Set();
-
-        players.forEach(player => {
-            if (seen.has(player)) {
-                duplicates.add(player);
-            }
-            seen.add(player);
-        });
-
-        return Array.from(duplicates);
-    },
-
-    // 确认保存带有重复玩家的对局
-    async confirmSaveWithDuplicates() {
-        if (!this.pendingGameData) return;
-
-        try {
-            const { players, scores } = this.pendingGameData;
-
-            // 保存对局
-            await api.addGame(players, scores);
-
-            // 清空表单
-            this.resetForm();
-
-            // 更新历史记录
-            await History.updateHistory();
-
-            // 隐藏对话框
-            this.duplicateModal.hide();
-
-            // 显示成功消息
             alert('记录保存成功！');
         } catch (error) {
-            console.error('保存失败:', error);
             this.showError(error.message);
-        } finally {
-            this.pendingGameData = null;
-        }
-    },
-
-    // 保存游戏数据的具体实现
-    async saveGameData(players, scores) {
-        try {
-            // 保存数据
-            await api.addGame(players, scores);
-
-            // 清空表单
-            this.resetForm();
-
-            // 更新历史记录
-            await History.updateHistory();
-
-            // 显示成功消息
-            alert('记录保存成功！');
-        } catch (error) {
-            console.error('保存失败:', error);
-            throw error; // 向上传递错误
         }
     },
 

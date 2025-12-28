@@ -49,7 +49,14 @@ const gameSchema = new mongoose.Schema({
         name: String,
         score: Number,
         pt: Number
-    }]
+    }],
+    rule: {
+        type: String,
+        enum: ["M", // M League Rule
+            "A", // JPML Official Rule
+        ],
+        required: true
+    },
 });
 gameSchema.index({ time: -1 });
 
@@ -289,10 +296,11 @@ app.delete('/api/players/:name', async (req, res) => {
 
 // 获取比赛记录
 app.get('/api/games', async (req, res) => {
-    console.log('Received GET request for /api/games');
+    console.log(`Received GET request for /api/games, rule=${req.query.rule}`);
     try {
         await connectDB();
-        const games = await Game.find().sort({ time: 1 });
+        const rule = req.query.rule;
+        const games = await (rule ? Game.find({ rule }) : Game.find()).sort({ time: 1 });
         console.log('Successfully retrieved games:', games.length);
         res.json(games);
     } catch (err) {
@@ -306,7 +314,7 @@ app.post('/api/games', async (req, res) => {
     console.log('Received POST request for /api/games:', req.body);
     try {
         await connectDB();
-        const { players } = req.body;
+        const { players, rule } = req.body;
 
         if (!players || !Array.isArray(players) || players.length !== 4) {
             console.log('Invalid game data received');
@@ -331,7 +339,8 @@ app.post('/api/games', async (req, res) => {
 
         const game = new Game({
             time: new Date(),
-            players: sortedPlayers
+            players: sortedPlayers,
+            rule
         });
 
         await game.save();

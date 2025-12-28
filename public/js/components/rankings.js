@@ -11,10 +11,20 @@ const Rankings = {
     showMinGamesOnly: false,
     games: null,
     players: null,
+    ruleSelect: null,
 
     // 初始化
     async init() {
         try {
+            this.ruleSelect = document.getElementById("ruleSelect");
+            this.ruleSelect.addEventListener('change', () => {
+                const headers = document.querySelectorAll('th[data-rule]');
+                headers.forEach(header => {
+                    header.style.display = header.dataset.rule === this.ruleSelect.value ? 'table-cell' : 'none';
+                });
+                this.updateRankings();
+            });
+
             document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
                 new bootstrap.Tooltip(el);
             });
@@ -54,22 +64,11 @@ const Rankings = {
                 }
             });
 
-            const { games, players } = await this.getGamesAndPlayers();
-            this.updateRankings(games, players);
+            this.updateRankings();
         } catch (error) {
             console.error('初始化失败:', error);
             alert('初始化失败: ' + error.message);
         }
-    },
-
-    async getGamesAndPlayers() {
-        const [games, players] = await Promise.all([
-            api.getGames(),
-            api.getPlayers()
-        ]);
-        this.games = games;
-        this.players = players;
-        return { games, players };
     },
 
     // 初始化历史对局气泡框
@@ -136,7 +135,7 @@ const Rankings = {
         }
 
         try {
-            const games = await api.getGames();
+            const games = await api.getGames(this.ruleSelect.value);
             let playerGames = games.filter(game =>
                 game.players.some(player => player.name === name)
             );
@@ -275,7 +274,7 @@ const Rankings = {
 
         // 更新排序图标
         this.updateSortIcons();
-        this.updateRankings(this.games, this.players);
+        this.updateRankings(true);
     },
 
     // 更新排序图标
@@ -315,8 +314,7 @@ const Rankings = {
             await api.addPlayer(name, engName);
             input.value = '';
             engInput.value = '';
-            const { games, players } = await this.getGamesAndPlayers();
-            await this.updateRankings(games, players);
+            await this.updateRankings();
             alert('添加成功！');
         } catch (error) {
             console.error('添加玩家失败:', error);
@@ -345,8 +343,7 @@ const Rankings = {
                     const result = await response.json();
                     throw new Error(result.message || '删除玩家失败');
                 }
-                const { games, players } = await this.getGamesAndPlayers();
-                await this.updateRankings(games, players);
+                await this.updateRankings();
                 alert('删除玩家成功！');
             }
         } catch (error) {
@@ -358,12 +355,22 @@ const Rankings = {
     // 切换最小场数过滤器
     toggleMinGamesFilter() {
         this.showMinGamesOnly = document.getElementById('filterMinGames').checked;
-        this.updateRankings(this.games, this.players);
+        this.updateRankings(true);
     },
 
     // 更新排名
-    async updateRankings(games, players) {
+    async updateRankings(useLastQueryResult = false) {
         try {
+            if (!useLastQueryResult) {
+                const [games, players] = await Promise.all([
+                    api.getGames(this.ruleSelect.value),
+                    api.getPlayers()
+                ]);
+                this.games = games;
+                this.players = players;
+            }
+            const games = this.games;
+            const players = this.players;
             ptCalc.addRateChangeToGames(players, games);
 
             // 计算每个玩家的统计数据
@@ -380,6 +387,7 @@ const Rankings = {
                     avgPT: 0,
                     recentGames: [],
                     rate: 1500,
+                    ukiCount: 0,
                 };
             });
 
@@ -391,6 +399,8 @@ const Rankings = {
                     stats[player.name].totalPT += player.pt;
                     stats[player.name].ranks[rank]++;
                     stats[player.name].rate += player.rateChange;
+                    if (player.score >= 30000)
+                        stats[player.name].ukiCount += 1;
                 });
             });
 
@@ -405,7 +415,7 @@ const Rankings = {
 
             // 分离"其他玩家"和普通玩家
             const otherPlayer = stats['其他玩家'];
-            let normalPlayers = Object.values(stats).filter(player => player.name !== '其他玩家');
+            let normalPlayers = Object.values(stats).filter(player => (player.name !== '其他玩家' && player.games > 0));
 
             // 应用最小场数过滤
             if (this.showMinGamesOnly) {
@@ -416,7 +426,7 @@ const Rankings = {
             const sortedPlayers = this.sortStats(normalPlayers);
 
             // 如果有"其他玩家"且满足最小场数要求，将其添加到列表末尾
-            if (otherPlayer && (!this.showMinGamesOnly || otherPlayer.games >= 16)) {
+            if (otherPlayer && otherPlayer.games > 0 && (!this.showMinGamesOnly || otherPlayer.games >= 16)) {
                 sortedPlayers.push(otherPlayer);
             }
 
@@ -431,7 +441,7 @@ const Rankings = {
                 return `
                     <tr class="${player.games === 0 ? 'inactive-player' : ''}">
                         <td>
-                            <a href="player.html?name=${encodeURIComponent(player.name)}" class="player-name-link text-decoration-none">
+                            <a href="player.html?name=${encodeURIComponent(player.name)}&rule=${this.ruleSelect.value}" class="player-name-link text-decoration-none">
                                 ${player.name}
                             </a>
                         </td>
@@ -439,7 +449,8 @@ const Rankings = {
                         <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
                         <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
                         <td>${player.avgPlacement.toFixed(2)}</td>
-                        <td>${player.rate.toFixed(0)}</td>
+                        ${this.ruleSelect.value === "M" ? `<td>${player.rate.toFixed(0)}</td>` : ""}
+                        ${this.ruleSelect.value === "A" ? `<td>${shared.safeDividePct(player.ukiCount, player.games)}</td>` : ""}
                         <td>${player.avgScore.toLocaleString()}</td>
                         <td>${player.ranks[0]} (${rankRates[0]})</td>
                         <td>${player.ranks[1]} (${rankRates[1]})</td>
@@ -521,45 +532,6 @@ const Rankings = {
         return Object.values(stats);
     },
 
-    // 渲染排名表格
-    renderRankings(stats) {
-        const tbody = document.getElementById('rankingsBody');
-        const sortedStats = this.sortStats(stats, this.currentSort);
-
-        tbody.innerHTML = sortedStats.map(player => {
-            // 计算顺位率
-            const rankRates = player.ranks.map(count =>
-                player.games > 0 ? ((count / player.games) * 100).toFixed(1) + '%' : '0%'
-            );
-
-            return `
-                <tr class="${player.games === 0 ? 'inactive-player' : ''}">
-                    <td>
-                        <a href="player.html?name=${encodeURIComponent(player.name)}" class="player-name-link text-decoration-none">
-                            ${player.name}
-                        </a>
-                    </td>
-                    <td>${player.games}</td>
-                    <td class="text-${player.totalPT >= 0 ? 'success' : 'danger'}">${player.totalPT.toFixed(1)}</td>
-                    <td class="text-${player.avgPT >= 0 ? 'success' : 'danger'}">${player.avgPT.toFixed(1)}</td>
-                    <td>${player.avgPlacement.toFixed(2)}</td>
-                    <td>${player.avgScore.toLocaleString()}</td>
-                    <td>${player.ranks[0]} (${rankRates[0]})</td>
-                    <td>${player.ranks[1]} (${rankRates[1]})</td>
-                    <td>${player.ranks[2]} (${rankRates[2]})</td>
-                    <td>${player.ranks[3]} (${rankRates[3]})</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-danger" 
-                                onclick="Rankings.showDeleteConfirm('${player.name}')"
-                                ${player.games > 0 ? 'disabled' : ''}>
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    },
-
     // 排序统计数据
     sortStats(players) {
         return [...players].sort((a, b) => {
@@ -605,6 +577,10 @@ const Rankings = {
                 case 'rate':
                     aValue = a.rate;
                     bValue = b.rate;
+                    break;
+                case 'ukiRate':
+                    aValue = shared.safeDivide(a.ukiCount, a.games);
+                    bValue = shared.safeDivide(b.ukiCount, b.games);
                     break;
                 default:
                     // 默认按平均顺位排序

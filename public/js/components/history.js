@@ -151,6 +151,11 @@ const History = {
                 hour12: false
             });
 
+            let ruleName = shared.getRuleName(game.rule);
+            if (ruleName !== "") {
+                ruleName = `（${ruleName}）`;
+            }
+
             const players = game.players.map(p =>
                 `<a href="/player.html?name=${encodeURIComponent(p.name)}" class="text-decoration-none">${p.name}</a><br>
                 <small class="text-muted">
@@ -163,7 +168,7 @@ const History = {
 
             return `
                 <tr>
-                    <td>${time}</td>
+                    <td>${time}${ruleName}</td>
                     <td>${players[0]}</td>
                     <td>${players[1]}</td>
                     <td>${players[2]}</td>

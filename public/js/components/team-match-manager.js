@@ -65,6 +65,7 @@ class TeamMatchManager {
         return '#' + [res(r), res(g), res(b)].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
     }
 
+    // todo: use shared.safeDivide instead
     safeDivide(a, b) {
         if (b === 0) return -1;
         else return a / b;
@@ -345,22 +346,15 @@ class TeamMatchManager {
 
     updatePT() {
         const scores = Array.from(document.querySelectorAll('input[name="score"]')).map(input => parseInt(input.value));
-        const scoresWithIndex = [];
-        scores.forEach((score, index) => {
-            if (score) {
-                scoresWithIndex.push({ score, index });
-            }
-        });
-        const ptOfScore = ptCalc.calculateGamePtsFromScoresWithIndex_deprecated(scoresWithIndex);
-
+        const allValid = scores.every(s => !isNaN(s));
+        const gamePts = allValid ? ptCalc.calculateGamePtsFromScores(scores) : null;
         const ptCells = document.querySelectorAll('.pt-value');
         const chomboChecks = document.querySelectorAll('input[name="chombo"]');
 
-        // 更新显示
         scores.forEach((score, index) => {
-            if (score) {
+            if (gamePts) {
                 const chombo = chomboChecks[index].checked ? -20 : 0;
-                const totalPt = ptOfScore[score] + chombo;
+                const totalPt = gamePts[score].finalPoint + chombo;
                 ptCells[index].textContent = totalPt.toFixed(1);
                 ptCells[index].className = `pt-value ${totalPt >= 0 ? 'text-success' : 'text-danger'}`;
             } else {

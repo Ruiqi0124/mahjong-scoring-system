@@ -119,6 +119,20 @@
                                     <span id="pt3" class="pt-value"></span>
                                 </td>
                             </tr>
+                            <tr>
+                                <td>规则</td>
+                                <td>
+                                    <select id="ruleSelect" class="form-select" value="M">
+                                        <option value="M">M League规</option>
+                                        <option value="A">A规</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" id="outOfTableKyoutaku" class="form-control" placeholder="桌外供托"
+                                        onchange="GameForm.updatePT()" disabled>
+                                </td>
+                                <td></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -179,27 +193,6 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                     <button type="button" class="btn btn-danger" onclick="History.confirmDeleteGame()">删除</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 重复玩家确认弹窗 -->
-    <div class="modal fade" id="duplicatePlayerModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">发现重复玩家</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>检测到重复的玩家：<span id="duplicatePlayers" class="fw-bold text-danger"></span></p>
-                    <p>是否继续保存？</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary"
-                        onclick="GameForm.confirmSaveWithDuplicates()">继续保存</button>
                 </div>
             </div>
         </div>

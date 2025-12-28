@@ -7,23 +7,34 @@ const Player = {
         field: 'pt',
         direction: 'desc'
     },
+    ruleSelect: null,
+    rankPieChart: null,
+    trendChart: null,
+    playerName: null,
 
     // 初始化
     async init() {
         try {
+            const params = new URLSearchParams(window.location.search);
+            const rule = params.get('rule') ?? "M";
+            this.ruleSelect = document.getElementById("ruleSelect");
+            this.ruleSelect.value = rule;
+            this.ruleSelect.addEventListener("change", () => {
+                this.updateDisplay();
+            });
+
             document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
                 new bootstrap.Tooltip(el);
             });
 
             // 从URL获取玩家名称
-            const params = new URLSearchParams(window.location.search);
             const playerName = params.get('name');
-
             if (!playerName) {
                 alert('未指定玩家！');
                 window.location.href = '/rankings.html';
                 return;
             }
+            this.playerName = playerName;
 
             // 设置页面标题
             document.title = `${playerName} 的资料 - 巢计分系统`;
@@ -48,41 +59,45 @@ const Player = {
                 }
             });
 
-            // 获取数据
-            const players = await api.getPlayers();
-            const games = await api.getGames();
-            console.log(`[${new Date().toISOString()}] 更新了所有游戏`, games.length);
-            ptCalc.addRateChangeToGames(players, games);
-
-            // 处理玩家数据
-            this.stats = this.calculatePlayerStats(games, playerName);
-
-            // 更新基本信息
-            this.updateBasicInfo(this.stats);
-
-            // 更新顺位统计
-            this.updateRankStats(this.stats);
-
-            // 绘制顺位比率饼图
-            this.drawRankPieChart(this.stats);
-
-            // 绘制最近对局走势图
-            this.drawTrendChart(this.stats.recentGames);
-
-            // 绘制相对pt表
-            this.showMinGamesOnly = document.getElementById('filterMinGames').checked;
-            this.drawRelativePtChart(this.stats.relativePt);
-
-            // 更新最近对局记录
-            this.showRateDetails = document.getElementById('showRateDetails').checked;
-            this.updateRecentGames(this.stats.recentGames);
-
-            // 更新排序图标
-            this.updateSortIcons();
+            await this.updateDisplay();
         } catch (error) {
             console.error('初始化失败:', error);
             alert('初始化失败: ' + error.message);
         }
+    },
+
+    async updateDisplay() {
+        // 获取数据
+        const players = await api.getPlayers();
+        const games = await api.getGames(this.ruleSelect.value);
+        console.log(`[${new Date().toISOString()}] 更新了所有游戏`, games.length);
+        ptCalc.addRateChangeToGames(players, games);
+
+        // 处理玩家数据
+        this.stats = this.calculatePlayerStats(games, this.playerName);
+
+        // 更新基本信息
+        this.updateBasicInfo(this.stats);
+
+        // 更新顺位统计
+        this.updateRankStats(this.stats);
+
+        // 绘制顺位比率饼图
+        this.drawRankPieChart(this.stats);
+
+        // 绘制最近对局走势图
+        this.drawTrendChart(this.stats.recentGames);
+
+        // 绘制相对pt表
+        this.showMinGamesOnly = document.getElementById('filterMinGames').checked;
+        this.drawRelativePtChart(this.stats.relativePt);
+
+        // 更新最近对局记录
+        this.showRateDetails = document.getElementById('showRateDetails').checked;
+        this.updateRecentGames(this.stats.recentGames);
+
+        // 更新排序图标
+        this.updateSortIcons();
     },
 
     // 计算玩家统计数据
@@ -195,6 +210,9 @@ const Player = {
 
     // 绘制顺位比率饼图
     drawRankPieChart(stats) {
+        if (this.rankPieChart) {
+            this.rankPieChart.destroy();
+        }
         const ctx = document.getElementById('rankPieChart').getContext('2d');
         const data = {
             labels: ['一位', '二位', '三位', '四位'],
@@ -210,7 +228,7 @@ const Player = {
             }]
         };
 
-        new Chart(ctx, {
+        this.rankPieChart = new Chart(ctx, {
             type: 'pie',
             data: data,
             options: {
@@ -236,6 +254,9 @@ const Player = {
 
     // 绘制最近对局走势图
     drawTrendChart(recentGames) {
+        if (this.trendChart) {
+            this.trendChart.destroy();
+        }
         const ctx = document.getElementById('trendChart').getContext('2d');
 
         // 先按时间排序所有对局并计算总累计PT
@@ -295,7 +316,7 @@ const Player = {
             ]
         };
 
-        new Chart(ctx, {
+        this.trendChart = new Chart(ctx, {
             type: 'line',
             data: data,
             options: {
