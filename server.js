@@ -765,7 +765,7 @@ app.patch('/api/team-matches/:id/time', async (req, res) => {
 });
 
 const TOTAL_GAMES = [
-    { "default": 16 }, { "default": 41 }
+    { "default": 16 }, { "default": 41, "东海麒麟会": 40 }
 ]
 
 // 获取团队赛排名数据
@@ -784,12 +784,12 @@ app.get('/api/team-rankings', async (req, res) => {
 
         // 计算团队排名
         const teamRankings = teams.map(team => {
-            const total_game = TOTAL_GAMES[season][team.name] ?? TOTAL_GAMES[season]["default"];
+            const totalGame = TOTAL_GAMES[season][team.name] ?? TOTAL_GAMES[season]["default"];
             return {
                 name: team.name,
                 engName: team.engName,
                 games: team.games,
-                progress: `${team.games}/${total_game}`,
+                progress: `${team.games}/${totalGame}`,
                 totalPT: team.totalPT,
                 avgPT: team.avgPT,
                 color: team.color,
