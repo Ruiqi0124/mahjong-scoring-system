@@ -19,7 +19,26 @@ const Player = {
             const rule = params.get('rule') ?? "M";
             this.ruleSelect = document.getElementById("ruleSelect");
             this.ruleSelect.value = rule;
+            const headersDependingOnRule = document.querySelectorAll('th[data-rule]');
             this.ruleSelect.addEventListener("change", () => {
+                headersDependingOnRule.forEach(header => {
+                    header.style.display = header.dataset.rule === this.ruleSelect.value ? 'table-cell' : 'none';
+                });
+                if (this.ruleSelect.value === "M") {
+                    if (!document.getElementById("rateCol")) {
+                        const col = document.createElement("col");
+                        col.id = "rateCol";
+                        col.style.width = "10%";
+                        document.getElementById("recentGamesColgroup").appendChild(col);
+                    }
+                    document.getElementById("showRateToggle").style.display = "block";
+                } else {
+                    document.getElementById("rateCol")?.remove();
+                    document.getElementById("showRateToggle").style.display = "none";
+                }
+                const url = new URL(window.location.href);
+                url.searchParams.set('rule', this.ruleSelect.value);
+                window.history.pushState({}, '', url);
                 this.updateDisplay();
             });
 
@@ -493,7 +512,7 @@ const Player = {
                     <td>${playersHtml[1]}</td>
                     <td>${playersHtml[2]}</td>
                     <td>${playersHtml[3]}</td>
-                    <td>${rateHtml}</td>
+                    ${this.ruleSelect.value === "M" ? "<td>${rateHtml}</td>" : ""}
                 </tr>
             `;
         }).join('');

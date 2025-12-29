@@ -16,12 +16,18 @@ const Rankings = {
     // 初始化
     async init() {
         try {
+            const params = new URLSearchParams(window.location.search);
+            const rule = params.get('rule') ?? "M";
             this.ruleSelect = document.getElementById("ruleSelect");
+            this.ruleSelect.value = rule;
+            const headersDependingOnRule = document.querySelectorAll('th[data-rule]');
             this.ruleSelect.addEventListener('change', () => {
-                const headers = document.querySelectorAll('th[data-rule]');
-                headers.forEach(header => {
+                headersDependingOnRule.forEach(header => {
                     header.style.display = header.dataset.rule === this.ruleSelect.value ? 'table-cell' : 'none';
                 });
+                const url = new URL(window.location.href);
+                url.searchParams.set('rule', this.ruleSelect.value);
+                window.history.pushState({}, '', url);
                 this.updateRankings();
             });
 
