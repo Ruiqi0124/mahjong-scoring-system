@@ -19,26 +19,7 @@ const Player = {
             const rule = params.get('rule') ?? "M";
             this.ruleSelect = document.getElementById("ruleSelect");
             this.ruleSelect.value = rule;
-            const headersDependingOnRule = document.querySelectorAll('th[data-rule]');
             this.ruleSelect.addEventListener("change", () => {
-                headersDependingOnRule.forEach(header => {
-                    header.style.display = header.dataset.rule === this.ruleSelect.value ? 'table-cell' : 'none';
-                });
-                if (this.ruleSelect.value === "M") {
-                    if (!document.getElementById("rateCol")) {
-                        const col = document.createElement("col");
-                        col.id = "rateCol";
-                        col.style.width = "10%";
-                        document.getElementById("recentGamesColgroup").appendChild(col);
-                    }
-                    document.getElementById("showRateToggle").style.display = "block";
-                } else {
-                    document.getElementById("rateCol")?.remove();
-                    document.getElementById("showRateToggle").style.display = "none";
-                }
-                const url = new URL(window.location.href);
-                url.searchParams.set('rule', this.ruleSelect.value);
-                window.history.pushState({}, '', url);
                 this.updateDisplay();
             });
 
@@ -86,6 +67,26 @@ const Player = {
     },
 
     async updateDisplay() {
+        const headersDependingOnRule = document.querySelectorAll('th[data-rule]');
+        headersDependingOnRule.forEach(header => {
+            header.style.display = header.dataset.rule === this.ruleSelect.value ? 'table-cell' : 'none';
+        });
+        if (this.ruleSelect.value === "M") {
+            if (!document.getElementById("rateCol")) {
+                const col = document.createElement("col");
+                col.id = "rateCol";
+                col.style.width = "10%";
+                document.getElementById("recentGamesColgroup").appendChild(col);
+            }
+            document.getElementById("showRateToggle").style.display = "block";
+        } else {
+            document.getElementById("rateCol")?.remove();
+            document.getElementById("showRateToggle").style.display = "none";
+        }
+        const url = new URL(window.location.href);
+        url.searchParams.set('rule', this.ruleSelect.value);
+        window.history.pushState({}, '', url);
+
         // 获取数据
         const players = await api.getPlayers();
         const games = await api.getGames(this.ruleSelect.value);
@@ -428,7 +429,7 @@ const Player = {
         tbody.innerHTML = sortedRelativePt.map(opponent => `
         <tr>
             <td>
-                <a href="?name=${encodeURIComponent(opponent.opponent_name)}" class="text-decoration-none">
+                <a href="?name=${encodeURIComponent(opponent.opponent_name)}&rule=${this.ruleSelect.value}" class="text-decoration-none">
                     ${opponent.opponent_name}
                 </a>
             </td>
@@ -484,7 +485,7 @@ const Player = {
 
             // 生成玩家名字的HTML，当前玩家高亮显示
             const playersHtml = sortedPlayers.map(player =>
-                `<a href="?name=${encodeURIComponent(player.name)}" class="text-decoration-none${player.name === this.stats.name ? ' fw-bold text-primary' : ''}">${player.name}</a>
+                `<a href="?name=${encodeURIComponent(player.name)}&rule=${this.ruleSelect.value}" class="text-decoration-none${player.name === this.stats.name ? ' fw-bold text-primary' : ''}">${player.name}</a>
                 ${this.showRateDetails ? rateInItalics(player.previousRate) : ""}
                 <br>
                 <small class="text-muted">
