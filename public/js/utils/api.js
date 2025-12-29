@@ -145,35 +145,6 @@ window.api = {
         }
     },
 
-    // 获取时间安排列表
-    async getSchedules() {
-        const response = await fetch('/api/schedules');
-        if (!response.ok) throw new Error(await response.text());
-        return await response.json();
-    },
-
-    // 添加时间安排
-    async addSchedule(data) {
-        const response = await fetch('/api/schedules', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-        if (!response.ok) throw new Error(await response.text());
-        return await response.json();
-    },
-
-    // 删除时间安排
-    async removeSchedule(scheduleId, time) {
-        const response = await fetch(`/api/schedules/${scheduleId}/${time}`, {
-            method: 'DELETE'
-        });
-        if (!response.ok) throw new Error(await response.text());
-        return await response.json();
-    },
-
     // 获取团队列表
     async getTeams(season = null) {
         try {
