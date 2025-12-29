@@ -12,7 +12,7 @@ const GameForm = {
             this.ruleSelect.addEventListener('change', () => {
                 if (this.ruleSelect.value === "A") {
                     this.outOfTableKyoutaku.disabled = false;
-                    this.outOfTableKyoutaku.value = 0;
+                    this.outOfTableKyoutaku.value = "";
                 } else {
                     this.outOfTableKyoutaku.disabled = true;
                     this.outOfTableKyoutaku.value = "";
@@ -105,7 +105,7 @@ const GameForm = {
                 totalScore += score;
             }
 
-            if (!this.outOfTableKyoutaku.disabled) {
+            if (!this.outOfTableKyoutaku.disabled && this.outOfTableKyoutaku.value !== "") {
                 const outOfTableKyoutaku = parseInt(this.outOfTableKyoutaku.value);
                 if (isNaN(outOfTableKyoutaku)) {
                     throw new Error('桌外供托格式有误');
