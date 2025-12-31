@@ -513,7 +513,7 @@ const Player = {
                     <td>${playersHtml[1]}</td>
                     <td>${playersHtml[2]}</td>
                     <td>${playersHtml[3]}</td>
-                    ${this.ruleSelect.value === "M" ? "<td>${rateHtml}</td>" : ""}
+                    ${this.ruleSelect.value === "M" ? `<td>${rateHtml}</td>` : ""}
                 </tr>
             `;
         }).join('');
