@@ -99,7 +99,8 @@ window.api = {
             });
 
             if (!response.ok) {
-                throw new Error('添加比赛记录失败');
+                const error = await response.json();
+                throw new Error(`添加比赛记录失败: ${error.message}`);
             }
 
             return await response.json();

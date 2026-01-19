@@ -319,6 +319,19 @@ app.post('/api/games', async (req, res) => {
             }
         }
 
+        // 检查是否重复录入
+        const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+        const candidates = await Game.find({
+            time: { $gte: twoMinutesAgo }
+        }).lean();
+        const duplicateGame = candidates.find(g => {
+            return g.players.length === players.length && g.players.every((p, i) => p.name === players[i].name);
+        });
+        if (duplicateGame) {
+            return res.status(400).json({ message: '检测到2分钟内已录入过类似对局，故跳过此次录入。请检查是否重复录入。' })
+        }
+
+
         const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
         const scores = sortedPlayers.map(p => p.score);
         let gamePts = null;
@@ -354,7 +367,7 @@ app.post('/api/games', async (req, res) => {
         res.status(201).json(game);
     } catch (err) {
         console.error('保存比赛记录错误:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: err.message });
     }
 });
 
