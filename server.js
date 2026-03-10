@@ -472,16 +472,18 @@ app.post('/api/teams', async (req, res) => {
         }
 
         // 验证每个成员
+        const membersEng = [];
         for (const member of members) {
             if (!member || typeof member !== 'string' || member.trim().length === 0) {
                 return res.status(400).json({ message: '成员名称不能为空' });
             }
 
             // 检查成员是否存在
-            const playerExists = await Player.findOne({ name: member });
-            if (!playerExists) {
+            const player = await Player.findOne({ name: member });
+            if (!player) {
                 return res.status(400).json({ message: `成员 "${member}" 不存在` });
             }
+            membersEng.push(player.engName);
 
             // 检查成员是否已经在其他团队中
             const existingTeamWithMember = await Team.findOne({ members: member });
