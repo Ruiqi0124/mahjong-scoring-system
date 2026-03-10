@@ -107,7 +107,7 @@ let Player = mongoose.models.Player || mongoose.model('Player', playerSchema);
 let Game = mongoose.models.Game || mongoose.model('Game', gameSchema);
 let GameDetail = mongoose.models.GameDetail || mongoose.model('GameDetail', gameDetailSchema);
 
-let TOTAL_SEASON_NUM = 2
+let TOTAL_SEASON_NUM = 3
 let teams = []
 let teamMatches = []
 for (let season = 0; season < TOTAL_SEASON_NUM; season++) {

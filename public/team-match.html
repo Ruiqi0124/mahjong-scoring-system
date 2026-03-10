@@ -42,6 +42,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/game-record.html?s=1">S2 Record Game</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/team-match.html?s=2&l=en" id="nav-2en">Nest League S3</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -530,22 +533,28 @@
                 "text-draw-tenpai-rate-tooltip": ["流局听牌局数 / 流局数", "流局听牌局数 / 流局数", "Tenpai at draw rounds / Draw rounds"],
             },
             other: {
-                "title": ["巢 League S1", "巢 League S2", "Nest League S2"],
+                "title": ["巢 League S1", "巢 League S2", "Nest League S2", "Nest League S2"],
                 "text-team-placeholder": ["所属队伍", "所属队伍", "Team"],
             },
             init() {
                 if (season === 0) {
                     this.index = 0;
+                    this.titleIndex = 0;
                 } else if (season === 1 && lang === "zh") {
                     this.index = 1;
+                    this.titleIndex = 1;
                 } else if (season === 1 && lang === "en") {
                     this.index = 2;
+                    this.titleIndex = 2;
+                } else if (season === 2 && lang === "en") {
+                    this.index = 2;
+                    this.titleIndex = 3;
                 }
             },
         };
         Text.init();
         document.getElementById(`nav-${season}${lang}`).classList.add("active");
-        document.title = Text.other["title"][Text.index];
+        document.title = Text.other["title"][Text.titleIndex];
         [...document.getElementsByClassName("text-team-placeholder")].forEach(e => { e.placeholder = Text.other["text-team-placeholder"][Text.index]; });
         Object.keys(Text.byClass).forEach(className => {
             try {
