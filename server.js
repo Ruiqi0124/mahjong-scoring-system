@@ -503,6 +503,7 @@ app.post('/api/teams', async (req, res) => {
             name: trimmedName,
             engName: engName.trim(),
             members,
+            membersEng,
             games: 0,
             totalPT: 0,
             avgPT: 0,
