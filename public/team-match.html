@@ -533,28 +533,28 @@
                 "text-draw-tenpai-rate-tooltip": ["流局听牌局数 / 流局数", "流局听牌局数 / 流局数", "Tenpai at draw rounds / Draw rounds"],
             },
             other: {
-                "title": ["巢 League S1", "巢 League S2", "Nest League S2", "Nest League S3"],
+                "title": ["巢 League S1", "巢 League S2", "Nest League S2"],
                 "text-team-placeholder": ["所属队伍", "所属队伍", "Team"],
             },
             init() {
                 if (season === 0) {
                     this.index = 0;
-                    this.titleIndex = 0;
+                    this.title = this.other["title"][this.index];
                 } else if (season === 1 && lang === "zh") {
                     this.index = 1;
-                    this.titleIndex = 1;
+                    this.title = this.other["title"][this.index];
                 } else if (season === 1 && lang === "en") {
                     this.index = 2;
-                    this.titleIndex = 2;
-                } else if (season === 2 && lang === "en") {
+                    this.title = this.other["title"][this.index];
+                } else {
                     this.index = 2;
-                    this.titleIndex = 3;
+                    this.title = this.other["title"][this.index].replace("2", String(season + 1));
                 }
             },
         };
         Text.init();
         document.getElementById(`nav-${season}${lang}`).classList.add("active");
-        document.title = Text.other["title"][Text.titleIndex];
+        document.title = Text.title;
         [...document.getElementsByClassName("text-team-placeholder")].forEach(e => { e.placeholder = Text.other["text-team-placeholder"][Text.index]; });
         Object.keys(Text.byClass).forEach(className => {
             try {

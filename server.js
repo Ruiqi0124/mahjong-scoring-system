@@ -107,7 +107,11 @@ let Player = mongoose.models.Player || mongoose.model('Player', playerSchema);
 let Game = mongoose.models.Game || mongoose.model('Game', gameSchema);
 let GameDetail = mongoose.models.GameDetail || mongoose.model('GameDetail', gameDetailSchema);
 
-let TOTAL_SEASON_NUM = 3
+
+const TOTAL_GAMES = [
+    { "default": 16 }, { "default": 41, "东海麒麟会": 40 }, { "default": 32 }
+]
+const TOTAL_SEASON_NUM = TOTAL_GAMES.length
 let teams = []
 let teamMatches = []
 for (let season = 0; season < TOTAL_SEASON_NUM; season++) {
@@ -779,10 +783,6 @@ app.patch('/api/team-matches/:id/time', async (req, res) => {
         res.status(500).json({ message: '更新比赛时间失败：' + err.message });
     }
 });
-
-const TOTAL_GAMES = [
-    { "default": 16 }, { "default": 41, "东海麒麟会": 40 }, { "default": 32 }
-]
 
 // 获取团队赛排名数据
 app.get('/api/team-rankings', async (req, res) => {
