@@ -93,7 +93,7 @@ class TeamMatchManager {
                         <td>${team.progress}</td>
                         <td class="${team.totalPT >= 0 ? 'text-success' : 'text-danger'}">${team.totalPT.toFixed(1)}</td>
                         <td>${this.safeDivideText(team.totalPlacement, team.games)}</td>
-                        <td style="${noWrap};">${team.placementStats.map(count => Number.isInteger(count) ? count : count.toFixed(1)).join("-")}</td>
+                        <td style="${noWrap};">${team.placementStats.map(count => Number.isInteger(count) ? count : count.toFixed(1)).join("/")}</td>
                         <td class="${team.totalRawPoint >= 0 ? 'text-success' : 'text-danger'}">${team.totalRawPoint.toFixed(1)}</td>
                         <td class="${team.totalPlacementPoint >= 0 ? 'text-success' : 'text-danger'}">${team.totalPlacementPoint.toFixed(1)}</td>
                     </tr>
@@ -115,7 +115,7 @@ class TeamMatchManager {
                         <td>${player.games}</td>
                         <td class="${player.totalPT >= 0 ? 'text-success' : 'text-danger'}">${player.totalPT.toFixed(1)}</td>
                         <td>${this.safeDivideText(player.totalPlacement, player.games)}</td>
-                        <td style="${noWrap}">${player.placementStats.map(count => Number.isInteger(count) ? count : count.toFixed(1)).join("-")}</td>
+                        <td style="${noWrap}">${player.placementStats.map(count => Number.isInteger(count) ? count : count.toFixed(1)).join("/")}</td>
                         <td class="${player.totalRawPoint >= 0 ? 'text-success' : 'text-danger'}">${player.totalRawPoint.toFixed(1)}</td>
                         <td class="${player.totalPlacementPoint >= 0 ? 'text-success' : 'text-danger'}">${player.totalPlacementPoint.toFixed(1)}</td>
                         ${this.season === 1 ? `<td>${this.safeDividePct(stats.win, stats.rounds)}</td>
